@@ -6,6 +6,16 @@ const bookingSchema = new mongoose.Schema({
     status: { type: String, enum: ['confirmed', 'cancelled', 'pending'], default: 'pending' },
     paymentStatus: { type: String, enum: ['paid', 'not_paid'], default: 'not_paid' },
     amount: { type: Number, required: true },
+    address: {
+        street: { type: String },
+        city: { type: String },
+        state: { type: String },
+        zip: { type: String },
+        country: { type: String },
+        phone: { type: String }
+    },
+    razorpayOrderId: { type: String },
+    razorpayPaymentId: { type: String },
     bookedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 

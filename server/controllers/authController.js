@@ -10,10 +10,33 @@ const generateToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const findUserByEmail = async (email) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    return await User.findOne({
+        email: new RegExp(`^${escapeRegex(normalizedEmail)}$`, 'i')
+    });
+};
+
+const findOTPByEmail = async (email, action, otp) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    return await OTP.findOne({
+        email: new RegExp(`^${escapeRegex(normalizedEmail)}$`, 'i'),
+        otp,
+        action
+    });
+};
+
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
-        let user = await User.findOne({ email });
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email, and password are required' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        let user = await findUserByEmail(normalizedEmail);
         if (user) return res.status(400).json({ message: 'User already exists' });
 
         const salt = await bcrypt.genSalt(10);
@@ -21,15 +44,15 @@ exports.register = async (req, res) => {
 
         user = await User.create({
             name,
-            email,
+            email: normalizedEmail,
             password: hashedPassword,
             role: 'user', // Hardcoded to prevent frontend passing role
             isVerified: false
         });
 
         const otp = generateOTP();
-        await OTP.create({ email, otp, action: 'account_verification' });
-        await sendOTPEmail(email, otp, 'account_verification');
+        await OTP.create({ email: normalizedEmail, otp, action: 'account_verification' });
+        await sendOTPEmail(normalizedEmail, otp, 'account_verification');
 
         res.status(201).json({
             message: 'OTP sent to email. Please verify.',
@@ -43,7 +66,12 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await findUserByEmail(normalizedEmail);
         if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -72,13 +100,18 @@ exports.login = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
-        const validOTP = await OTP.findOne({ email, otp, action: 'account_verification' });
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email and OTP are required' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const validOTP = await findOTPByEmail(normalizedEmail, 'account_verification', otp);
 
         if (!validOTP) {
             return res.status(400).json({ message: 'Invalid or expired OTP' });
         }
 
-        const user = await User.findOneAndUpdate({ email }, { isVerified: true }, { new: true });
+        const user = await User.findOneAndUpdate({ email: normalizedEmail }, { isVerified: true }, { new: true });
         await OTP.deleteOne({ _id: validOTP._id }); // Delete OTP after usage
 
         res.json({

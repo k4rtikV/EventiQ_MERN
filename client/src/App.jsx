@@ -9,6 +9,8 @@ import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
+import AddressDetails from './pages/AddressDetails';
+import PaymentPage from './pages/PaymentPage';
 
 function App() {
     return (
@@ -19,6 +21,8 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/events/:id" element={<EventDetail />} />
+                        <Route path="/booking/:id/address" element={<AddressDetails />} />
+                        <Route path="/booking/:id/payment" element={<PaymentPage />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/dashboard" element={<UserDashboard />} />

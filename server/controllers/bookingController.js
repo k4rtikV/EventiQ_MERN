@@ -2,8 +2,15 @@ const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
 const { sendBookingEmail, sendOTPEmail } = require('../utils/email');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 exports.sendBookingOTP = async (req, res) => {
     try {
@@ -21,7 +28,6 @@ exports.bookEvent = async (req, res) => {
     try {
         const { eventId, otp } = req.body;
 
-        // Verify OTP explicitly before proceeding
         const validOTP = await OTP.findOne({ email: req.user.email, otp, action: 'event_booking' });
         if (!validOTP) {
             return res.status(400).json({ message: 'Invalid or expired OTP for booking' });
@@ -44,7 +50,7 @@ exports.bookEvent = async (req, res) => {
             amount: event.ticketPrice
         });
 
-        await OTP.deleteOne({ _id: validOTP._id }); // cleanup
+        await OTP.deleteOne({ _id: validOTP._id });
 
         res.status(201).json({ message: 'Booking request submitted', booking });
     } catch (error) {
@@ -52,13 +58,116 @@ exports.bookEvent = async (req, res) => {
     }
 };
 
+exports.getBookingById = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id).populate('eventId').populate('userId', 'name email');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+        if (booking.userId._id.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to view this booking' });
+        }
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+exports.updateBookingAddress = async (req, res) => {
+    try {
+        const { street, city, state, zip, country, phone } = req.body;
+        const booking = await Booking.findOne({ _id: req.params.id, userId: req.user.id });
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        booking.address = { street, city, state, zip, country, phone };
+        await booking.save();
+
+        res.json({ message: 'Address saved successfully', booking });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+exports.createOrder = async (req, res) => {
+    try {
+        const booking = await Booking.findOne({ _id: req.params.id, userId: req.user.id }).populate('eventId');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+        if (booking.paymentStatus === 'paid') return res.status(400).json({ message: 'Payment already completed for this booking' });
+        if (!booking.address || !booking.address.street) {
+            return res.status(400).json({ message: 'Please save your address before proceeding to payment' });
+        }
+
+        const event = booking.eventId;
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        const amountInPaise = Math.round((event.ticketPrice || 0) * 100);
+        if (amountInPaise === 0) {
+            booking.paymentStatus = 'paid';
+            await booking.save();
+            return res.json({ free: true, booking });
+        }
+
+        const order = await razorpayInstance.orders.create({
+            amount: amountInPaise,
+            currency: 'INR',
+            receipt: `receipt_${booking._id}`,
+            payment_capture: 1
+        });
+
+        booking.razorpayOrderId = order.id;
+        await booking.save();
+
+        res.json({
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            key: process.env.RAZORPAY_KEY_ID,
+            bookingId: booking._id,
+            eventTitle: event.title
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+exports.verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+        const booking = await Booking.findOne({ _id: req.params.id, userId: req.user.id }).populate('eventId');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+        if (!booking.razorpayOrderId || booking.razorpayOrderId !== razorpay_order_id) {
+            return res.status(400).json({ message: 'Booking order mismatch' });
+        }
+
+        const generatedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex');
+
+        if (generatedSignature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Invalid payment signature' });
+        }
+
+        booking.paymentStatus = 'paid';
+        booking.razorpayPaymentId = razorpay_payment_id;
+        await booking.save();
+
+        res.json({ message: 'Payment verified successfully', booking });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 exports.confirmBooking = async (req, res) => {
     try {
-        const { paymentStatus } = req.body; // 'paid' or 'not_paid'
         const booking = await Booking.findById(req.params.id).populate('userId').populate('eventId');
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-        if (booking.status === 'confirmed') return res.status(400).json({ message: 'Booking is already confirmed' });
+        if (booking.status === 'confirmed') {
+            return res.status(400).json({ message: 'Booking is already confirmed' });
+        }
+
+        if (booking.paymentStatus !== 'paid') {
+            return res.status(400).json({ message: 'Cannot verify booking without completed payment' });
+        }
 
         const event = await Event.findById(booking.eventId._id);
         if (event.availableSeats <= 0) {
@@ -66,18 +175,14 @@ exports.confirmBooking = async (req, res) => {
         }
 
         booking.status = 'confirmed';
-        if (paymentStatus) {
-            booking.paymentStatus = paymentStatus;
-        }
         await booking.save();
 
         event.availableSeats -= 1;
         await event.save();
 
-        // Send email on admin confirmation
         await sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title);
 
-        res.json({ message: 'Booking confirmed successfully', booking });
+        res.json({ message: 'Booking verified successfully', booking });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
@@ -108,7 +213,6 @@ exports.cancelBooking = async (req, res) => {
         booking.status = 'cancelled';
         await booking.save();
 
-        // Only restore the seat if it was actually confirmed and deducted
         if (wasConfirmed) {
             const event = await Event.findById(booking.eventId);
             if (event) {
