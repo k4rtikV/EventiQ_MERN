@@ -1,8 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
+
 import Home from './pages/Home';
+import EventsPage from './pages/EventsPage';
 import EventDetail from './pages/EventDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -25,11 +29,15 @@ import PendingRequests from './pages/PendingRequests';
 function App() {
     return (
         <Router>
+            <ScrollToTop />
+
             <div className="min-h-screen bg-gray-50 flex flex-col">
                 <Navbar />
+
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <Routes>
                         <Route path="/" element={<Home />} />
+                        <Route path="/events" element={<EventsPage />} />
                         <Route path="/events/:id" element={<EventDetail />} />
                         <Route path="/booking/:id/address" element={<AddressDetails />} />
                         <Route path="/booking/:id/payment" element={<PaymentPage />} />
@@ -48,9 +56,18 @@ function App() {
                         <Route path="/booking/:id/purchased" element={<PurchasedEvent />} />
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/payment-failed" element={<PaymentFailed />} />
-                        <Route path="*" element={<h1 className="text-3xl font-bold text-center mt-20">404 - Page Not Found</h1>} />
+
+                        <Route
+                            path="*"
+                            element={
+                                <h1 className="text-3xl font-bold text-center mt-20">
+                                    404 - Page Not Found
+                                </h1>
+                            }
+                        />
                     </Routes>
                 </main>
+
                 <Footer />
             </div>
         </Router>

@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../utils/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTicketAlt, FaTimesCircle } from 'react-icons/fa';
+import defaultAvatar from '../assets/default-avatar.png';
 
 const UserDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -46,8 +47,12 @@ const UserDashboard = () => {
         <div className="max-w-6xl mx-auto">
             <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 mb-8 border border-gray-100 flex items-center text-center sm:text-left gap-4 sm:gap-6">
                 <div className="flex items-center gap-4 flex-1">
-                    <div className="w-20 h-20 bg-gray-200 text-gray-900 rounded-full flex items-center justify-center text-3xl font-bold uppercase tracking-widest shrink-0">
-                        {user?.name.charAt(0)}
+                    <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                        <img
+                            src={defaultAvatar}
+                            alt="User"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                     <div className="flex flex-col items-center sm:items-start">
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Welcome, {user?.name}!</h1>
