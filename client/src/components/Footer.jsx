@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
 
 const Footer = () => {
     return (
@@ -22,9 +23,9 @@ const Footer = () => {
                 </div>
                 <div>
                     <h3 className="text-xl font-bold text-white mb-4">Contact</h3>
-                    <p className="text-gray-400 leading-7">kavx1734@gmail.com</p>
-                    <p className="text-gray-400 leading-7">+91 91679 63477</p>
-                    <p className="text-gray-400 leading-7 mt-4">Thane, Mumbai 400604</p>
+                    <p className="text-gray-400 leading-7 flex items-center gap-2"><FiMail className="text-gray-300" /> kavx1734@gmail.com</p>
+                    <p className="text-gray-400 leading-7 flex items-center gap-2"><FiPhone className="text-gray-300" /> +91 91679 63477</p>
+                    <p className="text-gray-400 leading-7 mt-4 flex items-center gap-2"><FiMapPin className="text-gray-300" /> Thane, Mumbai 400604</p>
                 </div>
             </div>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-10 border-t border-gray-800 pt-6 text-gray-500 text-sm text-center">

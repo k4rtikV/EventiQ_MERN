@@ -16,6 +16,7 @@ import AboutUs from './pages/AboutUs';
 import FAQs from './pages/FAQs';
 import RefundPolicy from './pages/RefundPolicy';
 import ContactUs from './pages/ContactUs';
+import TicketPage from './pages/TicketPage';
 
 function App() {
     return (
@@ -36,6 +37,7 @@ function App() {
                         <Route path="/faqs" element={<FAQs />} />
                         <Route path="/refund-policy" element={<RefundPolicy />} />
                         <Route path="/contact-us" element={<ContactUs />} />
+                        <Route path="/ticket/:id" element={<TicketPage />} />
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/payment-failed" element={<PaymentFailed />} />
                         <Route path="*" element={<h1 className="text-3xl font-bold text-center mt-20">404 - Page Not Found</h1>} />

@@ -11,8 +11,78 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendBookingEmail = async (userEmail, userName, eventTitle) => {
+const PDFDocument = require('pdfkit');
+const QRCode = require('qrcode');
+const axios = require('axios');
+
+const sendBookingEmail = async (userEmail, userName, eventTitle, booking) => {
     try {
+        // create a PDF ticket in memory
+        const doc = new PDFDocument({ size: 'A4', margin: 50 });
+        const buffers = [];
+        doc.on('data', (chunk) => buffers.push(chunk));
+        const pdfEnd = new Promise((resolve) => doc.on('end', resolve));
+
+        const pageWidth = doc.page.width;
+        const pageMargin = doc.page.margins.left; // left & right
+
+        // Event image (header) if available
+        let headerHeight = 0;
+        try {
+            const imageUrl = booking.eventId && booking.eventId.image ? booking.eventId.image : null;
+            if (imageUrl) {
+                const resp = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+                const imgBuffer = Buffer.from(resp.data, 'binary');
+                const imgW = pageWidth - pageMargin * 2;
+                const imgH = 140;
+                doc.image(imgBuffer, pageMargin, 40, { width: imgW, height: imgH, align: 'center', valign: 'center' });
+                headerHeight = imgH + 20;
+            }
+        } catch (imgErr) {
+            // ignore image fetch errors
+            headerHeight = 0;
+        }
+
+        const contentTop = 40 + headerHeight + 10;
+
+        // Draw title
+        doc.fontSize(20).fillColor('#0f172a').text(eventTitle, pageMargin, contentTop);
+
+        // two-column layout: left for details, right for QR
+        const leftX = pageMargin;
+        const leftW = (pageWidth - pageMargin * 2) * 0.58;
+        const rightW = (pageWidth - pageMargin * 2) - leftW - 20;
+        const rightX = pageMargin + leftW + 20;
+
+        const detailsTop = contentTop + 30;
+        doc.fontSize(11).fillColor('#0b1220');
+        doc.text(`Name: ${userName}`, leftX, detailsTop);
+        doc.text(`Booking ID: ${booking._id}`, leftX, detailsTop + 18);
+        const eventDate = booking.eventId && booking.eventId.date ? new Date(booking.eventId.date).toLocaleString() : '';
+        doc.text(`Date: ${eventDate}`, leftX, detailsTop + 36);
+        const location = booking.eventId && booking.eventId.location ? booking.eventId.location : '';
+        doc.text(`Venue: ${location}`, leftX, detailsTop + 54);
+        doc.text(`Price: ₹${booking.amount}`, leftX, detailsTop + 72);
+
+        // QR on right
+        const qrValue = `${booking._id}-${booking.userId || ''}`;
+        try {
+            const qrDataUrl = await QRCode.toDataURL(qrValue, { margin: 1, width: 220 });
+            const base64 = qrDataUrl.split(',')[1];
+            const qrBuffer = Buffer.from(base64, 'base64');
+            const qrSize = 160;
+            doc.image(qrBuffer, rightX, detailsTop - 6, { width: qrSize, height: qrSize });
+        } catch (qrErr) {
+            console.warn('QR generation failed', qrErr);
+        }
+
+        // Footer note
+        doc.fontSize(10).fillColor('#666').text('Please show this ticket at the entrance.', leftX, detailsTop + 100);
+
+        doc.end();
+        await pdfEnd;
+        const pdfBuffer = Buffer.concat(buffers);
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: userEmail,
@@ -20,13 +90,24 @@ const sendBookingEmail = async (userEmail, userName, eventTitle) => {
             html: `
         <h2>Hi ${userName}!</h2>
         <p>Your booking for the event <strong>${eventTitle}</strong> is successfully confirmed.</p>
+        <p>Booking ID: <strong>${booking._id}</strong></p>
+        <p>Please find your ticket attached as a PDF.</p>
         <p>Thank you for choosing EventiQ.</p>
-      `
+      `,
+            attachments: [
+                {
+                    filename: `${eventTitle.replace(/[^a-z0-9]/gi, '_').slice(0, 40)}-${booking._id}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf'
+                }
+            ]
         };
+
         await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully to', userEmail);
+        console.log('Booking email with PDF sent successfully to', userEmail);
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Error sending booking email:', error);
+        throw error;
     }
 };
 

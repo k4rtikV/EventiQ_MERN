@@ -39,7 +39,7 @@ exports.bookEvent = async (req, res) => {
 
         const existingBooking = await Booking.findOne({ userId: req.user.id, eventId });
         if (existingBooking && existingBooking.status !== 'cancelled') {
-            return res.status(400).json({ message: 'Already booked or pending' });
+            return res.status(400).json({ message: 'Already booked or pending, please go to your profile to manage your bookings' });
         }
 
         const booking = await Booking.create({
@@ -180,7 +180,7 @@ exports.confirmBooking = async (req, res) => {
         event.availableSeats -= 1;
         await event.save();
 
-        await sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title);
+        await sendBookingEmail(booking.userId.email, booking.userId.name, booking.eventId.title, booking);
 
         res.json({ message: 'Booking verified successfully', booking });
     } catch (error) {
