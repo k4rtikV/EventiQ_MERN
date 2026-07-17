@@ -96,7 +96,7 @@ const Home = () => {
             </div>
 
             <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
-                <h2 className="text-3xl font-extrabold text-gray-900">Upcoming Events</h2>
+                <h2 className="text-3xl font-extrabold text-gray-900">Featured Events</h2>
                 <div className="text-gray-500 font-medium">{events.length} results found</div>
             </div>
 
