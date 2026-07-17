@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import EventDetail from './pages/EventDetail';
 import Login from './pages/Login';
@@ -11,6 +12,10 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
 import AddressDetails from './pages/AddressDetails';
 import PaymentPage from './pages/PaymentPage';
+import AboutUs from './pages/AboutUs';
+import FAQs from './pages/FAQs';
+import RefundPolicy from './pages/RefundPolicy';
+import ContactUs from './pages/ContactUs';
 
 function App() {
     return (
@@ -27,11 +32,16 @@ function App() {
                         <Route path="/register" element={<Register />} />
                         <Route path="/dashboard" element={<UserDashboard />} />
                         <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/about-us" element={<AboutUs />} />
+                        <Route path="/faqs" element={<FAQs />} />
+                        <Route path="/refund-policy" element={<RefundPolicy />} />
+                        <Route path="/contact-us" element={<ContactUs />} />
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/payment-failed" element={<PaymentFailed />} />
                         <Route path="*" element={<h1 className="text-3xl font-bold text-center mt-20">404 - Page Not Found</h1>} />
                     </Routes>
                 </main>
+                <Footer />
             </div>
         </Router>
     );

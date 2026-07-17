@@ -1,7 +1,7 @@
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
-const { sendBookingEmail, sendOTPEmail } = require('../utils/email');
+const { sendBookingEmail, sendOTPEmail, sendCancellationEmail } = require('../utils/email');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -209,6 +209,7 @@ exports.cancelBooking = async (req, res) => {
         if (booking.status === 'cancelled') return res.status(400).json({ message: 'Already cancelled' });
 
         const wasConfirmed = booking.status === 'confirmed';
+        const cancelledByAdmin = req.user.role === 'admin' && booking.userId.toString() !== req.user.id;
 
         booking.status = 'cancelled';
         await booking.save();
@@ -219,6 +220,21 @@ exports.cancelBooking = async (req, res) => {
                 event.availableSeats += 1;
                 await event.save();
             }
+        }
+
+        try {
+            const bookingUser = await Booking.findById(booking._id).populate('userId', 'name email').populate('eventId', 'title');
+            if (bookingUser && bookingUser.userId && bookingUser.eventId) {
+                await sendCancellationEmail(
+                    bookingUser.userId.email,
+                    bookingUser.userId.name,
+                    bookingUser.eventId.title,
+                    bookingUser.amount,
+                    cancelledByAdmin
+                );
+            }
+        } catch (emailError) {
+            console.error('Cancellation notification failed:', emailError);
         }
 
         res.json({ message: 'Booking cancelled successfully' });
