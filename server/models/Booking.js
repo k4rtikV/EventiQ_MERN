@@ -16,6 +16,7 @@ const bookingSchema = new mongoose.Schema({
     },
     razorpayOrderId: { type: String },
     razorpayPaymentId: { type: String },
+    allowNoAddress: { type: Boolean, default: false },
     bookedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 

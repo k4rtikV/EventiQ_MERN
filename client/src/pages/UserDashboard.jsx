@@ -86,7 +86,16 @@ const UserDashboard = () => {
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {bookings.map((booking) => (
-                            <div key={booking._id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col">
+                            <div
+                                key={booking._id}
+                                className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col border ${
+                                    booking.status === 'confirmed' && booking.paymentStatus === 'paid' ? 'border-green-300 bg-green-50' :
+                                    booking.status === 'pending' && booking.paymentStatus === 'paid' ? 'border-blue-300 bg-blue-50' :
+                                    booking.status === 'cancelled' ? 'border-red-300 bg-red-50' :
+                                    booking.status === 'pending' && booking.paymentStatus === 'not_paid' ? 'border-yellow-300 bg-yellow-50' :
+                                    'border-gray-100'
+                                }`}
+                            >
                                 <div className="p-6 border-b border-gray-50 flex-grow">
                                     {booking.eventId ? (
                                         <>
@@ -121,7 +130,7 @@ const UserDashboard = () => {
                                     {booking.eventId && booking.status === 'confirmed' ? (
                                         <>
                                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                                <Link to={`/events/${booking.eventId._id}`} className="text-gray-900 font-semibold text-sm hover:underline">View Event</Link>
+                                                <Link to={`/booking/${booking._id}/purchased`} className="text-gray-900 font-semibold text-sm hover:underline">View Event</Link>
                                                 <button
                                                     onClick={() => cancelBooking(booking._id)}
                                                     className="text-red-500 font-semibold text-sm hover:bg-red-600 hover:text-white transition flex items-center gap-1 px-2 py-1 rounded"
@@ -139,7 +148,7 @@ const UserDashboard = () => {
                                     ) : booking.eventId && booking.status === 'pending' ? (
                                         <>
                                             <div className="flex items-center justify-between gap-3">
-                                                <Link to={`/events/${booking.eventId._id}`} className="text-gray-900 font-semibold text-sm hover:underline">View Event</Link>
+                                                <Link to={`/booking/${booking._id}/purchased`} className="text-gray-900 font-semibold text-sm hover:underline">View Event</Link>
                                                 <button
                                                     onClick={() => cancelBooking(booking._id)}
                                                     className="text-red-500 font-semibold text-sm hover:bg-red-600 hover:text-white transition flex items-center gap-1 px-2 py-1 rounded"

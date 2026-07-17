@@ -9,6 +9,7 @@ const {
     updateBookingAddress,
     createOrder,
     verifyPayment,
+    repurchaseBooking,
     getBookingById
 } = require('../controllers/bookingController');
 const { protect, admin } = require('../middleware/auth');
@@ -20,6 +21,7 @@ router.get('/:id', protect, getBookingById);
 router.put('/:id/address', protect, updateBookingAddress);
 router.post('/:id/create-order', protect, createOrder);
 router.post('/:id/verify-payment', protect, verifyPayment);
+router.post('/:id/repurchase', protect, repurchaseBooking);
 router.put('/:id/confirm', protect, admin, confirmBooking);
 router.delete('/:id', protect, cancelBooking);
 

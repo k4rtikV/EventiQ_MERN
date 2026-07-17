@@ -1,7 +1,7 @@
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
-const { sendBookingEmail, sendOTPEmail, sendCancellationEmail } = require('../utils/email');
+const { sendBookingEmail, sendOTPEmail, sendCancellationEmail, sendPaymentReceivedEmail } = require('../utils/email');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -91,8 +91,11 @@ exports.createOrder = async (req, res) => {
         const booking = await Booking.findOne({ _id: req.params.id, userId: req.user.id }).populate('eventId');
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
         if (booking.paymentStatus === 'paid') return res.status(400).json({ message: 'Payment already completed for this booking' });
+        // allow certain bookings (created via repurchase) to proceed without an address
         if (!booking.address || !booking.address.street) {
-            return res.status(400).json({ message: 'Please save your address before proceeding to payment' });
+            if (!booking.allowNoAddress) {
+                return res.status(400).json({ message: 'Please save your address before proceeding to payment' });
+            }
         }
 
         const event = booking.eventId;
@@ -149,6 +152,13 @@ exports.verifyPayment = async (req, res) => {
         booking.paymentStatus = 'paid';
         booking.razorpayPaymentId = razorpay_payment_id;
         await booking.save();
+
+        // send payment received email to user
+        try {
+            await sendPaymentReceivedEmail(req.user.email, req.user.name, booking.eventId.title, booking._id, booking.amount);
+        } catch (emailErr) {
+            console.error('Failed to send payment received email:', emailErr);
+        }
 
         res.json({ message: 'Payment verified successfully', booking });
     } catch (error) {
@@ -238,6 +248,33 @@ exports.cancelBooking = async (req, res) => {
         }
 
         res.json({ message: 'Booking cancelled successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+exports.repurchaseBooking = async (req, res) => {
+    try {
+        const original = await Booking.findById(req.params.id).populate('eventId');
+        if (!original) return res.status(404).json({ message: 'Original booking not found' });
+        if (original.userId.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to repurchase' });
+        }
+
+        const event = original.eventId;
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+        if (event.availableSeats <= 0) return res.status(400).json({ message: 'No seats available' });
+
+        const booking = await Booking.create({
+            userId: req.user.id,
+            eventId: event._id,
+            status: 'pending',
+            paymentStatus: 'not_paid',
+            amount: event.ticketPrice,
+            allowNoAddress: true
+        });
+
+        res.status(201).json({ message: 'Repurchase booking created', booking });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }

@@ -17,6 +17,10 @@ import FAQs from './pages/FAQs';
 import RefundPolicy from './pages/RefundPolicy';
 import ContactUs from './pages/ContactUs';
 import TicketPage from './pages/TicketPage';
+import PurchasedEvent from './pages/PurchasedEvent';
+import SuccessfulBookings from './pages/SuccessfulBookings';
+import PaidClients from './pages/PaidClients';
+import PendingRequests from './pages/PendingRequests';
 
 function App() {
     return (
@@ -33,11 +37,15 @@ function App() {
                         <Route path="/register" element={<Register />} />
                         <Route path="/dashboard" element={<UserDashboard />} />
                         <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/successful-bookings" element={<SuccessfulBookings />} />
+                        <Route path="/paid-clients" element={<PaidClients />} />
+                        <Route path="/pending-requests" element={<PendingRequests />} />
                         <Route path="/about-us" element={<AboutUs />} />
                         <Route path="/faqs" element={<FAQs />} />
                         <Route path="/refund-policy" element={<RefundPolicy />} />
                         <Route path="/contact-us" element={<ContactUs />} />
                         <Route path="/ticket/:id" element={<TicketPage />} />
+                        <Route path="/booking/:id/purchased" element={<PurchasedEvent />} />
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/payment-failed" element={<PaymentFailed />} />
                         <Route path="*" element={<h1 className="text-3xl font-bold text-center mt-20">404 - Page Not Found</h1>} />

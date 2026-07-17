@@ -195,4 +195,51 @@ const sendCancellationEmail = async (userEmail, userName, eventTitle, amount, ca
     }
 };
 
-module.exports = { sendBookingEmail, sendOTPEmail, sendSupportEmail, sendCancellationEmail };
+const sendPaymentReceivedEmail = async (userEmail, userName, eventTitle, bookingId, amount) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: userEmail,
+            subject: `🎟️ Payment Received – Your Booking is Being Processed`,
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
+                    <h2 style="color: #111;">🎟️ Payment Received – Your Booking is Being Processed</h2>
+                    <p>Hi ${userName},</p>
+                    <p>Thank you for your purchase!</p>
+                    <p>We've successfully received your payment for <strong>${eventTitle}</strong>.</p>
+                    <h3>Payment Summary</h3>
+                    <ul>
+                        <li><strong>Event:</strong> ${eventTitle}</li>
+                        <li><strong>Booking ID:</strong> ${bookingId}</li>
+                        <li><strong>Amount Paid:</strong> ₹${amount}</li>
+                        <li><strong>Payment Status:</strong> ✅ Successful</li>
+                    </ul>
+                    <p>Your booking is now being processed by our team.</p>
+                    <h4>What happens next?</h4>
+                    <ul>
+                        <li>Our team will verify your booking.</li>
+                        <li>Once approved, you'll receive another email containing:</li>
+                    </ul>
+                    <ul>
+                        <li>🎟️ Your event ticket (PDF)</li>
+                        <li>QR code for entry</li>
+                        <li>Event details and instructions</li>
+                    </ul>
+                    <p>This process usually takes <strong>less than 10 minutes</strong>.</p>
+                    <p>If you don't receive another email within 10–15 minutes, please check your Spam/Junk folder first. If it's still missing, contact our support team with your Booking ID.</p>
+                    <p>We look forward to seeing you at the event!</p>
+                    <p>Best regards,</p>
+                    <p><strong>The EventiQ Team</strong></p>
+                    <p style="color: #999; font-size: 12px; margin-top: 20px;">This is an automated message from EventiQ.</p>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('Payment received email sent to', userEmail);
+    } catch (error) {
+        console.error('Error sending payment received email:', error);
+        throw error;
+    }
+};
+
+module.exports = { sendBookingEmail, sendOTPEmail, sendSupportEmail, sendCancellationEmail, sendPaymentReceivedEmail };
