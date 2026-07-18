@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/axios";
 import {
@@ -10,25 +10,20 @@ import {
 const EventsPage = () => {
     const [events, setEvents] = useState([]);
     const [search, setSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] =
+        useState("All");
+    const [sortOption, setSortOption] = useState("default");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            fetchEvents();
-        }, 400);
-
-        return () => clearTimeout(timeoutId);
-    }, [search]);
+        fetchEvents();
+    }, []);
 
     const fetchEvents = async () => {
         try {
             setLoading(true);
 
-            const response = await api.get("/events", {
-                params: {
-                    search: search.trim(),
-                },
-            });
+            const response = await api.get("/events");
 
             setEvents(
                 Array.isArray(response.data)
@@ -45,6 +40,80 @@ const EventsPage = () => {
             setLoading(false);
         }
     };
+
+    const categories = useMemo(() => {
+        const eventCategories = events
+            .map((event) => event.category?.trim())
+            .filter(Boolean);
+
+        return [
+            "All",
+            ...Array.from(new Set(eventCategories)).sort(
+                (firstCategory, secondCategory) =>
+                    firstCategory.localeCompare(secondCategory)
+            ),
+        ];
+    }, [events]);
+
+    const filteredAndSortedEvents = useMemo(() => {
+        const normalizedSearch = search.trim().toLowerCase();
+
+        const filteredEvents = events.filter((event) => {
+            const title = event.title?.toLowerCase() || "";
+            const location =
+                event.location?.toLowerCase() || "";
+            const category =
+                event.category?.toLowerCase() || "";
+
+            const matchesSearch =
+                normalizedSearch === "" ||
+                title.includes(normalizedSearch) ||
+                location.includes(normalizedSearch) ||
+                category.includes(normalizedSearch);
+
+            const matchesCategory =
+                selectedCategory === "All" ||
+                event.category?.trim() === selectedCategory;
+
+            return matchesSearch && matchesCategory;
+        });
+
+        const sortedEvents = [...filteredEvents];
+
+        if (sortOption === "price-low-to-high") {
+            sortedEvents.sort(
+                (firstEvent, secondEvent) =>
+                    Number(firstEvent.ticketPrice || 0) -
+                    Number(secondEvent.ticketPrice || 0)
+            );
+        }
+
+        if (sortOption === "price-high-to-low") {
+            sortedEvents.sort(
+                (firstEvent, secondEvent) =>
+                    Number(secondEvent.ticketPrice || 0) -
+                    Number(firstEvent.ticketPrice || 0)
+            );
+        }
+
+        return sortedEvents;
+    }, [
+        events,
+        search,
+        selectedCategory,
+        sortOption,
+    ]);
+
+    const resetFilters = () => {
+        setSearch("");
+        setSelectedCategory("All");
+        setSortOption("default");
+    };
+
+    const filtersAreActive =
+        search.trim() !== "" ||
+        selectedCategory !== "All" ||
+        sortOption !== "default";
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -69,35 +138,113 @@ const EventsPage = () => {
                 </div>
             </section>
 
-            {/* Search */}
+            {/* Search and Filters */}
             <section className="mb-10">
-                <div className="w-full max-w-2xl relative flex items-center group">
-                    <FaSearch className="absolute left-5 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Search */}
+                    <div className="relative flex items-center group md:col-span-2">
+                        <FaSearch className="absolute left-5 text-gray-400 group-focus-within:text-gray-900 transition-colors pointer-events-none" />
 
-                    <input
-                        type="text"
-                        placeholder="Search events by title..."
-                        className="w-full pl-14 pr-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                    />
+                        <input
+                            type="text"
+                            placeholder="Search by title, location or category..."
+                            className="w-full pl-14 pr-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                            value={search}
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                        />
+                    </div>
+
+                    {/* Category Filter */}
+                    <div>
+                        <label
+                            htmlFor="category-filter"
+                            className="sr-only"
+                        >
+                            Filter by category
+                        </label>
+
+                        <select
+                            id="category-filter"
+                            value={selectedCategory}
+                            onChange={(event) =>
+                                setSelectedCategory(
+                                    event.target.value
+                                )
+                            }
+                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                        >
+                            {categories.map((category) => (
+                                <option
+                                    key={category}
+                                    value={category}
+                                >
+                                    {category === "All"
+                                        ? "Any Category"
+                                        : category}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Price Sort */}
+                    <div>
+                        <label
+                            htmlFor="price-sort"
+                            className="sr-only"
+                        >
+                            Sort events by price
+                        </label>
+
+                        <select
+                            id="price-sort"
+                            value={sortOption}
+                            onChange={(event) =>
+                                setSortOption(event.target.value)
+                            }
+                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                        >
+                            <option value="default">
+                                Sort By Price
+                            </option>
+
+                            <option value="price-low-to-high">
+                                Price: Low to High
+                            </option>
+
+                            <option value="price-high-to-low">
+                                Price: High to Low
+                            </option>
+                        </select>
+                    </div>
                 </div>
             </section>
 
             {/* Results Header */}
-            <section className="flex items-center justify-between gap-4 mb-8 px-2 border-b border-gray-200 pb-4">
-                <h2 className="text-3xl font-extrabold text-gray-900">
-                    All Events
-                </h2>
+            <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-2 border-b border-gray-200 pb-4">
+                <div>
+                    <h2 className="text-3xl font-extrabold text-gray-900">
+                        All Events
+                    </h2>
 
-                <div className="text-gray-500 font-medium whitespace-nowrap">
-                    {events.length}{" "}
-                    {events.length === 1
-                        ? "event found"
-                        : "events found"}
+                    <p className="text-gray-500 font-medium mt-1">
+                        {filteredAndSortedEvents.length}{" "}
+                        {filteredAndSortedEvents.length === 1
+                            ? "event found"
+                            : "events found"}
+                    </p>
                 </div>
+
+                {filtersAreActive && (
+                    <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="self-start sm:self-auto px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-900 hover:text-white hover:border-gray-900 transition"
+                    >
+                        Clear Filters
+                    </button>
+                )}
             </section>
 
             {/* Event Results */}
@@ -105,19 +252,28 @@ const EventsPage = () => {
                 <div className="text-center py-20 text-xl font-semibold text-gray-600">
                     Loading events...
                 </div>
-            ) : events.length === 0 ? (
+            ) : filteredAndSortedEvents.length === 0 ? (
                 <div className="bg-white border border-gray-200 rounded-2xl text-center py-20 px-6 shadow-sm">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">
                         No events found
                     </h3>
 
-                    <p className="text-gray-500">
-                        No events match your current search.
+                    <p className="text-gray-500 mb-6">
+                        No events match your current search or
+                        filters.
                     </p>
+
+                    <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="px-6 py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black transition"
+                    >
+                        Clear Filters
+                    </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {events.map((event) => {
+                    {filteredAndSortedEvents.map((event) => {
                         const seatPercentage =
                             event.totalSeats > 0
                                 ? Math.min(
@@ -147,18 +303,24 @@ const EventsPage = () => {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
-                                            {event.category || "Event"}
+                                            {event.category ||
+                                                "Event"}
                                         </div>
                                     )}
 
                                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                                        {event.ticketPrice === 0 ? (
+                                        {Number(
+                                            event.ticketPrice
+                                        ) === 0 ? (
                                             <span className="text-green-600">
                                                 FREE
                                             </span>
                                         ) : (
                                             <span className="text-gray-900">
-                                                ₹{event.ticketPrice}
+                                                ₹
+                                                {
+                                                    event.ticketPrice
+                                                }
                                             </span>
                                         )}
                                     </div>
@@ -184,7 +346,8 @@ const EventsPage = () => {
                                                 ).toLocaleDateString(
                                                     undefined,
                                                     {
-                                                        weekday: "long",
+                                                        weekday:
+                                                            "long",
                                                         year: "numeric",
                                                         month: "long",
                                                         day: "numeric",
@@ -195,7 +358,10 @@ const EventsPage = () => {
 
                                         <div className="flex items-start gap-2">
                                             <FaMapMarkerAlt className="text-gray-400 mt-1 flex-shrink-0" />
-                                            <span>{event.location}</span>
+
+                                            <span>
+                                                {event.location}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -211,7 +377,8 @@ const EventsPage = () => {
 
                                         <p className="text-xs text-gray-500 mb-4">
                                             {event.availableSeats} of{" "}
-                                            {event.totalSeats} seats remaining
+                                            {event.totalSeats} seats
+                                            remaining
                                         </p>
 
                                         <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition">
