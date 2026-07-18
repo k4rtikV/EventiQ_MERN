@@ -1,29 +1,66 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import api from "../utils/axios";
+import React, {
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from 'react';
+
+import {
+    Link,
+    useNavigate
+} from 'react-router-dom';
+
+import api from '../utils/axios';
+import { AuthContext } from '../context/AuthContext';
+
 import {
     FaCalendarAlt,
+    FaHeart,
     FaMapMarkerAlt,
-    FaSearch,
-} from "react-icons/fa";
+    FaRegHeart,
+    FaSearch
+} from 'react-icons/fa';
 
 const EventsPage = () => {
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
+
     const [events, setEvents] = useState([]);
-    const [search, setSearch] = useState("");
+    const [wishlistIds, setWishlistIds] = useState(
+        new Set()
+    );
+
+    const [wishlistLoadingId, setWishlistLoadingId] =
+        useState(null);
+
+    const [search, setSearch] = useState('');
     const [selectedCategory, setSelectedCategory] =
-        useState("All");
-    const [sortOption, setSortOption] = useState("default");
+        useState('All');
+
+    const [sortOption, setSortOption] =
+        useState('default');
+
     const [loading, setLoading] = useState(true);
+    const [wishlistMessage, setWishlistMessage] =
+        useState('');
 
     useEffect(() => {
         fetchEvents();
     }, []);
 
+    useEffect(() => {
+        if (user) {
+            fetchWishlist();
+        } else {
+            setWishlistIds(new Set());
+        }
+    }, [user]);
+
     const fetchEvents = async () => {
         try {
             setLoading(true);
 
-            const response = await api.get("/events");
+            const response = await api.get('/events');
 
             setEvents(
                 Array.isArray(response.data)
@@ -31,9 +68,20 @@ const EventsPage = () => {
                     : []
             );
         } catch (error) {
-            console.error("Event request failed:", error);
-            console.error("Status:", error.response?.status);
-            console.error("Response:", error.response?.data);
+            console.error(
+                'Event request failed:',
+                error
+            );
+
+            console.error(
+                'Status:',
+                error.response?.status
+            );
+
+            console.error(
+                'Response:',
+                error.response?.data
+            );
 
             setEvents([]);
         } finally {
@@ -41,79 +89,252 @@ const EventsPage = () => {
         }
     };
 
+    const fetchWishlist = async () => {
+        try {
+            const { data } = await api.get('/wishlist');
+
+            const wishlistEvents = Array.isArray(data)
+                ? data
+                : [];
+
+            setWishlistIds(
+                new Set(
+                    wishlistEvents.map(
+                        (event) => event._id
+                    )
+                )
+            );
+        } catch (error) {
+            console.error(
+                'Error fetching wishlist:',
+                error
+            );
+
+            if (error.response?.status !== 401) {
+                setWishlistMessage(
+                    'Could not load your wishlist.'
+                );
+            }
+        }
+    };
+
+    const showTemporaryMessage = (message) => {
+        setWishlistMessage(message);
+
+        window.setTimeout(() => {
+            setWishlistMessage('');
+        }, 2500);
+    };
+
+    const toggleWishlist = async (eventId) => {
+        if (!user) {
+            navigate('/login', {
+                state: {
+                    message:
+                        'Please log in to save events to your wishlist.',
+                    from: '/events'
+                }
+            });
+
+            return;
+        }
+
+        if (wishlistLoadingId) {
+            return;
+        }
+
+        const isWishlisted =
+            wishlistIds.has(eventId);
+
+        try {
+            setWishlistLoadingId(eventId);
+
+            if (isWishlisted) {
+                await api.delete(
+                    `/wishlist/${eventId}`
+                );
+
+                setWishlistIds((currentIds) => {
+                    const updatedIds = new Set(
+                        currentIds
+                    );
+
+                    updatedIds.delete(eventId);
+
+                    return updatedIds;
+                });
+
+                showTemporaryMessage(
+                    'Event removed from your wishlist.'
+                );
+            } else {
+                await api.post(
+                    `/wishlist/${eventId}`
+                );
+
+                setWishlistIds((currentIds) => {
+                    const updatedIds = new Set(
+                        currentIds
+                    );
+
+                    updatedIds.add(eventId);
+
+                    return updatedIds;
+                });
+
+                showTemporaryMessage(
+                    'Event added to your wishlist.'
+                );
+            }
+        } catch (error) {
+            console.error(
+                'Wishlist update failed:',
+                error
+            );
+
+            if (error.response?.status === 401) {
+                navigate('/login');
+                return;
+            }
+
+            showTemporaryMessage(
+                error.response?.data?.message ||
+                    'Could not update your wishlist.'
+            );
+        } finally {
+            setWishlistLoadingId(null);
+        }
+    };
+
     const categories = useMemo(() => {
         const eventCategories = events
-            .map((event) => event.category?.trim())
+            .map((event) =>
+                event.category?.trim()
+            )
             .filter(Boolean);
 
         return [
-            "All",
-            ...Array.from(new Set(eventCategories)).sort(
-                (firstCategory, secondCategory) =>
-                    firstCategory.localeCompare(secondCategory)
-            ),
+            'All',
+            ...Array.from(
+                new Set(eventCategories)
+            ).sort(
+                (
+                    firstCategory,
+                    secondCategory
+                ) =>
+                    firstCategory.localeCompare(
+                        secondCategory
+                    )
+            )
         ];
     }, [events]);
 
-    const filteredAndSortedEvents = useMemo(() => {
-        const normalizedSearch = search.trim().toLowerCase();
+    const filteredAndSortedEvents =
+        useMemo(() => {
+            const normalizedSearch = search
+                .trim()
+                .toLowerCase();
 
-        const filteredEvents = events.filter((event) => {
-            const title = event.title?.toLowerCase() || "";
-            const location =
-                event.location?.toLowerCase() || "";
-            const category =
-                event.category?.toLowerCase() || "";
+            const filteredEvents = events.filter(
+                (event) => {
+                    const title =
+                        event.title?.toLowerCase() ||
+                        '';
 
-            const matchesSearch =
-                normalizedSearch === "" ||
-                title.includes(normalizedSearch) ||
-                location.includes(normalizedSearch) ||
-                category.includes(normalizedSearch);
+                    const location =
+                        event.location?.toLowerCase() ||
+                        '';
 
-            const matchesCategory =
-                selectedCategory === "All" ||
-                event.category?.trim() === selectedCategory;
+                    const category =
+                        event.category?.toLowerCase() ||
+                        '';
 
-            return matchesSearch && matchesCategory;
-        });
+                    const matchesSearch =
+                        normalizedSearch === '' ||
+                        title.includes(
+                            normalizedSearch
+                        ) ||
+                        location.includes(
+                            normalizedSearch
+                        ) ||
+                        category.includes(
+                            normalizedSearch
+                        );
 
-        const sortedEvents = [...filteredEvents];
+                    const matchesCategory =
+                        selectedCategory === 'All' ||
+                        event.category?.trim() ===
+                            selectedCategory;
 
-        if (sortOption === "price-low-to-high") {
-            sortedEvents.sort(
-                (firstEvent, secondEvent) =>
-                    Number(firstEvent.ticketPrice || 0) -
-                    Number(secondEvent.ticketPrice || 0)
+                    return (
+                        matchesSearch &&
+                        matchesCategory
+                    );
+                }
             );
-        }
 
-        if (sortOption === "price-high-to-low") {
-            sortedEvents.sort(
-                (firstEvent, secondEvent) =>
-                    Number(secondEvent.ticketPrice || 0) -
-                    Number(firstEvent.ticketPrice || 0)
-            );
-        }
+            const sortedEvents = [
+                ...filteredEvents
+            ];
 
-        return sortedEvents;
-    }, [
-        events,
-        search,
-        selectedCategory,
-        sortOption,
-    ]);
+            if (
+                sortOption ===
+                'price-low-to-high'
+            ) {
+                sortedEvents.sort(
+                    (
+                        firstEvent,
+                        secondEvent
+                    ) =>
+                        Number(
+                            firstEvent.ticketPrice ||
+                                0
+                        ) -
+                        Number(
+                            secondEvent.ticketPrice ||
+                                0
+                        )
+                );
+            }
+
+            if (
+                sortOption ===
+                'price-high-to-low'
+            ) {
+                sortedEvents.sort(
+                    (
+                        firstEvent,
+                        secondEvent
+                    ) =>
+                        Number(
+                            secondEvent.ticketPrice ||
+                                0
+                        ) -
+                        Number(
+                            firstEvent.ticketPrice ||
+                                0
+                        )
+                );
+            }
+
+            return sortedEvents;
+        }, [
+            events,
+            search,
+            selectedCategory,
+            sortOption
+        ]);
 
     const resetFilters = () => {
-        setSearch("");
-        setSelectedCategory("All");
-        setSortOption("default");
+        setSearch('');
+        setSelectedCategory('All');
+        setSortOption('default');
     };
 
     const filtersAreActive =
-        search.trim() !== "" ||
-        selectedCategory !== "All" ||
-        sortOption !== "default";
+        search.trim() !== '' ||
+        selectedCategory !== 'All' ||
+        sortOption !== 'default';
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -131,17 +352,25 @@ const EventsPage = () => {
                     </h1>
 
                     <p className="text-gray-300 text-base md:text-lg max-w-2xl leading-relaxed">
-                        Browse conferences, concerts, workshops,
-                        competitions and other experiences available
-                        on EventiQ.
+                        Browse conferences, concerts,
+                        workshops, competitions and other
+                        experiences available on EventiQ.
                     </p>
                 </div>
             </section>
 
+            {wishlistMessage && (
+                <div
+                    role="status"
+                    className="fixed top-24 right-4 z-50 max-w-sm bg-gray-900 text-white px-5 py-3 rounded-xl shadow-xl font-medium"
+                >
+                    {wishlistMessage}
+                </div>
+            )}
+
             {/* Search and Filters */}
             <section className="mb-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Search */}
                     <div className="relative flex items-center group md:col-span-2">
                         <FaSearch className="absolute left-5 text-gray-400 group-focus-within:text-gray-900 transition-colors pointer-events-none" />
 
@@ -151,12 +380,13 @@ const EventsPage = () => {
                             className="w-full pl-14 pr-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                             value={search}
                             onChange={(event) =>
-                                setSearch(event.target.value)
+                                setSearch(
+                                    event.target.value
+                                )
                             }
                         />
                     </div>
 
-                    {/* Category Filter */}
                     <div>
                         <label
                             htmlFor="category-filter"
@@ -175,20 +405,22 @@ const EventsPage = () => {
                             }
                             className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                         >
-                            {categories.map((category) => (
-                                <option
-                                    key={category}
-                                    value={category}
-                                >
-                                    {category === "All"
-                                        ? "Any Category"
-                                        : category}
-                                </option>
-                            ))}
+                            {categories.map(
+                                (category) => (
+                                    <option
+                                        key={category}
+                                        value={category}
+                                    >
+                                        {category ===
+                                        'All'
+                                            ? 'Any Category'
+                                            : category}
+                                    </option>
+                                )
+                            )}
                         </select>
                     </div>
 
-                    {/* Price Sort */}
                     <div>
                         <label
                             htmlFor="price-sort"
@@ -201,7 +433,9 @@ const EventsPage = () => {
                             id="price-sort"
                             value={sortOption}
                             onChange={(event) =>
-                                setSortOption(event.target.value)
+                                setSortOption(
+                                    event.target.value
+                                )
                             }
                             className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                         >
@@ -229,10 +463,13 @@ const EventsPage = () => {
                     </h2>
 
                     <p className="text-gray-500 font-medium mt-1">
-                        {filteredAndSortedEvents.length}{" "}
-                        {filteredAndSortedEvents.length === 1
-                            ? "event found"
-                            : "events found"}
+                        {
+                            filteredAndSortedEvents.length
+                        }{' '}
+                        {filteredAndSortedEvents.length ===
+                        1
+                            ? 'event found'
+                            : 'events found'}
                     </p>
                 </div>
 
@@ -252,15 +489,16 @@ const EventsPage = () => {
                 <div className="text-center py-20 text-xl font-semibold text-gray-600">
                     Loading events...
                 </div>
-            ) : filteredAndSortedEvents.length === 0 ? (
+            ) : filteredAndSortedEvents.length ===
+              0 ? (
                 <div className="bg-white border border-gray-200 rounded-2xl text-center py-20 px-6 shadow-sm">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">
                         No events found
                     </h3>
 
                     <p className="text-gray-500 mb-6">
-                        No events match your current search or
-                        filters.
+                        No events match your current
+                        search or filters.
                     </p>
 
                     <button
@@ -273,122 +511,195 @@ const EventsPage = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredAndSortedEvents.map((event) => {
-                        const seatPercentage =
-                            event.totalSeats > 0
-                                ? Math.min(
-                                      100,
-                                      Math.max(
-                                          0,
-                                          (event.availableSeats /
-                                              event.totalSeats) *
-                                              100
+                    {filteredAndSortedEvents.map(
+                        (event) => {
+                            const seatPercentage =
+                                event.totalSeats > 0
+                                    ? Math.min(
+                                          100,
+                                          Math.max(
+                                              0,
+                                              (event.availableSeats /
+                                                  event.totalSeats) *
+                                                  100
+                                          )
                                       )
-                                  )
-                                : 0;
+                                    : 0;
 
-                        return (
-                            <Link
-                                key={event._id}
-                                to={`/events/${event._id}`}
-                                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                            >
-                                {/* Event Image */}
-                                <div className="h-48 bg-gray-200 overflow-hidden relative">
-                                    {event.image ? (
-                                        <img
-                                            src={event.image}
-                                            alt={event.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
-                                            {event.category ||
-                                                "Event"}
-                                        </div>
-                                    )}
+                            const isWishlisted =
+                                wishlistIds.has(
+                                    event._id
+                                );
 
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                                        {Number(
-                                            event.ticketPrice
-                                        ) === 0 ? (
-                                            <span className="text-green-600">
-                                                FREE
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-900">
-                                                ₹
-                                                {
-                                                    event.ticketPrice
-                                                }
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
+                            const isUpdating =
+                                wishlistLoadingId ===
+                                event._id;
 
-                                {/* Event Details */}
-                                <div className="p-6 flex-grow flex flex-col">
-                                    <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                        {event.category}
-                                    </div>
-
-                                    <h2 className="text-xl font-bold text-gray-800 mb-3">
-                                        {event.title}
-                                    </h2>
-
-                                    <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
-                                        <div className="flex items-start gap-2">
-                                            <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
-
-                                            <span>
-                                                {new Date(
-                                                    event.date
-                                                ).toLocaleDateString(
-                                                    undefined,
-                                                    {
-                                                        weekday:
-                                                            "long",
-                                                        year: "numeric",
-                                                        month: "long",
-                                                        day: "numeric",
+                            return (
+                                <article
+                                    key={event._id}
+                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                                >
+                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                        <Link
+                                            to={`/events/${event._id}`}
+                                            className="block w-full h-full"
+                                        >
+                                            {event.image ? (
+                                                <img
+                                                    src={
+                                                        event.image
                                                     }
-                                                )}
-                                            </span>
-                                        </div>
+                                                    alt={
+                                                        event.title
+                                                    }
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                                    {event.category ||
+                                                        'Event'}
+                                                </div>
+                                            )}
+                                        </Link>
 
-                                        <div className="flex items-start gap-2">
-                                            <FaMapMarkerAlt className="text-gray-400 mt-1 flex-shrink-0" />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                toggleWishlist(
+                                                    event._id
+                                                )
+                                            }
+                                            disabled={
+                                                isUpdating
+                                            }
+                                            aria-label={
+                                                isWishlisted
+                                                    ? `Remove ${event.title} from wishlist`
+                                                    : `Add ${event.title} to wishlist`
+                                            }
+                                            title={
+                                                isWishlisted
+                                                    ? 'Remove from wishlist'
+                                                    : 'Add to wishlist'
+                                            }
+                                            className={`absolute top-4 left-4 w-11 h-11 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition ${
+                                                isWishlisted
+                                                    ? 'bg-red-500 text-white hover:bg-red-600'
+                                                    : 'bg-white/95 text-gray-700 hover:text-red-500'
+                                            } ${
+                                                isUpdating
+                                                    ? 'opacity-60 cursor-wait'
+                                                    : 'cursor-pointer'
+                                            }`}
+                                        >
+                                            {isWishlisted ? (
+                                                <FaHeart className="text-lg" />
+                                            ) : (
+                                                <FaRegHeart className="text-lg" />
+                                            )}
+                                        </button>
 
-                                            <span>
-                                                {event.location}
-                                            </span>
+                                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                                            {Number(
+                                                event.ticketPrice
+                                            ) === 0 ? (
+                                                <span className="text-green-600">
+                                                    FREE
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-900">
+                                                    ₹
+                                                    {
+                                                        event.ticketPrice
+                                                    }
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto">
-                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
-                                            <div
-                                                className="bg-gray-700 h-2 rounded-full"
-                                                style={{
-                                                    width: `${seatPercentage}%`,
-                                                }}
-                                            />
+                                    <div className="p-6 flex-grow flex flex-col">
+                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                            {
+                                                event.category
+                                            }
                                         </div>
 
-                                        <p className="text-xs text-gray-500 mb-4">
-                                            {event.availableSeats} of{" "}
-                                            {event.totalSeats} seats
-                                            remaining
-                                        </p>
+                                        <Link
+                                            to={`/events/${event._id}`}
+                                            className="hover:text-blue-600 transition"
+                                        >
+                                            <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                                {
+                                                    event.title
+                                                }
+                                            </h2>
+                                        </Link>
 
-                                        <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition">
-                                            View Details
+                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                            <div className="flex items-start gap-2">
+                                                <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
+
+                                                <span>
+                                                    {new Date(
+                                                        event.date
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            weekday:
+                                                                'long',
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        }
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-start gap-2">
+                                                <FaMapMarkerAlt className="text-gray-400 mt-1 flex-shrink-0" />
+
+                                                <span>
+                                                    {
+                                                        event.location
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-auto">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                                <div
+                                                    className="bg-gray-700 h-2 rounded-full"
+                                                    style={{
+                                                        width: `${seatPercentage}%`
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <p className="text-xs text-gray-500 mb-4">
+                                                {
+                                                    event.availableSeats
+                                                }{' '}
+                                                of{' '}
+                                                {
+                                                    event.totalSeats
+                                                }{' '}
+                                                seats remaining
+                                            </p>
+
+                                            <Link
+                                                to={`/events/${event._id}`}
+                                                className="block w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition"
+                                            >
+                                                View Details
+                                            </Link>
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
+                                </article>
+                            );
+                        }
+                    )}
                 </div>
             )}
         </div>
