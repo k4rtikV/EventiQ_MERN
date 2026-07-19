@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
@@ -15,6 +16,93 @@ const {
 
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const axios = require('axios');
+
+const fetchRazorpayPaymentMetadata = async (
+    paymentId
+) => {
+    if (!paymentId) {
+        return null;
+    }
+
+    const response = await axios.get(
+        `https://api.razorpay.com/v1/payments/${paymentId}`,
+        {
+            auth: {
+                username:
+                    process.env.RAZORPAY_KEY_ID,
+                password:
+                    process.env.RAZORPAY_KEY_SECRET
+            },
+            params: {
+                'expand[]': 'card'
+            },
+            timeout: 10000
+        }
+    );
+
+    const payment = response.data || {};
+    const card = payment.card || {};
+
+    return {
+        method: payment.method || null,
+
+        paidAt: payment.created_at
+            ? new Date(
+                  payment.created_at * 1000
+              )
+            : new Date(),
+
+        currency:
+            payment.currency || 'INR',
+
+        card:
+            payment.method === 'card' ||
+            payment.method === 'emi'
+                ? {
+                      last4:
+                          card.last4 || null,
+
+                      network:
+                          card.network || null,
+
+                      type:
+                          card.type || null,
+
+                      issuer:
+                          card.issuer || null,
+
+                      international:
+                          Boolean(
+                              card.international ??
+                                  payment.international
+                          ),
+
+                      emi:
+                          payment.method === 'emi'
+                  }
+                : undefined,
+
+        upi:
+            payment.method === 'upi'
+                ? {
+                      vpa:
+                          payment.vpa || null
+                  }
+                : undefined,
+
+        bank:
+            payment.method ===
+            'netbanking'
+                ? payment.bank || null
+                : null,
+
+        wallet:
+            payment.method === 'wallet'
+                ? payment.wallet || null
+                : null
+    };
+};
 
 const generateOTP = () =>
     Math.floor(
@@ -58,17 +146,21 @@ const getPromoSettings = () => {
 
     return {
         code,
+
         active,
+
         discountPercent:
             Number.isFinite(discountPercent) &&
             discountPercent > 0
                 ? discountPercent
                 : 10,
+
         minimumAmount:
             Number.isFinite(minimumAmount) &&
             minimumAmount >= 0
                 ? minimumAmount
                 : 500,
+
         maximumDiscount:
             Number.isFinite(maximumDiscount) &&
             maximumDiscount >= 0
@@ -99,6 +191,7 @@ const removePurchasedEventFromWishlist =
 const clearPromoFromBooking = (booking) => {
     booking.promoCode = null;
     booking.discountAmount = 0;
+
     booking.amount =
         booking.originalAmount ?? booking.amount;
 };
@@ -229,10 +322,7 @@ const validateNewsletterPromo = async ({
 };
 
 const markNewsletterPromoAsUsed =
-    async ({
-        email,
-        bookingId
-    }) => {
+    async ({ email, bookingId }) => {
         const normalizedEmail = String(
             email || ''
         )
@@ -436,7 +526,6 @@ exports.getBookingById = async (
         });
     }
 };
-
 exports.updateBookingAddress = async (
     req,
     res
@@ -572,10 +661,13 @@ exports.applyPromoCode = async (
 
         booking.originalAmount =
             result.originalAmount;
+
         booking.discountAmount =
             result.discountAmount;
+
         booking.promoCode =
             result.code;
+
         booking.amount =
             result.finalAmount;
 
@@ -591,12 +683,16 @@ exports.applyPromoCode = async (
             pricing: {
                 originalAmount:
                     result.originalAmount,
+
                 discountAmount:
                     result.discountAmount,
+
                 finalAmount:
                     result.finalAmount,
+
                 promoCode:
                     result.code,
+
                 discountPercent:
                     result.discountPercent
             }
@@ -651,10 +747,13 @@ exports.removePromoCode = async (
 
         booking.originalAmount =
             currentTicketPrice;
+
         booking.discountAmount = 0;
         booking.promoCode = null;
+
         booking.amount =
             currentTicketPrice;
+
         booking.razorpayOrderId =
             undefined;
 
@@ -667,9 +766,12 @@ exports.removePromoCode = async (
             pricing: {
                 originalAmount:
                     currentTicketPrice,
+
                 discountAmount: 0,
+
                 finalAmount:
                     currentTicketPrice,
+
                 promoCode: null
             }
         });
@@ -753,16 +855,18 @@ exports.createOrder = async (
 
         /*
          * Promo validation is repeated here.
-         * This prevents someone from changing the
-         * amount in browser developer tools.
+         * This prevents someone from changing
+         * the amount using browser developer tools.
          */
         if (booking.promoCode) {
             const promoResult =
                 await validateNewsletterPromo({
                     enteredCode:
                         booking.promoCode,
+
                     userEmail:
                         req.user.email,
+
                     originalAmount:
                         currentTicketPrice
                 });
@@ -781,19 +885,24 @@ exports.createOrder = async (
                     .json({
                         message:
                             promoResult.message,
+
                         promoRemoved: true,
+
                         booking
                     });
             }
 
             booking.promoCode =
                 promoResult.code;
+
             booking.discountAmount =
                 promoResult.discountAmount;
+
             booking.amount =
                 promoResult.finalAmount;
         } else {
             booking.discountAmount = 0;
+
             booking.amount =
                 currentTicketPrice;
         }
@@ -808,14 +917,21 @@ exports.createOrder = async (
         );
 
         /*
-         * Free events are completed without opening Razorpay.
-         * Newsletter promo codes are not allowed on free events.
+         * Free events are completed without
+         * opening the Razorpay checkout.
          */
         if (amountInPaise === 0) {
             booking.paymentStatus =
                 'paid';
+
             booking.razorpayOrderId =
                 undefined;
+
+            booking.paymentDetails = {
+                method: 'free',
+                paidAt: new Date(),
+                currency: 'INR'
+            };
 
             await booking.save();
 
@@ -849,13 +965,19 @@ exports.createOrder = async (
             await razorpayInstance.orders.create({
                 amount: amountInPaise,
                 currency: 'INR',
-                receipt: `receipt_${booking._id}`,
+
+                receipt:
+                    `receipt_${booking._id}`,
+
                 payment_capture: 1,
+
                 notes: {
                     bookingId:
                         booking._id.toString(),
+
                     userId:
                         req.user.id.toString(),
+
                     promoCode:
                         booking.promoCode ||
                         ''
@@ -871,16 +993,23 @@ exports.createOrder = async (
             orderId: order.id,
             amount: order.amount,
             currency: order.currency,
-            key: process.env
-                .RAZORPAY_KEY_ID,
+
+            key:
+                process.env
+                    .RAZORPAY_KEY_ID,
+
             bookingId: booking._id,
             eventTitle: event.title,
+
             originalAmount:
                 booking.originalAmount,
+
             discountAmount:
                 booking.discountAmount,
+
             finalAmount:
                 booking.amount,
+
             promoCode:
                 booking.promoCode
         });
@@ -897,26 +1026,25 @@ exports.createOrder = async (
         });
     }
 };
-
 exports.verifyPayment = async (
     req,
     res
 ) => {
     try {
         const {
-            razorpay_payment_id,
             razorpay_order_id,
+            razorpay_payment_id,
             razorpay_signature
         } = req.body;
 
         if (
-            !razorpay_payment_id ||
             !razorpay_order_id ||
+            !razorpay_payment_id ||
             !razorpay_signature
         ) {
             return res.status(400).json({
                 message:
-                    'Incomplete Razorpay payment details.'
+                    'Missing payment verification details.'
             });
         }
 
@@ -944,17 +1072,16 @@ exports.verifyPayment = async (
         }
 
         if (
-            !booking.razorpayOrderId ||
             booking.razorpayOrderId !==
-                razorpay_order_id
+            razorpay_order_id
         ) {
             return res.status(400).json({
                 message:
-                    'Booking order mismatch'
+                    'Payment order does not match this booking.'
             });
         }
 
-        const generatedSignature =
+        const expectedSignature =
             crypto
                 .createHmac(
                     'sha256',
@@ -966,42 +1093,105 @@ exports.verifyPayment = async (
                 )
                 .digest('hex');
 
-        const receivedSignature =
-            Buffer.from(
-                razorpay_signature
+        const isSignatureValid =
+            crypto.timingSafeEqual(
+                Buffer.from(
+                    expectedSignature
+                ),
+                Buffer.from(
+                    razorpay_signature
+                )
             );
 
-        const expectedSignature =
-            Buffer.from(
-                generatedSignature
-            );
-
-        if (
-            receivedSignature.length !==
-                expectedSignature.length ||
-            !crypto.timingSafeEqual(
-                receivedSignature,
-                expectedSignature
-            )
-        ) {
+        if (!isSignatureValid) {
             return res.status(400).json({
                 message:
-                    'Invalid payment signature'
+                    'Payment verification failed.'
             });
         }
 
+        let razorpayPayment = null;
+
+        try {
+            razorpayPayment =
+                await razorpayInstance.payments.fetch(
+                    razorpay_payment_id
+                );
+        } catch (paymentFetchError) {
+            console.error(
+                'Unable to fetch Razorpay payment:',
+                paymentFetchError
+            );
+        }
+
+        if (razorpayPayment) {
+            if (
+                razorpayPayment.order_id !==
+                razorpay_order_id
+            ) {
+                return res.status(400).json({
+                    message:
+                        'The Razorpay payment does not belong to this order.'
+                });
+            }
+
+            if (
+                razorpayPayment.status !==
+                    'captured' &&
+                razorpayPayment.captured !==
+                    true
+            ) {
+                return res.status(400).json({
+                    message:
+                        'The payment has not been captured.'
+                });
+            }
+
+            const expectedAmount =
+                Math.round(
+                    roundCurrency(
+                        booking.amount
+                    ) * 100
+                );
+
+            if (
+                Number(
+                    razorpayPayment.amount
+                ) !== expectedAmount
+            ) {
+                return res.status(400).json({
+                    message:
+                        'The paid amount does not match the booking amount.'
+                });
+            }
+
+            if (
+                razorpayPayment.currency !==
+                'INR'
+            ) {
+                return res.status(400).json({
+                    message:
+                        'Unexpected payment currency.'
+                });
+            }
+        }
+
         /*
-         * If a newsletter promo was used,
-         * claim the one-time subscriber usage
-         * before completing the booking.
+         * Revalidate the promo before finalising
+         * the payment. This protects one-use promo
+         * codes from being reused in another booking.
          */
+        let promoSubscriber = null;
+
         if (booking.promoCode) {
             const promoResult =
                 await validateNewsletterPromo({
                     enteredCode:
                         booking.promoCode,
+
                     userEmail:
                         req.user.email,
+
                     originalAmount:
                         booking.originalAmount
                 });
@@ -1017,53 +1207,138 @@ exports.verifyPayment = async (
                     });
             }
 
-            const claimedSubscriber =
-                await markNewsletterPromoAsUsed(
-                    {
-                        email:
-                            req.user.email,
-                        bookingId:
-                            booking._id
-                    }
-                );
+            promoSubscriber =
+                promoResult.subscriber;
 
-            if (!claimedSubscriber) {
-                return res.status(409).json({
-                    message:
-                        'This newsletter promo has already been used.'
-                });
-            }
+            booking.originalAmount =
+                promoResult.originalAmount;
+
+            booking.discountAmount =
+                promoResult.discountAmount;
+
+            booking.amount =
+                promoResult.finalAmount;
+
+            booking.promoCode =
+                promoResult.code;
         }
 
         booking.paymentStatus = 'paid';
+
+        booking.razorpayOrderId =
+            razorpay_order_id;
+
         booking.razorpayPaymentId =
             razorpay_payment_id;
 
+        /*
+         * Store only safe payment metadata.
+         * Full card number, CVV, OTP and expiry
+         * are never returned or stored.
+         */
+        try {
+            const metadata =
+                await fetchRazorpayPaymentMetadata(
+                    razorpay_payment_id
+                );
+
+            if (metadata) {
+                booking.paymentDetails =
+                    metadata;
+            } else {
+                booking.paymentDetails = {
+                    method:
+                        razorpayPayment?.method ||
+                        'online',
+
+                    paidAt:
+                        razorpayPayment?.created_at
+                            ? new Date(
+                                  razorpayPayment.created_at *
+                                      1000
+                              )
+                            : new Date(),
+
+                    currency:
+                        razorpayPayment?.currency ||
+                        'INR'
+                };
+            }
+        } catch (metadataError) {
+            console.error(
+                'Payment metadata fetch failed:',
+                metadataError
+            );
+
+            booking.paymentDetails = {
+                method:
+                    razorpayPayment?.method ||
+                    'online',
+
+                paidAt:
+                    razorpayPayment?.created_at
+                        ? new Date(
+                              razorpayPayment.created_at *
+                                  1000
+                          )
+                        : new Date(),
+
+                currency:
+                    razorpayPayment?.currency ||
+                    'INR'
+            };
+        }
+
         await booking.save();
 
-        await removePurchasedEventFromWishlist(
-            req.user.id,
-            booking.eventId._id
-        );
+        if (promoSubscriber) {
+            const promoMarked =
+                await markNewsletterPromoAsUsed({
+                    email: req.user.email,
+                    bookingId:
+                        booking._id
+                });
+
+            if (!promoMarked) {
+                console.error(
+                    'Newsletter promo was not marked as used after payment:',
+                    booking._id
+                );
+            }
+        }
+
+        try {
+            await removePurchasedEventFromWishlist(
+                req.user.id,
+                booking.eventId?._id ||
+                    booking.eventId
+            );
+        } catch (wishlistError) {
+            console.error(
+                'Unable to remove purchased event from wishlist:',
+                wishlistError
+            );
+        }
 
         try {
             await sendPaymentReceivedEmail(
                 req.user.email,
                 req.user.name,
-                booking.eventId.title,
+                booking.eventId?.title ||
+                    'your event',
                 booking._id,
                 booking.amount
             );
         } catch (emailError) {
             console.error(
-                'Failed to send payment received email:',
+                'Payment received email failed:',
                 emailError
             );
         }
 
         res.json({
             message:
-                'Payment verified successfully',
+                'Payment verified successfully.',
             booking
         });
     } catch (error) {
@@ -1073,136 +1348,171 @@ exports.verifyPayment = async (
         );
 
         res.status(500).json({
-            message: 'Server Error',
-            error: error.message
-        });
-    }
-};
-
-exports.confirmBooking = async (
-    req,
-    res
-) => {
-    try {
-        const booking =
-            await Booking.findById(
-                req.params.id
-            )
-                .populate('userId')
-                .populate('eventId');
-
-        if (!booking) {
-            return res.status(404).json({
-                message:
-                    'Booking not found'
-            });
-        }
-
-        if (
-            booking.status ===
-            'confirmed'
-        ) {
-            return res.status(400).json({
-                message:
-                    'Booking is already confirmed'
-            });
-        }
-
-        if (
-            booking.paymentStatus !==
-            'paid'
-        ) {
-            return res.status(400).json({
-                message:
-                    'Cannot verify booking without completed payment'
-            });
-        }
-
-        const event =
-            await Event.findById(
-                booking.eventId._id
-            );
-
-        if (!event) {
-            return res.status(404).json({
-                message: 'Event not found'
-            });
-        }
-
-        if (event.availableSeats <= 0) {
-            return res.status(400).json({
-                message:
-                    'No seats available to confirm this booking'
-            });
-        }
-
-        booking.status = 'confirmed';
-
-        await booking.save();
-
-        event.availableSeats -= 1;
-
-        await event.save();
-
-        await sendBookingEmail(
-            booking.userId.email,
-            booking.userId.name,
-            booking.eventId.title,
-            booking
-        );
-
-        res.json({
             message:
-                'Booking verified successfully',
-            booking
-        });
-    } catch (error) {
-        console.error(
-            'Confirm booking error:',
-            error
-        );
-
-        res.status(500).json({
-            message: 'Server Error',
+                'Unable to verify the payment.',
             error: error.message
         });
     }
 };
 
-exports.getMyBookings = async (
+exports.getMyPaymentHistory = async (
     req,
     res
 ) => {
     try {
         const bookings =
-            req.user.role === 'admin'
-                ? await Booking.find()
-                      .populate('eventId')
-                      .populate(
-                          'userId',
-                          'name email'
-                      )
-                      .sort({
-                          createdAt: -1
-                      })
-                : await Booking.find({
-                      userId: req.user.id
-                  })
-                      .populate('eventId')
-                      .sort({
-                          createdAt: -1
-                      });
+            await Booking.find({
+                userId: req.user.id,
+                paymentStatus: 'paid'
+            })
+                .populate('eventId')
+                .sort({
+                    'paymentDetails.paidAt':
+                        -1,
+                    updatedAt: -1,
+                    createdAt: -1
+                });
+
+        /*
+         * Backfill safe metadata for older paid
+         * bookings that only have a payment ID.
+         */
+        await Promise.all(
+            bookings.map(
+                async (booking) => {
+                    const alreadyHasDetails =
+                        Boolean(
+                            booking
+                                .paymentDetails
+                                ?.method
+                        );
+
+                    if (
+                        alreadyHasDetails ||
+                        !booking
+                            .razorpayPaymentId
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        const metadata =
+                            await fetchRazorpayPaymentMetadata(
+                                booking.razorpayPaymentId
+                            );
+
+                        if (metadata) {
+                            await Booking.updateOne(
+                                { _id: booking._id },
+                                {
+                                    $set: {
+                                        paymentDetails: metadata
+                                        }
+                                }
+                            );
+                        }
+                    } catch (
+                        metadataError
+                    ) {
+                        console.error(
+                            `Unable to backfill payment details for booking ${booking._id}:`,
+                            metadataError.message
+                        );
+                    }
+                }
+            )
+        );
 
         res.json(bookings);
     } catch (error) {
         console.error(
-            'Get bookings error:',
+            'Get payment history error:',
             error
         );
 
         res.status(500).json({
-            message: 'Server Error',
+            message:
+                'Unable to load payment history.',
             error: error.message
+        });
+    }
+};
+exports.getMyBookings = async (req, res) => {
+    try {
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: 'User not authenticated'
+            });
+        }
+
+        /*
+         * Load bookings without populate first.
+         * This prevents one invalid or deleted event reference
+         * from crashing the complete dashboard request.
+         */
+        const bookings = await Booking.find({
+            userId
+        })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        /*
+         * Keep only valid MongoDB ObjectIds before querying events.
+         */
+        const validEventIds = [
+            ...new Set(
+                bookings
+                    .map((booking) => booking.eventId)
+                    .filter(
+                        (eventId) =>
+                            eventId &&
+                            mongoose.Types.ObjectId.isValid(eventId)
+                    )
+                    .map((eventId) => eventId.toString())
+            )
+        ];
+
+        const events = validEventIds.length
+            ? await Event.find({
+                  _id: { $in: validEventIds }
+              }).lean()
+            : [];
+
+        const eventMap = new Map(
+            events.map((event) => [
+                event._id.toString(),
+                event
+            ])
+        );
+
+        /*
+         * Manually attach event information.
+         *
+         * When an event was deleted or the old reference is invalid,
+         * eventId becomes null instead of returning HTTP 500.
+         */
+        const safeBookings = bookings.map((booking) => {
+            const eventId = booking.eventId?.toString();
+
+            return {
+                ...booking,
+                eventId:
+                    eventId && eventMap.has(eventId)
+                        ? eventMap.get(eventId)
+                        : null
+            };
+        });
+
+        return res.status(200).json(safeBookings);
+    } catch (error) {
+        console.error('Get bookings error:', error);
+
+        return res.status(500).json({
+            message: 'Server Error',
+            error: error.message,
+            name: error.name
         });
     }
 };

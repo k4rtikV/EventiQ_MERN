@@ -89,6 +89,72 @@ const bookingSchema = new mongoose.Schema(
             type: String
         },
 
+        paymentDetails: {
+            method: {
+                type: String,
+                default: null
+            },
+
+            paidAt: {
+                type: Date,
+                default: null
+            },
+
+            currency: {
+                type: String,
+                default: 'INR'
+            },
+
+            card: {
+                last4: {
+                    type: String,
+                    default: null
+                },
+
+                network: {
+                    type: String,
+                    default: null
+                },
+
+                type: {
+                    type: String,
+                    default: null
+                },
+
+                issuer: {
+                    type: String,
+                    default: null
+                },
+
+                international: {
+                    type: Boolean,
+                    default: false
+                },
+
+                emi: {
+                    type: Boolean,
+                    default: false
+                }
+            },
+
+            upi: {
+                vpa: {
+                    type: String,
+                    default: null
+                }
+            },
+
+            bank: {
+                type: String,
+                default: null
+            },
+
+            wallet: {
+                type: String,
+                default: null
+            }
+        },
+
         allowNoAddress: {
             type: Boolean,
             default: false

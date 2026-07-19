@@ -1,52 +1,77 @@
 const express = require('express');
-
 const router = express.Router();
 
 const {
-    bookEvent,
-    confirmBooking,
-    getMyBookings,
-    cancelBooking,
     sendBookingOTP,
+    bookEvent,
+    getBookingById,
     updateBookingAddress,
     applyPromoCode,
     removePromoCode,
     createOrder,
     verifyPayment,
-    repurchaseBooking,
-    getBookingById
+    getMyBookings,
+    getMyPaymentHistory,
+    cancelBooking,
+    repurchaseBooking
 } = require('../controllers/bookingController');
 
-const {
-    protect,
-    admin
-} = require('../middleware/auth');
-
-const validateAddress = require(
-    '../middleware/validateAddress'
-);
+const { protect } = require('../middleware/auth');
 
 const {
     downloadInvoice
 } = require('../controllers/invoiceController');
 
-router.post(
-    '/send-otp',
-    protect,
-    sendBookingOTP
-);
+/*
+|--------------------------------------------------------------------------
+| Named routes
+|--------------------------------------------------------------------------
+|
+| These must remain above "/:id".
+|
+*/
 
-router.post(
-    '/',
-    protect,
-    bookEvent
-);
+router.post('/otp', protect, sendBookingOTP);
+
+router.post('/', protect, bookEvent);
+
+/*
+|--------------------------------------------------------------------------
+| User bookings
+|--------------------------------------------------------------------------
+|
+| Your UserDashboard currently requests:
+| GET /api/bookings/my
+|
+*/
+
+router.get('/my', protect, getMyBookings);
+
+/*
+|--------------------------------------------------------------------------
+| Optional compatibility route
+|--------------------------------------------------------------------------
+*/
+
+router.get('/my-bookings', protect, getMyBookings);
+
+/*
+|--------------------------------------------------------------------------
+| Payment history
+|--------------------------------------------------------------------------
+*/
 
 router.get(
-    '/my',
+    '/my/payment-history',
     protect,
-    getMyBookings
+    getMyPaymentHistory
 );
+
+/*
+|--------------------------------------------------------------------------
+| Booking-specific routes
+|--------------------------------------------------------------------------
+*/
 
 router.get(
     '/:id/invoice',
@@ -54,21 +79,14 @@ router.get(
     downloadInvoice
 );
 
-router.get(
-    '/:id',
-    protect,
-    getBookingById
-);
-
 router.put(
     '/:id/address',
     protect,
-    validateAddress,
     updateBookingAddress
 );
 
 router.post(
-    '/:id/apply-promo',
+    '/:id/promo',
     protect,
     applyPromoCode
 );
@@ -98,16 +116,24 @@ router.post(
 );
 
 router.put(
-    '/:id/confirm',
-    protect,
-    admin,
-    confirmBooking
-);
-
-router.delete(
-    '/:id',
+    '/:id/cancel',
     protect,
     cancelBooking
+);
+
+/*
+|--------------------------------------------------------------------------
+| Dynamic booking ID route
+|--------------------------------------------------------------------------
+|
+| This must always remain last.
+|
+*/
+
+router.get(
+    '/:id',
+    protect,
+    getBookingById
 );
 
 module.exports = router;
