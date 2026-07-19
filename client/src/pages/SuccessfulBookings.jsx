@@ -19,7 +19,7 @@ const SuccessfulBookings = () => {
 
     const fetchBookings = async () => {
         try {
-            const res = await api.get('/bookings/my'); // admin gets all bookings
+            const res = await api.get('/bookings/admin/all'); // admin gets all bookings
             const data = res.data || [];
             const successful = data.filter(b => b.status === 'confirmed' && b.paymentStatus === 'paid');
             setBookings(successful);

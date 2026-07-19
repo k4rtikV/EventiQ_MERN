@@ -19,7 +19,7 @@ const PaidClients = () => {
 
     const fetchPaidClients = async () => {
         try {
-            const res = await api.get('/bookings/my');
+            const res = await api.get('/bookings/admin/all');
             const paidBookings = (res.data || []).filter(b => b.status === 'confirmed' && b.paymentStatus === 'paid');
             setClients(paidBookings);
         } catch (error) {

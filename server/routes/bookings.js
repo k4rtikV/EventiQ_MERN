@@ -12,11 +12,14 @@ const {
     verifyPayment,
     getMyBookings,
     getMyPaymentHistory,
+    getAllBookings,
+    confirmBooking,
     cancelBooking,
     repurchaseBooking
 } = require('../controllers/bookingController');
 
-const { protect } = require('../middleware/auth');
+const { protect, admin } = require('../middleware/auth');
+const validateAddress = require('../middleware/validateAddress');
 
 const {
     downloadInvoice
@@ -27,44 +30,63 @@ const {
 | Named routes
 |--------------------------------------------------------------------------
 |
-| These must remain above "/:id".
+| Keep all named routes above the dynamic "/:id" route.
 |
 */
 
-router.post('/otp', protect, sendBookingOTP);
+router.post(
+    '/send-otp',
+    protect,
+    sendBookingOTP
+);
 
-router.post('/', protect, bookEvent);
+router.post(
+    '/otp',
+    protect,
+    sendBookingOTP
+);
 
-/*
-|--------------------------------------------------------------------------
-| User bookings
-|--------------------------------------------------------------------------
-|
-| Your UserDashboard currently requests:
-| GET /api/bookings/my
-|
-*/
-
-router.get('/my', protect, getMyBookings);
-
-/*
-|--------------------------------------------------------------------------
-| Optional compatibility route
-|--------------------------------------------------------------------------
-*/
-
-router.get('/my-bookings', protect, getMyBookings);
+router.post(
+    '/',
+    protect,
+    bookEvent
+);
 
 /*
 |--------------------------------------------------------------------------
-| Payment history
+| User booking routes
 |--------------------------------------------------------------------------
 */
+
+router.get(
+    '/my',
+    protect,
+    getMyBookings
+);
+
+router.get(
+    '/my-bookings',
+    protect,
+    getMyBookings
+);
 
 router.get(
     '/my/payment-history',
     protect,
     getMyPaymentHistory
+);
+
+/*
+|--------------------------------------------------------------------------
+| Admin booking routes
+|--------------------------------------------------------------------------
+*/
+
+router.get(
+    '/admin/all',
+    protect,
+    admin,
+    getAllBookings
 );
 
 /*
@@ -82,7 +104,14 @@ router.get(
 router.put(
     '/:id/address',
     protect,
+    validateAddress,
     updateBookingAddress
+);
+
+router.post(
+    '/:id/apply-promo',
+    protect,
+    applyPromoCode
 );
 
 router.post(
@@ -115,6 +144,25 @@ router.post(
     repurchaseBooking
 );
 
+/*
+|--------------------------------------------------------------------------
+| Admin booking actions
+|--------------------------------------------------------------------------
+*/
+
+router.put(
+    '/:id/confirm',
+    protect,
+    admin,
+    confirmBooking
+);
+
+/*
+|--------------------------------------------------------------------------
+| Cancellation
+|--------------------------------------------------------------------------
+*/
+
 router.put(
     '/:id/cancel',
     protect,
@@ -123,10 +171,28 @@ router.put(
 
 /*
 |--------------------------------------------------------------------------
-| Dynamic booking ID route
+| Admin rejection/deletion compatibility route
 |--------------------------------------------------------------------------
 |
-| This must always remain last.
+| Your current admin frontend uses DELETE when rejecting a booking.
+| cancelBooking safely changes the booking status to "cancelled".
+|
+*/
+
+router.delete(
+    '/:id',
+    protect,
+    admin,
+    cancelBooking
+);
+
+/*
+|--------------------------------------------------------------------------
+| Dynamic booking route
+|--------------------------------------------------------------------------
+|
+| This must stay last. Otherwise values such as "my" and "admin" may be
+| treated as MongoDB booking IDs.
 |
 */
 

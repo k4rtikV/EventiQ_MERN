@@ -1437,6 +1437,193 @@ exports.getMyPaymentHistory = async (
         });
     }
 };
+exports.getAllBookings = async (req, res) => {
+    try {
+        const bookings = await Booking.find()
+            .populate('eventId')
+            .populate('userId', 'name email role')
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json(bookings);
+    } catch (error) {
+        console.error(
+            'Get all bookings error:',
+            error
+        );
+
+        return res.status(500).json({
+            message:
+                'Unable to load admin bookings.',
+            error: error.message
+        });
+    }
+};
+exports.confirmBooking = async (req, res) => {
+    try {
+        const booking = await Booking.findById(
+            req.params.id
+        )
+            .populate(
+                'userId',
+                'name email'
+            )
+            .populate('eventId');
+
+        if (!booking) {
+            return res.status(404).json({
+                message: 'Booking not found'
+            });
+        }
+
+        if (!booking.eventId) {
+            return res.status(404).json({
+                message:
+                    'The event linked to this booking no longer exists.'
+            });
+        }
+
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'A cancelled booking cannot be confirmed.'
+            });
+        }
+
+        if (booking.status === 'confirmed') {
+            return res.status(400).json({
+                message:
+                    'Booking is already confirmed.'
+            });
+        }
+
+        if (
+            booking.paymentStatus !== 'paid'
+        ) {
+            return res.status(400).json({
+                message:
+                    'Only bookings with completed payment can be confirmed.'
+            });
+        }
+
+        const event = await Event.findById(
+            booking.eventId._id
+        );
+
+        if (!event) {
+            return res.status(404).json({
+                message: 'Event not found'
+            });
+        }
+
+        if (event.availableSeats <= 0) {
+            return res.status(400).json({
+                message:
+                    'No seats are available for this event.'
+            });
+        }
+
+        /*
+         * updateOne prevents old bookings from being
+         * fully validated against newer required fields
+         * such as originalAmount.
+         */
+        const bookingUpdate =
+            await Booking.updateOne(
+                {
+                    _id: booking._id,
+                    status: {
+                        $ne: 'confirmed'
+                    }
+                },
+                {
+                    $set: {
+                        status: 'confirmed'
+                    }
+                }
+            );
+
+        if (
+            bookingUpdate.modifiedCount === 0
+        ) {
+            return res.status(409).json({
+                message:
+                    'The booking was already processed.'
+            });
+        }
+
+        const eventUpdate =
+            await Event.updateOne(
+                {
+                    _id: event._id,
+                    availableSeats: {
+                        $gt: 0
+                    }
+                },
+                {
+                    $inc: {
+                        availableSeats: -1
+                    }
+                }
+            );
+
+        if (
+            eventUpdate.modifiedCount === 0
+        ) {
+            /*
+             * Restore the booking if the seat update
+             * failed because no seats remained.
+             */
+            await Booking.updateOne(
+                {
+                    _id: booking._id
+                },
+                {
+                    $set: {
+                        status: 'pending'
+                    }
+                }
+            );
+
+            return res.status(400).json({
+                message:
+                    'No seats are available for this event.'
+            });
+        }
+
+        booking.status = 'confirmed';
+
+        try {
+            await sendBookingEmail(
+                booking.userId.email,
+                booking.userId.name,
+                booking.eventId.title,
+                booking
+            );
+        } catch (emailError) {
+            console.error(
+                'Booking confirmation email failed:',
+                emailError
+            );
+        }
+
+        return res.status(200).json({
+            message:
+                'Booking confirmed successfully.',
+            booking
+        });
+    } catch (error) {
+        console.error(
+            'Confirm booking error:',
+            error
+        );
+
+        return res.status(500).json({
+            message:
+                'Unable to confirm the booking.',
+            error: error.message
+        });
+    }
+};
 exports.getMyBookings = async (req, res) => {
     try {
         const userId = req.user?._id;
@@ -1565,7 +1752,20 @@ exports.cancelBooking = async (
 
         booking.status = 'cancelled';
 
-        await booking.save();
+/*
+ * updateOne avoids validation errors on legacy
+ * bookings that do not contain newer required fields.
+ */
+        await Booking.updateOne(
+            {
+                _id: booking._id
+            },
+            {
+                $set: {
+                status: 'cancelled'
+                }
+            }
+        );
 
         if (wasConfirmed) {
             const event =

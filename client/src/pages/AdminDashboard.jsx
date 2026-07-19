@@ -27,7 +27,7 @@ const AdminDashboard = () => {
         try {
             const [eventsRes, bookingsRes] = await Promise.all([
                 api.get('/events'),
-                api.get('/bookings/my') // Admin gets all bookings
+                api.get('/bookings/admin/all') // Admin gets all bookings
             ]);
             setEvents(eventsRes.data);
             setBookings(bookingsRes.data);

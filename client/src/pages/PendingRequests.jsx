@@ -19,7 +19,7 @@ const PendingRequests = () => {
 
     const fetchPending = async () => {
         try {
-            const res = await api.get('/bookings/my');
+            const res = await api.get('/bookings/admin/all');
             const pendingBookings = (res.data || []).filter(b => b.status === 'pending');
             setPending(pendingBookings);
         } catch (error) {
