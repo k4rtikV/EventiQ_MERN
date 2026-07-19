@@ -9,6 +9,8 @@ const {
     cancelBooking,
     sendBookingOTP,
     updateBookingAddress,
+    applyPromoCode,
+    removePromoCode,
     createOrder,
     verifyPayment,
     repurchaseBooking,
@@ -20,7 +22,9 @@ const {
     admin
 } = require('../middleware/auth');
 
-const validateAddress = require('../middleware/validateAddress');
+const validateAddress = require(
+    '../middleware/validateAddress'
+);
 
 router.post(
     '/send-otp',
@@ -51,6 +55,18 @@ router.put(
     protect,
     validateAddress,
     updateBookingAddress
+);
+
+router.post(
+    '/:id/apply-promo',
+    protect,
+    applyPromoCode
+);
+
+router.delete(
+    '/:id/promo',
+    protect,
+    removePromoCode
 );
 
 router.post(
