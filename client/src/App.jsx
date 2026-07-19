@@ -31,6 +31,7 @@ import PurchasedEvent from './pages/PurchasedEvent';
 import SuccessfulBookings from './pages/SuccessfulBookings';
 import PaidClients from './pages/PaidClients';
 import PendingRequests from './pages/PendingRequests';
+import TicketDelaySupport from './pages/TicketDelaySupport';
 
 function App() {
     return (
@@ -129,6 +130,13 @@ function App() {
                         <Route
                             path="/contact-us"
                             element={<ContactUs />}
+                        />
+
+                        <Route
+                            path="/support/ticket-delay/:bookingId"
+                            element={
+                                <TicketDelaySupport />
+                            }
                         />
 
                         <Route

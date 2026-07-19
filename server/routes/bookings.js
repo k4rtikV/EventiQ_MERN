@@ -26,6 +26,10 @@ const validateAddress = require(
     '../middleware/validateAddress'
 );
 
+const {
+    downloadInvoice
+} = require('../controllers/invoiceController');
+
 router.post(
     '/send-otp',
     protect,
@@ -42,6 +46,12 @@ router.get(
     '/my',
     protect,
     getMyBookings
+);
+
+router.get(
+    '/:id/invoice',
+    protect,
+    downloadInvoice
 );
 
 router.get(

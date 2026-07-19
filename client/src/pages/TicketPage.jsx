@@ -11,6 +11,7 @@ import {
 
 import QRCodeGenerator from 'qrcode';
 import { jsPDF } from 'jspdf';
+import { FaArrowLeft } from 'react-icons/fa';
 
 import { AuthContext } from '../context/AuthContext';
 import api from '../utils/axios';
@@ -988,12 +989,15 @@ const TicketPage = () => {
                 <button
                     type="button"
                     onClick={() =>
-                        navigate('/dashboard')
-                    }
-                    className="bg-gray-900 text-white px-6 py-3 rounded-md hover:bg-black"
-                >
-                    Back to Dashboard
-                </button>
+                    navigate(
+                            '/dashboard'
+                            )
+                        }
+                        className="group inline-flex items-center justify-center gap-2 bg-gray-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-black dark:hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                        >
+                        <FaArrowLeft className="transition-transform duration-200 group-hover:-translate-x-1" />
+                            Return to dashboard
+                        </button>
             </div>
         );
     }
@@ -1037,16 +1041,15 @@ const TicketPage = () => {
                 </div>
             )}
 
-            <div className="mb-4">
-                <button
-                    type="button"
-                    onClick={() =>
-                        navigate('/dashboard')
-                    }
-                    className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                    ← Back to Dashboard
-                </button>
+            <div className="mb-6">
+                    <button
+                        type="button"
+                        onClick={() => navigate('/dashboard')}
+                        className="group inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+    >
+                    <FaArrowLeft className="transition-transform duration-200 group-hover:-translate-x-1" />
+                        Back to dashboard
+                    </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-4">

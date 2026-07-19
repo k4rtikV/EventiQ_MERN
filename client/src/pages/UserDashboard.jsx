@@ -14,6 +14,8 @@ import {
     FaCheckCircle,
     FaClock,
     FaCreditCard,
+    FaDownload,
+    FaExclamationTriangle,
     FaHeart,
     FaList,
     FaTicketAlt,
@@ -32,26 +34,35 @@ const FILTERS = {
     CANCELLED: 'cancelled',
     TICKET_RECEIVED: 'ticket_received',
     AWAITING_TICKET: 'awaiting_ticket',
-    PAYMENT_INCOMPLETE:
-        'payment_incomplete'
+    PAYMENT_INCOMPLETE: 'payment_incomplete'
 };
 
 const UserDashboard = () => {
-    const { user } =
-        useContext(AuthContext);
+    const {
+        user
+    } = useContext(AuthContext);
 
     const navigate = useNavigate();
 
-    const [bookings, setBookings] =
-        useState([]);
+    const [
+        bookings,
+        setBookings
+    ] = useState([]);
 
-    const [loading, setLoading] =
-        useState(true);
+    const [
+        loading,
+        setLoading
+    ] = useState(true);
 
     const [
         activeFilter,
         setActiveFilter
     ] = useState(FILTERS.ALL);
+
+    const [
+        downloadingInvoiceId,
+        setDownloadingInvoiceId
+    ] = useState(null);
 
     useEffect(() => {
         if (!user) {
@@ -64,10 +75,9 @@ const UserDashboard = () => {
 
     const fetchBookings = async () => {
         try {
-            const { data } =
-                await api.get(
-                    '/bookings/my'
-                );
+            const {
+                data
+            } = await api.get('/bookings/my');
 
             setBookings(
                 Array.isArray(data)
@@ -104,10 +114,62 @@ const UserDashboard = () => {
             await fetchBookings();
         } catch (error) {
             alert(
-                error.response?.data
-                    ?.message ||
-                    'Error cancelling booking'
+                error.response?.data?.message ||
+                'Error cancelling booking'
             );
+        }
+    };
+
+    const downloadInvoice = async (
+        booking
+    ) => {
+        try {
+            setDownloadingInvoiceId(
+                booking._id
+            );
+
+            const response = await api.get(
+                `/bookings/${booking._id}/invoice`,
+                {
+                    responseType: 'blob'
+                }
+            );
+
+            const year = new Date(
+                booking.bookedAt ||
+                booking.createdAt
+            ).getFullYear();
+
+            const invoiceNumber =
+                `INV-${year}-${booking._id
+                    .slice(-8)
+                    .toUpperCase()}`;
+
+            const url =
+                URL.createObjectURL(
+                    response.data
+                );
+
+            const link =
+                document.createElement('a');
+
+            link.href = url;
+            link.download =
+                `${invoiceNumber}.pdf`;
+
+            document.body.appendChild(link);
+
+            link.click();
+            link.remove();
+
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            alert(
+                error.response?.data?.message ||
+                'Unable to download invoice'
+            );
+        } finally {
+            setDownloadingInvoiceId(null);
         }
     };
 
@@ -116,27 +178,22 @@ const UserDashboard = () => {
         filter
     ) => {
         const isCancelled =
-            booking.status ===
-            'cancelled';
+            booking.status === 'cancelled';
 
         const isPaid =
-            booking.paymentStatus ===
-            'paid';
+            booking.paymentStatus === 'paid';
 
         const hasTicket =
-            booking.status ===
-                'confirmed' &&
+            booking.status === 'confirmed' &&
             isPaid;
 
         const isAwaitingTicket =
-            booking.status ===
-                'pending' &&
+            booking.status === 'pending' &&
             isPaid;
 
         const isPaymentIncomplete =
             !isCancelled &&
-            booking.paymentStatus !==
-                'paid';
+            booking.paymentStatus !== 'paid';
 
         switch (filter) {
             case FILTERS.CANCELLED:
@@ -211,7 +268,10 @@ const UserDashboard = () => {
                             activeFilter
                         )
                 ),
-            [bookings, activeFilter]
+            [
+                bookings,
+                activeFilter
+            ]
         );
 
     const filterButtons = [
@@ -249,33 +309,27 @@ const UserDashboard = () => {
         booking
     ) => {
         if (
-            booking.status ===
-            'cancelled'
+            booking.status === 'cancelled'
         ) {
             return 'border-red-300 bg-red-50 dark:border-red-900/70 dark:bg-red-950/30';
         }
 
         if (
-            booking.status ===
-                'confirmed' &&
-            booking.paymentStatus ===
-                'paid'
+            booking.status === 'confirmed' &&
+            booking.paymentStatus === 'paid'
         ) {
             return 'border-green-300 bg-green-50 dark:border-green-900/70 dark:bg-green-950/30';
         }
 
         if (
-            booking.status ===
-                'pending' &&
-            booking.paymentStatus ===
-                'paid'
+            booking.status === 'pending' &&
+            booking.paymentStatus === 'paid'
         ) {
             return 'border-blue-300 bg-blue-50 dark:border-blue-900/70 dark:bg-blue-950/30';
         }
 
         if (
-            booking.paymentStatus !==
-            'paid'
+            booking.paymentStatus !== 'paid'
         ) {
             return 'border-yellow-300 bg-yellow-50 dark:border-yellow-900/70 dark:bg-yellow-950/30';
         }
@@ -361,9 +415,7 @@ const UserDashboard = () => {
 
                                 return (
                                     <button
-                                        key={
-                                            value
-                                        }
+                                        key={value}
                                         type="button"
                                         onClick={() =>
                                             setActiveFilter(
@@ -434,8 +486,7 @@ const UserDashboard = () => {
                         Browse Events
                     </Link>
                 </div>
-            ) : filteredBookings.length ===
-              0 ? (
+            ) : filteredBookings.length === 0 ? (
                 <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-10 text-center">
                     <FaCheckCircle className="mx-auto text-4xl text-gray-300 dark:text-gray-600 mb-4" />
 
@@ -465,9 +516,7 @@ const UserDashboard = () => {
                     {filteredBookings.map(
                         (booking) => (
                             <article
-                                key={
-                                    booking._id
-                                }
+                                key={booking._id}
                                 className={`rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col border ${getCardStyle(
                                     booking
                                 )}`}
@@ -538,8 +587,7 @@ const UserDashboard = () => {
                                                     </strong>{' '}
                                                     {Number(
                                                         booking.amount
-                                                    ) ===
-                                                    0
+                                                    ) === 0
                                                         ? 'Free'
                                                         : `₹${Number(
                                                               booking.amount
@@ -554,7 +602,7 @@ const UserDashboard = () => {
                                                     </strong>{' '}
                                                     {new Date(
                                                         booking.bookedAt ||
-                                                            booking.createdAt
+                                                        booking.createdAt
                                                     ).toLocaleDateString()}
                                                 </p>
                                             </div>
@@ -579,8 +627,7 @@ const UserDashboard = () => {
                                                     to={`/booking/${booking._id}/purchased`}
                                                     className="text-gray-900 dark:text-gray-100 font-semibold text-sm hover:underline"
                                                 >
-                                                    View
-                                                    Event
+                                                    View Event
                                                 </Link>
 
                                                 <button
@@ -599,11 +646,31 @@ const UserDashboard = () => {
 
                                             <Link
                                                 to={`/ticket/${booking._id}`}
-                                                className="inline-flex justify-center w-full text-center bg-gray-900 dark:bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-black dark:hover:bg-blue-700 transition"
+                                                className="inline-flex justify-center w-full text-center bg-gray-900 dark:bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-black dark:hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] transition-all duration-200"
                                             >
-                                                View
-                                                Ticket
+                                                View Ticket
                                             </Link>
+
+                                            <button
+                                                type="button"
+                                                disabled={
+                                                    downloadingInvoiceId ===
+                                                    booking._id
+                                                }
+                                                onClick={() =>
+                                                    downloadInvoice(
+                                                        booking
+                                                    )
+                                                }
+                                                className="group inline-flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 rounded-xl px-4 py-3 font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                                            >
+                                                <FaDownload className="transition-transform duration-200 group-hover:translate-y-0.5" />
+
+                                                {downloadingInvoiceId ===
+                                                booking._id
+                                                    ? 'Downloading...'
+                                                    : 'Download Invoice'}
+                                            </button>
                                         </>
                                     ) : booking.eventId &&
                                       booking.status ===
@@ -614,8 +681,7 @@ const UserDashboard = () => {
                                                     to={`/booking/${booking._id}/purchased`}
                                                     className="text-gray-900 dark:text-gray-100 font-semibold text-sm hover:underline"
                                                 >
-                                                    View
-                                                    Event
+                                                    View Event
                                                 </Link>
 
                                                 <button
@@ -636,27 +702,55 @@ const UserDashboard = () => {
                                             'paid' ? (
                                                 <Link
                                                     to={`/booking/${booking._id}/address`}
-                                                    className="inline-flex justify-center w-full text-center bg-yellow-500 text-white rounded-xl px-4 py-3 font-semibold hover:bg-yellow-600 transition"
+                                                    className="inline-flex justify-center w-full text-center bg-yellow-500 text-white rounded-xl px-4 py-3 font-semibold hover:bg-yellow-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] transition-all duration-200"
                                                 >
-                                                    Continue
-                                                    to Payment
+                                                    Continue to Payment
                                                 </Link>
                                             ) : (
-                                                <button
-                                                    type="button"
-                                                    disabled
-                                                    className="w-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-xl px-4 py-3 font-semibold cursor-not-allowed"
-                                                >
-                                                    Ticket
-                                                    pending
-                                                    approval
-                                                </button>
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        disabled
+                                                        className="w-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-xl px-4 py-3 font-semibold cursor-not-allowed"
+                                                    >
+                                                        Ticket pending approval
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            downloadingInvoiceId ===
+                                                            booking._id
+                                                        }
+                                                        onClick={() =>
+                                                            downloadInvoice(
+                                                                booking
+                                                            )
+                                                        }
+                                                        className="group inline-flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 rounded-xl px-4 py-3 font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+                                                    >
+                                                        <FaDownload className="transition-transform duration-200 group-hover:translate-y-0.5" />
+
+                                                        {downloadingInvoiceId ===
+                                                        booking._id
+                                                            ? 'Downloading...'
+                                                            : 'Download Invoice'}
+                                                    </button>
+
+                                                    <Link
+                                                        to={`/support/ticket-delay/${booking._id}`}
+                                                        className="group inline-flex items-center justify-center gap-2 w-full text-center bg-red-600 text-white border border-red-600 rounded-xl px-4 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:shadow-md hover:-translate-y-[2px] active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                                                    >
+                                                        <FaExclamationTriangle className="transition-transform duration-200 group-hover:scale-110" />
+
+                                                        Ticket delayed? Contact support
+                                                    </Link>
+                                                </>
                                             )}
                                         </>
                                     ) : (
                                         <div className="w-full text-center text-sm text-gray-500 dark:text-gray-400 italic py-2">
-                                            Booking
-                                            Cancelled
+                                            Booking Cancelled
                                         </div>
                                     )}
                                 </div>
