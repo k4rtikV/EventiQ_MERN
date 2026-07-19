@@ -259,28 +259,30 @@ const WishlistPage = () => {
                                         disabled={isRemoving}
                                         title="Remove from wishlist"
                                         aria-label={`Remove ${event.title} from wishlist`}
-                                        className={`absolute top-4 left-4 w-11 h-11 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md hover:bg-red-600 transition ${
+                                        className={`wishlist-heart-button-active absolute top-4 left-4 z-10 flex h-11 w-11 items-center justify-center rounded-full shadow-md ${
                                             isRemoving
-                                                ? 'opacity-60 cursor-wait'
+                                                ? 'cursor-wait opacity-60'
                                                 : 'cursor-pointer'
                                         }`}
                                     >
                                         <FaHeart className="text-lg" />
                                     </button>
 
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                                    <div className="event-price-badge absolute top-4 right-4 z-10 rounded-full px-3 py-1.5 text-sm font-extrabold shadow-md backdrop-blur-sm">
                                         {Number(
                                             event.ticketPrice
                                         ) === 0 ? (
-                                            <span className="text-green-600">
+                                            <span className="event-price-badge-free">
                                                 FREE
                                             </span>
                                         ) : (
-                                            <span className="text-gray-900">
+                                            <span>
                                                 ₹
-                                                {
+                                                {Number(
                                                     event.ticketPrice
-                                                }
+                                                ).toLocaleString(
+                                                    'en-IN'
+                                                )}
                                             </span>
                                         )}
                                     </div>

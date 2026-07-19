@@ -1,8 +1,9 @@
 import React from 'react';
+
 import {
     BrowserRouter as Router,
-    Routes,
-    Route
+    Route,
+    Routes
 } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
@@ -36,12 +37,15 @@ function App() {
         <Router>
             <ScrollToTop />
 
-            <div className="min-h-screen bg-gray-50 flex flex-col">
+            <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col transition-colors duration-300">
                 <Navbar />
 
                 <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route
+                            path="/"
+                            element={<Home />}
+                        />
 
                         <Route
                             path="/events"
@@ -90,7 +94,9 @@ function App() {
 
                         <Route
                             path="/successful-bookings"
-                            element={<SuccessfulBookings />}
+                            element={
+                                <SuccessfulBookings />
+                            }
                         />
 
                         <Route
@@ -100,7 +106,9 @@ function App() {
 
                         <Route
                             path="/pending-requests"
-                            element={<PendingRequests />}
+                            element={
+                                <PendingRequests />
+                            }
                         />
 
                         <Route
@@ -108,7 +116,10 @@ function App() {
                             element={<AboutUs />}
                         />
 
-                        <Route path="/faqs" element={<FAQs />} />
+                        <Route
+                            path="/faqs"
+                            element={<FAQs />}
+                        />
 
                         <Route
                             path="/refund-policy"
