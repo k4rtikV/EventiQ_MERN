@@ -11,6 +11,7 @@ const {
     sendBookingEmail,
     sendOTPEmail,
     sendCancellationEmail,
+    sendRefundInitiatedEmail,
     sendPaymentReceivedEmail
 } = require('../utils/email');
 
@@ -1803,7 +1804,9 @@ exports.cancelBooking = async (
             },
             {
                 $set: {
-                status: 'cancelled'
+                    status: 'cancelled',
+                    'cancellationDetails.cancelledBy': cancelledByAdmin ? 'admin' : 'user',
+                    'cancellationDetails.cancelledAt': new Date()
                 }
             }
         );
@@ -1951,6 +1954,112 @@ exports.repurchaseBooking = async (
 
         res.status(500).json({
             message: 'Server Error',
+            error: error.message
+        });
+    }
+};
+
+
+exports.initiateRefund = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id)
+            .populate('userId', 'name email')
+            .populate('eventId', 'title');
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found.' });
+        }
+
+        if (booking.status !== 'cancelled' || booking.paymentStatus !== 'paid') {
+            return res.status(400).json({
+                message: 'Refunds can be initiated only for paid bookings that have been cancelled.'
+            });
+        }
+
+        if (booking.refund?.status === 'initiated') {
+            return res.status(409).json({
+                message: 'A refund has already been initiated for this booking.'
+            });
+        }
+
+        const refundAmount = Number(req.body.refundAmount);
+        const reason = String(req.body.reason || '').trim();
+        const note = String(req.body.note || '').trim();
+
+        if (!Number.isFinite(refundAmount) || refundAmount <= 0 || refundAmount > booking.amount) {
+            return res.status(400).json({
+                message: `Refund amount must be greater than zero and cannot exceed ₹${booking.amount}.`
+            });
+        }
+
+        if (reason.length < 3 || reason.length > 150) {
+            return res.status(400).json({
+                message: 'Please select or enter a valid refund reason.'
+            });
+        }
+
+        if (note.length > 500) {
+            return res.status(400).json({
+                message: 'Internal note cannot exceed 500 characters.'
+            });
+        }
+
+        const initiatedAt = new Date();
+
+        const refundUpdate = await Booking.updateOne(
+            {
+                _id: booking._id,
+                'refund.status': { $ne: 'initiated' }
+            },
+            {
+                $set: {
+                    'refund.status': 'initiated',
+                    'refund.amount': refundAmount,
+                    'refund.reason': reason,
+                    'refund.note': note || null,
+                    'refund.initiatedAt': initiatedAt,
+                    'refund.initiatedBy': req.user._id
+                }
+            }
+        );
+
+        if (refundUpdate.modifiedCount === 0) {
+            return res.status(409).json({
+                message: 'A refund has already been initiated for this booking.'
+            });
+        }
+
+        try {
+            await sendRefundInitiatedEmail(
+                booking.userId.email,
+                booking.userId.name,
+                booking.eventId?.title || 'your event booking',
+                booking._id.toString(),
+                refundAmount,
+                reason
+            );
+        } catch (emailError) {
+            console.error('Refund initiation email failed:', emailError);
+
+            return res.status(502).json({
+                message: 'The refund was recorded as initiated, but the notification email could not be sent. Please contact the user manually.',
+                refundRecorded: true
+            });
+        }
+
+        const updatedBooking = await Booking.findById(booking._id)
+            .populate('userId', 'name email')
+            .populate('eventId', 'title');
+
+        return res.status(200).json({
+            message: 'Refund initiated successfully. The user has been notified by email.',
+            booking: updatedBooking
+        });
+    } catch (error) {
+        console.error('Initiate refund error:', error);
+
+        return res.status(500).json({
+            message: 'Unable to initiate the refund.',
             error: error.message
         });
     }

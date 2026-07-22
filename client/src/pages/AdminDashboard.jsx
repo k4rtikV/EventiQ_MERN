@@ -152,6 +152,7 @@ const AdminDashboard = () => {
     const [events, setEvents] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
 
     const [showEventForm, setShowEventForm] = useState(false);
     const [eventFormError, setEventFormError] = useState('');
@@ -258,6 +259,65 @@ const AdminDashboard = () => {
             } catch (error) {
                 alert(error.response?.data?.message || 'Error cancelling booking');
             }
+        }
+    };
+
+
+    const handleInitiateRefund = (bookingId) => {
+        navigate(`/admin/refunds/${bookingId}`);
+    };
+
+    const handleViewInvoice = async (booking) => {
+        const invoiceWindow = window.open('', '_blank');
+
+        try {
+            setViewingInvoiceId(booking._id);
+
+            if (invoiceWindow) {
+                invoiceWindow.document.write(
+                    '<p style="font-family: Arial, sans-serif; padding: 24px;">Loading invoice...</p>'
+                );
+            }
+
+            const response = await api.get(
+                `/bookings/${booking._id}/invoice`,
+                {
+                    responseType: 'blob'
+                }
+            );
+
+            const invoiceUrl = URL.createObjectURL(
+                new Blob([response.data], {
+                    type: 'application/pdf'
+                })
+            );
+
+            if (invoiceWindow) {
+                invoiceWindow.location.href = invoiceUrl;
+            } else {
+                const link = document.createElement('a');
+                link.href = invoiceUrl;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+
+            window.setTimeout(() => {
+                URL.revokeObjectURL(invoiceUrl);
+            }, 60000);
+        } catch (error) {
+            if (invoiceWindow) {
+                invoiceWindow.close();
+            }
+
+            alert(
+                error.response?.data?.message ||
+                'Unable to open the invoice.'
+            );
+        } finally {
+            setViewingInvoiceId(null);
         }
     };
 
@@ -411,7 +471,7 @@ const AdminDashboard = () => {
                                             <h4 className="font-bold text-gray-900 text-lg leading-tight">{booking.eventId?.title || 'Deleted Event'}</h4>
                                             <div className="flex flex-col gap-1 items-end shrink-0 ml-4">
                                                 <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : booking.status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{booking.status}</span>
-                                                {booking.status !== 'cancelled' && <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-800'}`}>{booking.paymentStatus.replace('_', ' ')}</span>}
+                                                <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-800'}`}>{booking.paymentStatus.replace('_', ' ')}</span>
                                             </div>
                                         </div>
                                         <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100 text-sm">
@@ -436,12 +496,51 @@ const AdminDashboard = () => {
                                             )}
                                         </div>
 
-                                        {/* Action buttons for admin */}
+                                        {booking.status === 'cancelled' && booking.paymentStatus === 'paid' && (
+                                            <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                                <p className="text-xs font-semibold leading-relaxed text-amber-900">
+                                                    This event was booked and paid for by the user and was later cancelled.
+                                                </p>
+
+                                                {booking.refund?.status === 'initiated' ? (
+                                                    <div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700">
+                                                        Refund initiated for ₹{booking.refund.amount} on{' '}
+                                                        {new Date(booking.refund.initiatedAt).toLocaleString()}
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleInitiateRefund(booking._id)}
+                                                        className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white"
+                                                    >
+                                                        Initiate Refund
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Invoice access is available only for paid bookings. */}
+                                        {booking.paymentStatus === 'paid' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleViewInvoice(booking)}
+                                                disabled={viewingInvoiceId === booking._id}
+                                                className="w-full mb-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60 border border-indigo-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition"
+                                            >
+                                                {viewingInvoiceId === booking._id
+                                                    ? 'Opening Invoice...'
+                                                    : 'View / Download Invoice'}
+                                            </button>
+                                        )}
+
+                                        {/* Action buttons for pending booking requests. */}
                                         {booking.status === 'pending' && (
                                             <div className="flex flex-wrap gap-2 mt-2">
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
-                                                    ✓ Approve as Paid
-                                                </button>
+                                                {booking.paymentStatus === 'paid' && (
+                                                    <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                                        ✓ Approve as Paid
+                                                    </button>
+                                                )}
                                                 <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
                                                     ✓ Approve Undecided
                                                 </button>

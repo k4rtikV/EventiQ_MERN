@@ -526,6 +526,62 @@ const sendCancellationEmail = async (
     }
 };
 
+const sendRefundInitiatedEmail = async (
+    userEmail,
+    userName,
+    eventTitle,
+    bookingId,
+    refundAmount,
+    reason
+) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: userEmail,
+            subject: `Refund initiated for ${eventTitle}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; color: #111827;">
+                    <div style="max-width: 620px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden;">
+                        <div style="background: #111827; color: #ffffff; padding: 22px 26px;">
+                            <h2 style="margin: 0; font-size: 22px;">Refund Initiated</h2>
+                        </div>
+
+                        <div style="padding: 26px;">
+                            <p>Hi ${escapeHtml(userName)},</p>
+
+                            <p>
+                                We have initiated your refund for
+                                <strong>${escapeHtml(eventTitle)}</strong>.
+                            </p>
+
+                            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin: 20px 0;">
+                                <p style="margin: 0 0 8px;"><strong>Booking ID:</strong> ${escapeHtml(bookingId)}</p>
+                                <p style="margin: 0 0 8px;"><strong>Refund amount:</strong> ₹${formatAmount(refundAmount)}</p>
+                                <p style="margin: 0;"><strong>Reason:</strong> ${escapeHtml(reason)}</p>
+                            </div>
+
+                            <p>
+                                The amount will be returned to the original payment method. Bank processing times may vary.
+                            </p>
+
+                            <p>
+                                Regards,<br />
+                                <strong>The EventiQ Team</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Refund initiation email sent to', userEmail);
+    } catch (error) {
+        console.error('Error sending refund initiation email:', error);
+        throw error;
+    }
+};
+
 const sendPaymentReceivedEmail =
     async (
         userEmail,
@@ -821,6 +877,7 @@ module.exports = {
     sendOTPEmail,
     sendSupportEmail,
     sendCancellationEmail,
+    sendRefundInitiatedEmail,
     sendPaymentReceivedEmail,
     sendNewsletterPromoEmail
 };

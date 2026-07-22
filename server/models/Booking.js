@@ -155,6 +155,56 @@ const bookingSchema = new mongoose.Schema(
             }
         },
 
+        cancellationDetails: {
+            cancelledBy: {
+                type: String,
+                enum: ['user', 'admin'],
+                default: null
+            },
+
+            cancelledAt: {
+                type: Date,
+                default: null
+            }
+        },
+
+        refund: {
+            status: {
+                type: String,
+                enum: ['not_started', 'initiated'],
+                default: 'not_started'
+            },
+
+            amount: {
+                type: Number,
+                default: null,
+                min: 0
+            },
+
+            reason: {
+                type: String,
+                default: null,
+                trim: true
+            },
+
+            note: {
+                type: String,
+                default: null,
+                trim: true
+            },
+
+            initiatedAt: {
+                type: Date,
+                default: null
+            },
+
+            initiatedBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                default: null
+            }
+        },
+
         allowNoAddress: {
             type: Boolean,
             default: false
