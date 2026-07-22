@@ -3,6 +3,149 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
 
+const EVENT_CATEGORIES = [
+    'Art',
+    'Business',
+    'Comedy',
+    'Education',
+    'Entertainment',
+    'Food',
+    'Gaming',
+    'Music',
+    'Sports',
+    'Technology',
+    'Other'
+];
+
+const hasMeaningfulText = (
+    value,
+    {
+        minimumLetters = 3,
+        minimumConsecutiveLetters = 3,
+        maximumDigitRatio = 0.5
+    } = {}
+) => {
+    const trimmedValue = String(value || '').trim();
+    const letters = trimmedValue.match(/\p{L}/gu) || [];
+    const digits = trimmedValue.match(/\d/g) || [];
+    const alphanumericCount = letters.length + digits.length;
+    const containsWordLikeText = new RegExp(
+        `\\p{L}{${minimumConsecutiveLetters},}`,
+        'u'
+    ).test(trimmedValue);
+    const digitRatio = alphanumericCount === 0
+        ? 0
+        : digits.length / alphanumericCount;
+    const hasRepeatedGarbage = /(.)\1{4,}/u.test(trimmedValue);
+
+    return (
+        letters.length >= minimumLetters &&
+        containsWordLikeText &&
+        digitRatio <= maximumDigitRatio &&
+        !hasRepeatedGarbage
+    );
+};
+
+const isValidHttpUrl = (value) => {
+    try {
+        const parsedUrl = new URL(value);
+        return ['http:', 'https:'].includes(parsedUrl.protocol);
+    } catch {
+        return false;
+    }
+};
+
+const getMinimumEventDateTime = () => {
+    const minimumDate = new Date(Date.now() + 5 * 60 * 1000);
+    minimumDate.setSeconds(0, 0);
+    const offset = minimumDate.getTimezoneOffset() * 60000;
+
+    return new Date(minimumDate.getTime() - offset)
+        .toISOString()
+        .slice(0, 16);
+};
+
+const validateEventForm = (formData) => {
+    const title = formData.title.trim();
+    const description = formData.description.trim();
+    const location = formData.location.trim();
+    const image = formData.image.trim();
+    const totalSeats = Number(formData.totalSeats);
+    const ticketPrice = Number(formData.ticketPrice);
+    const eventDate = new Date(formData.date);
+
+    if (title.length < 3 || title.length > 100) {
+        return 'Event title must be between 3 and 100 characters.';
+    }
+
+    if (!hasMeaningfulText(title, {
+        minimumLetters: 3,
+        minimumConsecutiveLetters: 2,
+        maximumDigitRatio: 0.5
+    })) {
+        return 'Event title must contain a meaningful event name, not mostly numbers or random characters.';
+    }
+
+    if (!EVENT_CATEGORIES.includes(formData.category)) {
+        return 'Please select a valid event category.';
+    }
+
+    if (!formData.date || Number.isNaN(eventDate.getTime())) {
+        return 'Please select a valid event date and time.';
+    }
+
+    if (eventDate.getTime() <= Date.now() + 4 * 60 * 1000) {
+        return 'Event date and time must be at least 5 minutes in the future.';
+    }
+
+    if (location.length < 2 || location.length > 150) {
+        return 'Location must be between 2 and 150 characters.';
+    }
+
+    if (
+        location.toLowerCase() !== 'online' &&
+        !hasMeaningfulText(location, {
+            minimumLetters: 3,
+            minimumConsecutiveLetters: 3,
+            maximumDigitRatio: 0.5
+        })
+    ) {
+        return 'Please enter a meaningful venue, city, address, or Online.';
+    }
+
+    if (!Number.isInteger(totalSeats) || totalSeats < 1 || totalSeats > 100000) {
+        return 'Total seats must be a whole number between 1 and 100,000.';
+    }
+
+    if (
+        formData.ticketPrice.trim() === '' ||
+        !Number.isFinite(ticketPrice) ||
+        ticketPrice < 0 ||
+        ticketPrice > 1000000 ||
+        !/^\d+(\.\d{1,2})?$/.test(formData.ticketPrice)
+    ) {
+        return 'Ticket price must be between ₹0 and ₹10,00,000 with no more than two decimal places.';
+    }
+
+    if (image && (image.length > 2048 || !isValidHttpUrl(image))) {
+        return 'Please enter a valid HTTP or HTTPS image URL.';
+    }
+
+    if (description.length < 20 || description.length > 2000) {
+        return 'Event description must be between 20 and 2,000 characters.';
+    }
+
+    if (!hasMeaningfulText(description, {
+        minimumLetters: 10,
+        minimumConsecutiveLetters: 3,
+        maximumDigitRatio: 0.5
+    })) {
+        return 'Event description must contain meaningful text, not mostly numbers or random characters.';
+    }
+
+    return '';
+};
+
 const AdminDashboard = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -11,6 +154,8 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     const [showEventForm, setShowEventForm] = useState(false);
+    const [eventFormError, setEventFormError] = useState('');
+    const [creatingEvent, setCreatingEvent] = useState(false);
     const [formData, setFormData] = useState({
         title: '', description: '', date: '', location: '', category: '', totalSeats: '', ticketPrice: '', image: ''
     });
@@ -40,13 +185,48 @@ const AdminDashboard = () => {
 
     const handleCreateEvent = async (e) => {
         e.preventDefault();
+        setEventFormError('');
+
+        const validationError = validateEventForm(formData);
+
+        if (validationError) {
+            setEventFormError(validationError);
+            return;
+        }
+
+        const eventPayload = {
+            title: formData.title.trim(),
+            description: formData.description.trim(),
+            date: formData.date,
+            location: formData.location.trim(),
+            category: formData.category,
+            totalSeats: Number(formData.totalSeats),
+            ticketPrice: Number(formData.ticketPrice),
+            image: formData.image.trim()
+        };
+
         try {
-            await api.post('/events', formData);
+            setCreatingEvent(true);
+            await api.post('/events', eventPayload);
             setShowEventForm(false);
-            setFormData({ title: '', description: '', date: '', location: '', category: '', totalSeats: '', ticketPrice: '', image: '' });
-            fetchData();
+            setFormData({
+                title: '',
+                description: '',
+                date: '',
+                location: '',
+                category: '',
+                totalSeats: '',
+                ticketPrice: '',
+                image: ''
+            });
+            await fetchData();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error creating event');
+            setEventFormError(
+                error.response?.data?.message ||
+                'Unable to create the event. Please review the details and try again.'
+            );
+        } finally {
+            setCreatingEvent(false);
         }
     };
 
@@ -91,7 +271,10 @@ const AdminDashboard = () => {
                     <p className="text-gray-300">Manage events and manually confirm bookings.</p>
                 </div>
                 <button
-                    onClick={() => setShowEventForm(!showEventForm)}
+                    onClick={() => {
+                        setShowEventForm((current) => !current);
+                        setEventFormError('');
+                    }}
                     className="w-full md:w-auto bg-white text-black font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition shadow-md"
                 >
                     {showEventForm ? 'Cancel Creation' : '+ Create New Event'}
@@ -126,20 +309,60 @@ const AdminDashboard = () => {
             {showEventForm && (
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8 animation-slideDown">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">Create New Event</h2>
-                    <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input required type="text" placeholder="Event Title" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                        <input required type="text" placeholder="Category (e.g., Tech, Music)" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} />
-                        <input required type="date" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-                        <input required type="text" placeholder="Location" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
-                        <input required type="number" placeholder="Total Seats" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.totalSeats} onChange={e => setFormData({ ...formData, totalSeats: e.target.value })} />
-                        <input required type="number" placeholder="Ticket Price (0 for free)" className="border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.ticketPrice} onChange={e => setFormData({ ...formData, ticketPrice: e.target.value })} />
+                    {eventFormError && (
+                        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                            {eventFormError}
+                        </div>
+                    )}
 
-                        <div className="md:col-span-2">
-                            <input type="text" placeholder="Image URL (Provide any direct link to an image)" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} />
+                    <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6" noValidate>
+                        <div>
+                            <label htmlFor="event-title" className="block text-sm font-semibold text-gray-700 mb-2">Event Title</label>
+                            <input id="event-title" required type="text" minLength="3" maxLength="100" placeholder="e.g., Mumbai Tech Summit 2026" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.title} onChange={(e) => { setFormData({ ...formData, title: e.target.value }); if (eventFormError) setEventFormError(''); }} />
                         </div>
 
-                        <textarea required placeholder="Event Description" className="border px-4 py-3 rounded-lg md:col-span-2 h-32 focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
-                        <button type="submit" className="md:col-span-2 bg-gray-900 text-white font-bold py-3 mt-2 rounded-lg hover:bg-black transition shadow-md">Publish Event</button>
+                        <div>
+                            <label htmlFor="event-category" className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                            <select id="event-category" required className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition bg-white" value={formData.category} onChange={(e) => { setFormData({ ...formData, category: e.target.value }); if (eventFormError) setEventFormError(''); }}>
+                                <option value="">Select a category</option>
+                                {EVENT_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="event-date" className="block text-sm font-semibold text-gray-700 mb-2">Event Date and Time</label>
+                            <input id="event-date" required type="datetime-local" min={getMinimumEventDateTime()} className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.date} onChange={(e) => { setFormData({ ...formData, date: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                        </div>
+
+                        <div>
+                            <label htmlFor="event-location" className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                            <input id="event-location" required type="text" minLength="2" maxLength="150" placeholder="e.g., Jio World Convention Centre, Mumbai" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.location} onChange={(e) => { setFormData({ ...formData, location: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                        </div>
+
+                        <div>
+                            <label htmlFor="event-seats" className="block text-sm font-semibold text-gray-700 mb-2">Total Seats</label>
+                            <input id="event-seats" required type="number" min="1" max="100000" step="1" placeholder="e.g., 250" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.totalSeats} onChange={(e) => { setFormData({ ...formData, totalSeats: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                        </div>
+
+                        <div>
+                            <label htmlFor="event-price" className="block text-sm font-semibold text-gray-700 mb-2">Ticket Price</label>
+                            <input id="event-price" required type="number" min="0" max="1000000" step="0.01" placeholder="Enter 0 for a free event" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.ticketPrice} onChange={(e) => { setFormData({ ...formData, ticketPrice: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label htmlFor="event-image" className="block text-sm font-semibold text-gray-700 mb-2">Image URL <span className="font-normal text-gray-500">(optional)</span></label>
+                            <input id="event-image" type="url" maxLength="2048" placeholder="https://example.com/event-image.jpg" className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-gray-700 outline-none transition" value={formData.image} onChange={(e) => { setFormData({ ...formData, image: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label htmlFor="event-description" className="block text-sm font-semibold text-gray-700 mb-2">Event Description</label>
+                            <textarea id="event-description" required minLength="20" maxLength="2000" placeholder="Describe the event, schedule, highlights, and what attendees can expect." className="w-full border px-4 py-3 rounded-lg h-32 focus:ring-2 focus:ring-gray-700 outline-none transition resize-y" value={formData.description} onChange={(e) => { setFormData({ ...formData, description: e.target.value }); if (eventFormError) setEventFormError(''); }} />
+                            <p className="mt-1 text-xs text-gray-500 text-right">{formData.description.length}/2000</p>
+                        </div>
+
+                        <button type="submit" disabled={creatingEvent} className="md:col-span-2 bg-gray-900 text-white font-bold py-3 mt-2 rounded-lg hover:bg-black transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-gray-900">
+                            {creatingEvent ? 'Publishing...' : 'Publish Event'}
+                        </button>
                     </form>
                 </div>
             )}
