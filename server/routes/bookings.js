@@ -18,8 +18,14 @@ const {
     repurchaseBooking
 } = require('../controllers/bookingController');
 
-const { protect, admin } = require('../middleware/auth');
-const validateAddress = require('../middleware/validateAddress');
+const {
+    protect,
+    admin
+} = require('../middleware/auth');
+
+const validateAddress = require(
+    '../middleware/validateAddress'
+);
 
 const {
     downloadInvoice
@@ -159,10 +165,24 @@ router.put(
 
 /*
 |--------------------------------------------------------------------------
-| Cancellation
+| Cancellation routes
 |--------------------------------------------------------------------------
+|
+| Both normal users and admins may reach these routes.
+|
+| The cancelBooking controller itself checks whether:
+| 1. The authenticated user owns the booking, or
+| 2. The authenticated user is an admin.
+|
+| Therefore, the admin middleware must not be used here.
+|
 */
 
+/*
+ * Used by any frontend that sends:
+ *
+ * PUT /api/bookings/:id/cancel
+ */
 router.put(
     '/:id/cancel',
     protect,
@@ -170,19 +190,16 @@ router.put(
 );
 
 /*
-|--------------------------------------------------------------------------
-| Admin rejection/deletion compatibility route
-|--------------------------------------------------------------------------
-|
-| Your current admin frontend uses DELETE when rejecting a booking.
-| cancelBooking safely changes the booking status to "cancelled".
-|
-*/
-
+ * Used by the current UserDashboard:
+ *
+ * DELETE /api/bookings/:id
+ *
+ * Admin pages may also continue using this route to reject or
+ * cancel a booking. Authorization is handled inside cancelBooking.
+ */
 router.delete(
     '/:id',
     protect,
-    admin,
     cancelBooking
 );
 

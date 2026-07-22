@@ -41,7 +41,7 @@ const EventDetail = () => {
 
         try {
             if (!showOTP) {
-                await api.post('/bookings/send-otp');
+                await api.post('/bookings/send-otp', { eventId: event._id });
                 setShowOTP(true);
                 setSuccessMsg('OTP sent to your email. Please verify to continue.');
             } else {

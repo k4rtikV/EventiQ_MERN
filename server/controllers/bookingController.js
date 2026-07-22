@@ -349,11 +349,38 @@ const markNewsletterPromoAsUsed =
         );
     };
 
-exports.sendBookingOTP = async (
-    req,
-    res
-) => {
+exports.sendBookingOTP = async (req, res) => {
     try {
+        const { eventId } = req.body;
+
+        /*
+         * Only an active unpaid booking should prevent another booking.
+         *
+         * Paid bookings should never block the user from purchasing
+         * another ticket for the same event, regardless of whether
+         * the ticket has already been allotted.
+         */
+        if (eventId) {
+            const existingUnpaidBooking =
+                await Booking.findOne({
+                    userId: req.user.id,
+                    eventId,
+                    paymentStatus: 'not_paid',
+                    status: {
+                        $ne: 'cancelled'
+                    }
+                });
+
+            if (existingUnpaidBooking) {
+                return res.status(400).json({
+                    message:
+                        'You already have an unpaid booking for this event. Please complete or cancel it from your profile before booking again.',
+                    bookingId:
+                        existingUnpaidBooking._id
+                });
+            }
+        }
+
         const otp = generateOTP();
 
         await OTP.findOneAndDelete({
@@ -373,7 +400,7 @@ exports.sendBookingOTP = async (
             'event_booking'
         );
 
-        res.json({
+        return res.status(200).json({
             message: 'OTP sent successfully'
         });
     } catch (error) {
@@ -382,17 +409,14 @@ exports.sendBookingOTP = async (
             error
         );
 
-        res.status(500).json({
+        return res.status(500).json({
             message: 'Error sending OTP',
             error: error.message
         });
     }
 };
 
-exports.bookEvent = async (
-    req,
-    res
-) => {
+exports.bookEvent = async (req, res) => {
     try {
         const { eventId, otp } = req.body;
 
@@ -425,20 +449,29 @@ exports.bookEvent = async (
             });
         }
 
-        const existingBooking =
+        /*
+         * A previously paid booking is a completed purchase and must
+         * not be considered a duplicate.
+         *
+         * Block the new booking only when the user has another active
+         * booking for this event whose payment has not been completed.
+         */
+        const existingUnpaidBooking =
             await Booking.findOne({
                 userId: req.user.id,
-                eventId
+                eventId,
+                paymentStatus: 'not_paid',
+                status: {
+                    $ne: 'cancelled'
+                }
             });
 
-        if (
-            existingBooking &&
-            existingBooking.status !==
-                'cancelled'
-        ) {
+        if (existingUnpaidBooking) {
             return res.status(400).json({
                 message:
-                    'Already booked or pending, please go to your profile to manage your bookings'
+                    'You already have an unpaid booking for this event. Please complete or cancel it from your profile before booking again.',
+                bookingId:
+                    existingUnpaidBooking._id
             });
         }
 
@@ -458,11 +491,15 @@ exports.bookEvent = async (
                 amount: ticketPrice
             });
 
+        /*
+         * Delete the OTP only after the booking has been
+         * successfully created.
+         */
         await OTP.deleteOne({
             _id: validOTP._id
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message:
                 'Booking request submitted',
             booking
@@ -473,7 +510,7 @@ exports.bookEvent = async (
             error
         );
 
-        res.status(500).json({
+        return res.status(500).json({
             message: 'Server Error',
             error: error.message
         });
@@ -1745,6 +1782,10 @@ exports.cancelBooking = async (
             booking.status ===
             'confirmed';
 
+        const wasPaid =
+        booking.paymentStatus ===
+        'paid';    
+
         const cancelledByAdmin =
             req.user.role === 'admin' &&
             booking.userId.toString() !==
@@ -1779,6 +1820,7 @@ exports.cancelBooking = async (
             }
         }
 
+        if (wasPaid) {
         try {
             const bookingUser =
                 await Booking.findById(
@@ -1815,6 +1857,7 @@ exports.cancelBooking = async (
                 emailError
             );
         }
+    }
 
         res.json({
             message:

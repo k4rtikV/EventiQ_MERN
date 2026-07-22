@@ -53,6 +53,7 @@ const Footer = () => {
             setNewsletterError(
                 'Please enter your name.'
             );
+
             return;
         }
 
@@ -60,6 +61,7 @@ const Footer = () => {
             setNewsletterError(
                 'Please enter your email address.'
             );
+
             return;
         }
 
@@ -247,25 +249,24 @@ const Footer = () => {
                         </h3>
 
                         <div className="space-y-3 text-gray-400">
-                            <a
-                                href="mailto:kavx1734@gmail.com"
+                            <Link
+                                to="/contact-us"
                                 className="flex items-center gap-3 transition hover:text-white"
                             >
                                 <FiMail className="shrink-0 text-gray-300" />
+
                                 <span>
                                     kavx1734@gmail.com
                                 </span>
-                            </a>
+                            </Link>
 
-                            <a
-                                href="tel:+919167963477"
-                                className="flex items-center gap-3 transition hover:text-white"
-                            >
+                            <div className="flex items-center gap-3">
                                 <FiPhone className="shrink-0 text-gray-300" />
+
                                 <span>
                                     +91 91679 63477
                                 </span>
-                            </a>
+                            </div>
 
                             <p className="flex items-start gap-3 pt-1">
                                 <FiMapPin className="mt-1 shrink-0 text-gray-300" />
