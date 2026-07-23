@@ -43,7 +43,37 @@ import NotificationsPage from './pages/NotificationsPage';
 
 function AppContent() {
     const location = useLocation();
-    const isAdminRoute = location.pathname.startsWith('/admin');
+
+    const getLoggedInUser = () => {
+        try {
+            const storedUser =
+                localStorage.getItem('userInfo') ||
+                localStorage.getItem('user');
+
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch (error) {
+            console.error('Unable to read logged-in user:', error);
+            return null;
+        }
+    };
+
+    const loggedInUser = getLoggedInUser();
+    const isAdminUser = loggedInUser?.role === 'admin';
+
+    const adminOnlyPaths = [
+        '/admin',
+        '/successful-bookings',
+        '/paid-clients',
+        '/pending-requests'
+    ];
+
+    const isAdminRoute = adminOnlyPaths.some(
+        (path) =>
+            location.pathname === path ||
+            location.pathname.startsWith(`${path}/`)
+    );
+
+    const shouldShowChatbot = !isAdminUser && !isAdminRoute;
 
     return (
         <>
@@ -215,7 +245,7 @@ function AppContent() {
 
                 <Footer />
 
-                {!isAdminRoute && <EventiQChatbot />}
+                {shouldShowChatbot && <EventiQChatbot />}
             </div>
         </>
     );
