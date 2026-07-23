@@ -32,6 +32,11 @@ const newsletterSubscriberSchema = new mongoose.Schema(
             default: null
         },
 
+        unsubscribedAt: {
+            type: Date,
+            default: null
+        },
+
         promoUsedBookingId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Booking',

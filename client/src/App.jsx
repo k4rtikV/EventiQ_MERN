@@ -36,6 +36,7 @@ import RefundDelaySupport from './pages/RefundDelaySupport';
 import InitiateRefund from './pages/InitiateRefund';
 import RefundStatus from './pages/RefundStatus';
 import DelayedRequestsSupport from './pages/DelayedRequestsSupport';
+import NewsletterDashboard from './pages/NewsletterDashboard';
 
 function App() {
     return (
@@ -163,6 +164,11 @@ function App() {
                         <Route
                             path="/admin/delayed-support"
                             element={<DelayedRequestsSupport />}
+                        />
+
+                        <Route
+                            path="/admin/newsletter"
+                            element={<NewsletterDashboard />}
                         />
 
                         <Route

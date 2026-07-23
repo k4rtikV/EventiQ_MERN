@@ -152,6 +152,7 @@ const AdminDashboard = () => {
     const [events, setEvents] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [supportRequests, setSupportRequests] = useState([]);
+    const [newsletterStats, setNewsletterStats] = useState({ total: 0, active: 0 });
     const [loading, setLoading] = useState(true);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
 
@@ -172,14 +173,16 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const [eventsRes, bookingsRes, supportRes] = await Promise.all([
+            const [eventsRes, bookingsRes, supportRes, newsletterRes] = await Promise.all([
                 api.get('/events'),
                 api.get('/bookings/admin/all'),
-                api.get('/support/admin/requests')
+                api.get('/support/admin/requests'),
+                api.get('/newsletter/admin/dashboard')
             ]);
             setEvents(eventsRes.data);
             setBookings(bookingsRes.data);
             setSupportRequests(supportRes.data);
+            setNewsletterStats(newsletterRes.data.stats || { total: 0, active: 0 });
         } catch (error) {
             console.error('Error fetching admin data', error);
         } finally {
@@ -345,7 +348,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Admin Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
                 <button onClick={() => navigate('/successful-bookings')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:bg-emerald-200 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-emerald-400">
                     <div>
                         <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Total Revenue</p>
@@ -374,6 +377,14 @@ const AdminDashboard = () => {
                         <p className="mt-1 text-xs font-semibold text-gray-400">Open requests</p>
                     </div>
                     <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl font-bold">✉</div>
+                </button>
+                <button onClick={() => navigate('/admin/newsletter')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:bg-cyan-700 hover:text-white hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <div>
+                        <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Newsletter</p>
+                        <h3 className="text-3xl font-black text-cyan-600">{newsletterStats.active || 0}</h3>
+                        <p className="mt-1 text-xs font-semibold text-gray-400">Active subscribers</p>
+                    </div>
+                    <div className="w-12 h-12 bg-cyan-100 text-cyan-700 rounded-full flex items-center justify-center text-xl font-bold">✉</div>
                 </button>
             </div>
 

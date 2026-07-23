@@ -872,6 +872,38 @@ const sendNewsletterPromoEmail =
         }
     };
 
+
+const sendNewsletterCampaignEmail = async (
+    userEmail,
+    userName,
+    subject,
+    message
+) => {
+    const safeName = escapeHtml(userName || 'Subscriber');
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replaceAll('\n', '<br />');
+
+    await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: userEmail,
+        subject,
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.7; padding: 24px; color: #111827; max-width: 680px; margin: 0 auto;">
+                <div style="background: #020617; color: #ffffff; padding: 22px 24px; border-radius: 14px 14px 0 0;">
+                    <div style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #93c5fd;">EventiQ Newsletter</div>
+                    <h1 style="font-size: 25px; margin: 8px 0 0;">${safeSubject}</h1>
+                </div>
+
+                <div style="border: 1px solid #e5e7eb; border-top: 0; border-radius: 0 0 14px 14px; padding: 24px; background: #ffffff;">
+                    <p style="margin-top: 0;">Hello ${safeName},</p>
+                    <p>${safeMessage}</p>
+                    <p style="margin-top: 28px;">Best regards,<br /><strong>The EventiQ Team</strong></p>
+                </div>
+            </div>
+        `
+    });
+};
+
 module.exports = {
     sendBookingEmail,
     sendOTPEmail,
@@ -879,5 +911,6 @@ module.exports = {
     sendCancellationEmail,
     sendRefundInitiatedEmail,
     sendPaymentReceivedEmail,
-    sendNewsletterPromoEmail
+    sendNewsletterPromoEmail,
+    sendNewsletterCampaignEmail
 };
