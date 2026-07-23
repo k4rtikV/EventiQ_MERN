@@ -7,7 +7,8 @@ import React, {
 
 import {
     Link,
-    useNavigate
+    useNavigate,
+    useSearchParams
 } from 'react-router-dom';
 
 import api from '../utils/axios';
@@ -24,6 +25,8 @@ import {
 const EventsPage = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] =
+        useSearchParams();
 
     const [events, setEvents] = useState([]);
     const [wishlistIds, setWishlistIds] = useState(
@@ -35,7 +38,10 @@ const EventsPage = () => {
 
     const [search, setSearch] = useState('');
     const [selectedCategory, setSelectedCategory] =
-        useState('All');
+        useState(
+            searchParams.get('category')?.trim() ||
+                'All'
+        );
 
     const [sortOption, setSortOption] =
         useState('default');
@@ -229,6 +235,45 @@ const EventsPage = () => {
         ];
     }, [events]);
 
+    useEffect(() => {
+        const requestedCategory =
+            searchParams.get('category')?.trim();
+
+        if (!requestedCategory) {
+            setSelectedCategory('All');
+            return;
+        }
+
+        const matchingCategory = categories.find(
+            (category) =>
+                category !== 'All' &&
+                category.toLowerCase() ===
+                    requestedCategory.toLowerCase()
+        );
+
+        if (matchingCategory) {
+            setSelectedCategory(matchingCategory);
+        }
+    }, [categories, searchParams]);
+
+    const handleCategoryChange = (category) => {
+        setSelectedCategory(category);
+
+        const updatedParams = new URLSearchParams(
+            searchParams
+        );
+
+        if (category === 'All') {
+            updatedParams.delete('category');
+        } else {
+            updatedParams.set('category', category);
+        }
+
+        setSearchParams(updatedParams, {
+            replace: true
+        });
+    };
+
     const filteredAndSortedEvents =
         useMemo(() => {
             const normalizedSearch = search
@@ -263,8 +308,10 @@ const EventsPage = () => {
 
                     const matchesCategory =
                         selectedCategory === 'All' ||
-                        event.category?.trim() ===
-                            selectedCategory;
+                        event.category
+                            ?.trim()
+                            .toLowerCase() ===
+                            selectedCategory.toLowerCase();
 
                     return (
                         matchesSearch &&
@@ -329,6 +376,15 @@ const EventsPage = () => {
         setSearch('');
         setSelectedCategory('All');
         setSortOption('default');
+
+        const updatedParams = new URLSearchParams(
+            searchParams
+        );
+        updatedParams.delete('category');
+
+        setSearchParams(updatedParams, {
+            replace: true
+        });
     };
 
     const filtersAreActive =
@@ -399,7 +455,7 @@ const EventsPage = () => {
                             id="category-filter"
                             value={selectedCategory}
                             onChange={(event) =>
-                                setSelectedCategory(
+                                handleCategoryChange(
                                     event.target.value
                                 )
                             }

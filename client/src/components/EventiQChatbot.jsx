@@ -18,6 +18,8 @@ import {
     useNavigate
 } from 'react-router-dom';
 
+import api from '../utils/axios';
+
 const INITIAL_MESSAGE = {
     id: 'welcome-message',
     sender: 'bot',
@@ -32,6 +34,12 @@ const INITIAL_MESSAGE = {
 
 const CHAT_STORAGE_KEY =
     'eventiq-chatbot-messages';
+
+const CHAT_STATE_STORAGE_KEY =
+    'eventiq-chatbot-conversation-state';
+
+const EVENT_CATEGORY_STATE =
+    'waiting-for-event-category';
 
 const normalizeText = (value = '') =>
     value
@@ -73,6 +81,19 @@ const EventiQChatbot = () => {
     const [isTyping, setIsTyping] =
         useState(false);
 
+    const [availableCategories, setAvailableCategories] =
+        useState([]);
+
+    const [categoriesLoading, setCategoriesLoading] =
+        useState(true);
+
+    const [conversationState, setConversationState] =
+        useState(() =>
+            localStorage.getItem(
+                CHAT_STATE_STORAGE_KEY
+            ) || null
+        );
+
     const [messages, setMessages] =
         useState(() => {
             try {
@@ -113,6 +134,7 @@ const EventiQChatbot = () => {
     const quickQuestions =
         useMemo(
             () => [
+                'Suggest events',
                 'Browse events',
                 'How do I book an event?',
                 'Where is my ticket?',
@@ -131,6 +153,65 @@ const EventiQChatbot = () => {
             JSON.stringify(messages)
         );
     }, [messages]);
+
+    useEffect(() => {
+        if (conversationState) {
+            localStorage.setItem(
+                CHAT_STATE_STORAGE_KEY,
+                conversationState
+            );
+        } else {
+            localStorage.removeItem(
+                CHAT_STATE_STORAGE_KEY
+            );
+        }
+    }, [conversationState]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchEventCategories = async () => {
+            try {
+                setCategoriesLoading(true);
+
+                const { data } = await api.get('/events');
+                const events = Array.isArray(data) ? data : [];
+
+                const categories = Array.from(
+                    new Set(
+                        events
+                            .map((event) => event.category?.trim())
+                            .filter(Boolean)
+                    )
+                ).sort((firstCategory, secondCategory) =>
+                    firstCategory.localeCompare(secondCategory)
+                );
+
+                if (isMounted) {
+                    setAvailableCategories(categories);
+                }
+            } catch (error) {
+                console.error(
+                    'Could not load chatbot event categories:',
+                    error
+                );
+
+                if (isMounted) {
+                    setAvailableCategories([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setCategoriesLoading(false);
+                }
+            }
+        };
+
+        fetchEventCategories();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     useEffect(() => {
         if (!isOpen) {
@@ -160,6 +241,35 @@ const EventiQChatbot = () => {
         };
     }, []);
 
+    const createCategorySuggestions = () => [
+        ...availableCategories,
+        'Browse all events',
+        'Cancel recommendation'
+    ];
+
+    const findMatchingCategory = (message) =>
+        availableCategories.find((category) =>
+            message.includes(
+                normalizeText(category)
+            )
+        );
+
+    const createCategoryResult = (category) => ({
+        text:
+            `Great choice! I found the ${category} category. Use the button below to view matching events.`,
+        action: {
+            label: `View ${category} Events`,
+            path: `/events?category=${encodeURIComponent(
+                category
+            )}`
+        },
+        suggestions: [
+            'Suggest another category',
+            'How do I book an event?'
+        ],
+        nextConversationState: null
+    });
+
     const getBotResponse = (
         rawMessage
     ) => {
@@ -175,6 +285,156 @@ const EventiQChatbot = () => {
                         0,
                         3
                     )
+            };
+        }
+
+        if (conversationState === EVENT_CATEGORY_STATE) {
+            if (
+                includesAny(message, [
+                    'cancel',
+                    'never mind',
+                    'nevermind',
+                    'stop recommendation',
+                    'cancel recommendation'
+                ])
+            ) {
+                return {
+                    text:
+                        'No problem. I have cancelled the event recommendation. What else can I help you with?',
+                    suggestions: quickQuestions.slice(0, 4),
+                    nextConversationState: null
+                };
+            }
+
+            if (
+                includesAny(message, [
+                    'all',
+                    'any category',
+                    'browse all',
+                    'all events',
+                    'no preference'
+                ])
+            ) {
+                return {
+                    text:
+                        'Sure! You can browse every available event on the Events page.',
+                    action: {
+                        label: 'Browse All Events',
+                        path: '/events'
+                    },
+                    suggestions: [
+                        'How do I book an event?',
+                        'Can I book multiple tickets?'
+                    ],
+                    nextConversationState: null
+                };
+            }
+
+            const selectedCategory =
+                findMatchingCategory(message);
+
+            if (selectedCategory) {
+                return createCategoryResult(
+                    selectedCategory
+                );
+            }
+
+            if (categoriesLoading) {
+                return {
+                    text:
+                        'I am still loading the latest event categories. Please try again in a moment.',
+                    suggestions: ['Suggest events'],
+                    nextConversationState:
+                        EVENT_CATEGORY_STATE
+                };
+            }
+
+            if (availableCategories.length === 0) {
+                return {
+                    text:
+                        'I could not load the event categories right now. You can still browse all available events.',
+                    action: {
+                        label: 'Browse Events',
+                        path: '/events'
+                    },
+                    suggestions: ['Try event suggestions again'],
+                    nextConversationState: null
+                };
+            }
+
+            return {
+                text:
+                    'I could not match that to an available category. Please select or type one of the categories below.',
+                suggestions: createCategorySuggestions(),
+                nextConversationState:
+                    EVENT_CATEGORY_STATE
+            };
+        }
+
+        const directlyRequestedCategory =
+            findMatchingCategory(message);
+
+        if (
+            directlyRequestedCategory &&
+            includesAny(message, [
+                'event',
+                'recommend',
+                'suggest',
+                'show',
+                'find',
+                'browse'
+            ])
+        ) {
+            return createCategoryResult(
+                directlyRequestedCategory
+            );
+        }
+
+        if (
+            includesAny(message, [
+                'suggest event',
+                'recommend event',
+                'event recommendation',
+                'help me find an event',
+                'help me choose an event',
+                'what event should i attend',
+                'which event should i attend',
+                'show events by category',
+                'find me an event',
+                'find me events',
+                'suggest another category',
+                'try event suggestions again'
+            ])
+        ) {
+            if (categoriesLoading) {
+                return {
+                    text:
+                        'I am loading the latest event categories. Please try again in a moment.',
+                    suggestions: ['Suggest events'],
+                    nextConversationState:
+                        EVENT_CATEGORY_STATE
+                };
+            }
+
+            if (availableCategories.length === 0) {
+                return {
+                    text:
+                        'I could not load the available categories right now, but you can still browse all events.',
+                    action: {
+                        label: 'Browse Events',
+                        path: '/events'
+                    },
+                    suggestions: ['Try event suggestions again'],
+                    nextConversationState: null
+                };
+            }
+
+            return {
+                text:
+                    'Sure! What type of event are you interested in? Select a category below or type its name.',
+                suggestions: createCategorySuggestions(),
+                nextConversationState:
+                    EVENT_CATEGORY_STATE
             };
         }
 
@@ -823,6 +1083,17 @@ const EventiQChatbot = () => {
                 trimmedMessage
             );
 
+        if (
+            Object.prototype.hasOwnProperty.call(
+                response,
+                'nextConversationState'
+            )
+        ) {
+            setConversationState(
+                response.nextConversationState
+            );
+        }
+
         addBotResponse(response);
     };
 
@@ -860,9 +1131,13 @@ const EventiQChatbot = () => {
         setMessages([
             INITIAL_MESSAGE
         ]);
+        setConversationState(null);
 
         localStorage.removeItem(
             CHAT_STORAGE_KEY
+        );
+        localStorage.removeItem(
+            CHAT_STATE_STORAGE_KEY
         );
     };
 
