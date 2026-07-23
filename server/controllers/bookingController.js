@@ -177,6 +177,25 @@ const roundCurrency = (amount) =>
             100
     ) / 100;
 
+const normalizeQuantity = (value) => {
+    const quantity = Number(value);
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+        return null;
+    }
+
+    return quantity;
+};
+
+const getBookingQuantity = (booking) =>
+    normalizeQuantity(booking?.quantity) || 1;
+
+const getBookingBaseAmount = (event, booking) =>
+    roundCurrency(
+        Number(event?.ticketPrice || 0) *
+            getBookingQuantity(booking)
+    );
+
 const removePurchasedEventFromWishlist =
     async (userId, eventId) => {
         if (!userId || !eventId) {
@@ -422,6 +441,14 @@ exports.bookEvent = async (req, res) => {
     try {
         const { eventId, otp } = req.body;
 
+        const quantity = normalizeQuantity(req.body.quantity);
+
+        if (!quantity) {
+            return res.status(400).json({
+                message: 'Quantity must be a whole number between 1 and 10.'
+            });
+        }
+
         const validOTP = await OTP.findOne({
             email: req.user.email,
             otp,
@@ -444,10 +471,9 @@ exports.bookEvent = async (req, res) => {
             });
         }
 
-        if (event.availableSeats <= 0) {
+        if (event.availableSeats < quantity) {
             return res.status(400).json({
-                message:
-                    'No seats available'
+                message: `Only ${event.availableSeats} seat${event.availableSeats === 1 ? '' : 's'} remaining for this event.`
             });
         }
 
@@ -481,16 +507,21 @@ exports.bookEvent = async (req, res) => {
             event.ticketPrice || 0
         );
 
+        const bookingTotal = roundCurrency(
+            ticketPrice * quantity
+        );
+
         const booking =
             await Booking.create({
                 userId: req.user.id,
                 eventId,
                 status: 'pending',
                 paymentStatus: 'not_paid',
-                originalAmount: ticketPrice,
+                quantity,
+                originalAmount: bookingTotal,
                 discountAmount: 0,
                 promoCode: null,
-                amount: ticketPrice
+                amount: bookingTotal
             });
 
         /*
@@ -668,9 +699,9 @@ exports.applyPromoCode = async (
         }
 
         const currentTicketPrice =
-            roundCurrency(
-                booking.eventId.ticketPrice ||
-                    0
+            getBookingBaseAmount(
+                booking.eventId,
+                booking
             );
 
         booking.originalAmount =
@@ -777,12 +808,11 @@ exports.removePromoCode = async (
             });
         }
 
-        const currentTicketPrice =
-            roundCurrency(
-                booking.eventId?.ticketPrice ??
-                    booking.originalAmount ??
-                    booking.amount
-            );
+        const currentTicketPrice = booking.eventId
+            ? getBookingBaseAmount(booking.eventId, booking)
+            : roundCurrency(
+                  booking.originalAmount ?? booking.amount
+              );
 
         booking.originalAmount =
             currentTicketPrice;
@@ -877,17 +907,16 @@ exports.createOrder = async (
             });
         }
 
-        if (event.availableSeats <= 0) {
+        const quantity = getBookingQuantity(booking);
+
+        if (event.availableSeats < quantity) {
             return res.status(400).json({
-                message:
-                    'This event is sold out.'
+                message: `Only ${event.availableSeats} seat${event.availableSeats === 1 ? '' : 's'} remaining. Please create a new booking with a lower quantity.`
             });
         }
 
         const currentTicketPrice =
-            roundCurrency(
-                event.ticketPrice || 0
-            );
+            getBookingBaseAmount(event, booking);
 
         booking.originalAmount =
             currentTicketPrice;
@@ -1554,10 +1583,11 @@ exports.confirmBooking = async (req, res) => {
             });
         }
 
-        if (event.availableSeats <= 0) {
+        const quantity = getBookingQuantity(booking);
+
+        if (event.availableSeats < quantity) {
             return res.status(400).json({
-                message:
-                    'No seats are available for this event.'
+                message: `Only ${event.availableSeats} seat${event.availableSeats === 1 ? '' : 's'} are available for this booking of ${quantity}.`
             });
         }
 
@@ -1595,12 +1625,12 @@ exports.confirmBooking = async (req, res) => {
                 {
                     _id: event._id,
                     availableSeats: {
-                        $gt: 0
+                        $gte: quantity
                     }
                 },
                 {
                     $inc: {
-                        availableSeats: -1
+                        availableSeats: -quantity
                     }
                 }
             );
@@ -1835,7 +1865,7 @@ exports.cancelBooking = async (
                 );
 
             if (event) {
-                event.availableSeats += 1;
+                event.availableSeats += getBookingQuantity(booking);
                 await event.save();
             }
         }
@@ -1933,15 +1963,20 @@ exports.repurchaseBooking = async (
             });
         }
 
-        if (event.availableSeats <= 0) {
+        const quantity = getBookingQuantity(original);
+
+        if (event.availableSeats < quantity) {
             return res.status(400).json({
-                message:
-                    'No seats available'
+                message: `Only ${event.availableSeats} seat${event.availableSeats === 1 ? '' : 's'} available. The original booking requires ${quantity}.`
             });
         }
 
         const ticketPrice = roundCurrency(
             event.ticketPrice || 0
+        );
+
+        const bookingTotal = roundCurrency(
+            ticketPrice * quantity
         );
 
         const booking =
@@ -1950,11 +1985,12 @@ exports.repurchaseBooking = async (
                 eventId: event._id,
                 status: 'pending',
                 paymentStatus: 'not_paid',
+                quantity,
                 originalAmount:
-                    ticketPrice,
+                    bookingTotal,
                 discountAmount: 0,
                 promoCode: null,
-                amount: ticketPrice,
+                amount: bookingTotal,
                 allowNoAddress: true
             });
 

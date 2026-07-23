@@ -44,7 +44,8 @@ const FILTERS = {
 
 const DASHBOARD_VIEWS = {
     BOOKINGS: 'bookings',
-    PAYMENTS: 'payments'
+    PAYMENTS: 'payments',
+    REFUNDS: 'refunds'
 };
 
 const formatCurrency = (amount) => {
@@ -445,6 +446,16 @@ const UserDashboard = () => {
         [bookings, activeFilter]
     );
 
+    const refundBookings = useMemo(
+        () =>
+            bookings.filter(
+                (booking) =>
+                    booking.status === 'cancelled' &&
+                    booking.paymentStatus === 'paid'
+            ),
+        [bookings]
+    );
+
     const filterButtons = [
         {
             value: FILTERS.ALL,
@@ -597,6 +608,27 @@ const UserDashboard = () => {
                         {paymentHistory.length}
                     </span>
                 </button>
+
+                <button
+                    type="button"
+                    onClick={() =>
+                        setActiveView(
+                            DASHBOARD_VIEWS.REFUNDS
+                        )
+                    }
+                    className={`group inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold border hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] transition-all duration-200 ${
+                        activeView ===
+                        DASHBOARD_VIEWS.REFUNDS
+                            ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-blue-300 hover:text-blue-600'
+                    }`}
+                >
+                    <FaMoneyBillWave className="transition-transform group-hover:scale-110" />
+                    Manage Refunds
+                    <span className="rounded-full bg-black/10 dark:bg-white/10 px-2 py-0.5 text-xs">
+                        {refundBookings.length}
+                    </span>
+                </button>
             </div>
 
             {activeView ===
@@ -635,6 +667,19 @@ const UserDashboard = () => {
                     downloadInvoice={
                         downloadInvoice
                     }
+                    downloadingInvoiceId={
+                        downloadingInvoiceId
+                    }
+                />
+            )}
+
+            {activeView ===
+                DASHBOARD_VIEWS.REFUNDS && (
+                <ManageRefundsSection
+                    refundBookings={refundBookings}
+                    getCardStyle={getCardStyle}
+                    cancelBooking={cancelBooking}
+                    downloadInvoice={downloadInvoice}
                     downloadingInvoiceId={
                         downloadingInvoiceId
                     }
@@ -757,6 +802,68 @@ const BookingsSection = ({
                     )
                 )}
             </div>
+        )}
+    </section>
+);
+
+const ManageRefundsSection = ({
+    refundBookings,
+    getCardStyle,
+    cancelBooking,
+    downloadInvoice,
+    downloadingInvoiceId
+}) => (
+    <section>
+        <div className="mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+                <FaMoneyBillWave />
+                Manage Refunds
+            </h2>
+
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+                View paid event bookings that were cancelled
+                and track their refund status.
+            </p>
+        </div>
+
+        {refundBookings.length === 0 ? (
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-12 text-center">
+                <FaCheckCircle className="mx-auto text-4xl text-gray-300 dark:text-gray-600 mb-4" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    No refund bookings found
+                </h3>
+                <p className="mt-2 text-gray-500 dark:text-gray-400">
+                    Paid bookings that are cancelled will appear
+                    here automatically.
+                </p>
+            </div>
+        ) : (
+            <>
+                <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
+                    Showing{' '}
+                    <strong className="text-gray-700 dark:text-gray-200">
+                        {refundBookings.length}
+                    </strong>{' '}
+                    {refundBookings.length === 1
+                        ? 'refund booking'
+                        : 'refund bookings'}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {refundBookings.map((booking) => (
+                        <BookingCard
+                            key={booking._id}
+                            booking={booking}
+                            cardStyle={getCardStyle(booking)}
+                            cancelBooking={cancelBooking}
+                            downloadInvoice={downloadInvoice}
+                            downloadingInvoiceId={
+                                downloadingInvoiceId
+                            }
+                        />
+                    ))}
+                </div>
+            </>
         )}
     </section>
 );

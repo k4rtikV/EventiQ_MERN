@@ -30,6 +30,14 @@ const bookingSchema = new mongoose.Schema(
             default: 'not_paid'
         },
 
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 10,
+            default: 1
+        },
+
         originalAmount: {
             type: Number,
             required: true,

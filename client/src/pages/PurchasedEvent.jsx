@@ -301,6 +301,13 @@ const PurchasedEvent = () => {
 
                                 <Detail
                                     icon={<FaChair />}
+                                    label="Tickets booked"
+                                >
+                                    {Number(booking.quantity || 1)}
+                                </Detail>
+
+                                <Detail
+                                    icon={<FaChair />}
                                     label="Availability"
                                 >
                                     {event.availableSeats}{' '}

@@ -165,7 +165,7 @@ const generateInvoicePDF = (booking) =>
 
             doc.fillColor('#111827')
                 .fontSize(11)
-                .text('1', 325, rowTop + 22, {
+                .text(String(Number(booking.quantity || 1)), 325, rowTop + 22, {
                     width: 50,
                     align: 'center'
                 })

@@ -184,11 +184,15 @@ const sendBookingEmail = async (
         );
 
         doc.text(
-            `Price: ₹${formatAmount(
-                booking.amount
-            )}`,
+            `Admits: ${Number(booking.quantity || 1)}`,
             leftX,
             detailsTop + 72
+        );
+
+        doc.text(
+            `Total paid: ₹${formatAmount(booking.amount)}`,
+            leftX,
+            detailsTop + 90
         );
 
         const qrValue = `${booking._id}-${
@@ -237,7 +241,7 @@ const sendBookingEmail = async (
             .text(
                 'Please show this ticket at the entrance.',
                 leftX,
-                detailsTop + 100
+                detailsTop + 118
             );
 
         doc.end();
@@ -273,10 +277,8 @@ const sendBookingEmail = async (
                     </p>
 
                     <p>
-                        Amount paid:
-                        <strong>₹${formatAmount(
-                            booking.amount
-                        )}</strong>
+                        Tickets: <strong>${Number(booking.quantity || 1)}</strong><br />
+                        Amount paid: <strong>₹${formatAmount(booking.amount)}</strong>
                     </p>
 
                     <p>

@@ -323,6 +323,9 @@ const PaymentPage = () => {
         );
     }
 
+    const quantity = Number(booking.quantity || 1);
+    const unitPrice = Number(booking.eventId?.ticketPrice || 0);
+
     const originalAmount = Number(
         booking.originalAmount ??
             booking.eventId?.ticketPrice ??
@@ -473,15 +476,18 @@ const PaymentPage = () => {
 
                     <div className="space-y-3">
                         <div className="flex items-center justify-between gap-4 text-gray-700">
-                            <span>
-                                Ticket price
-                            </span>
+                            <span>Ticket price</span>
+                            <span className="font-semibold text-gray-900">{formatPrice(unitPrice)}</span>
+                        </div>
 
-                            <span className="font-semibold text-gray-900">
-                                {formatPrice(
-                                    originalAmount
-                                )}
-                            </span>
+                        <div className="flex items-center justify-between gap-4 text-gray-700">
+                            <span>Quantity</span>
+                            <span className="font-semibold text-gray-900">{quantity}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 text-gray-700">
+                            <span>Subtotal</span>
+                            <span className="font-semibold text-gray-900">{formatPrice(originalAmount)}</span>
                         </div>
 
                         {discountAmount >

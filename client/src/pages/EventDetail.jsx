@@ -15,6 +15,7 @@ const EventDetail = () => {
     const [showOTP, setShowOTP] = useState(false);
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
+    const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -45,7 +46,7 @@ const EventDetail = () => {
                 setShowOTP(true);
                 setSuccessMsg('OTP sent to your email. Please verify to continue.');
             } else {
-                const { data } = await api.post('/bookings', { eventId: event._id, otp });
+                const { data } = await api.post('/bookings', { eventId: event._id, otp, quantity });
                 navigate(`/booking/${data.booking._id}/address`);
             }
         } catch (err) {
@@ -59,6 +60,8 @@ const EventDetail = () => {
     if (error && !event) return <div className="text-center py-20 text-xl text-red-500">{error || 'Event not found'}</div>;
 
     const isSoldOut = event.availableSeats <= 0;
+    const maxQuantity = Math.min(10, event.availableSeats);
+    const bookingTotal = Number(event.ticketPrice || 0) * quantity;
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
@@ -125,6 +128,49 @@ const EventDetail = () => {
                                     <p className="font-bold text-gray-800">{event.location}</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="mb-5">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Number of tickets
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                                    disabled={quantity <= 1 || showOTP}
+                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    −
+                                </button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={maxQuantity}
+                                    value={quantity}
+                                    disabled={showOTP}
+                                    onChange={(e) => {
+                                        const next = Number(e.target.value);
+                                        setQuantity(Math.min(maxQuantity, Math.max(1, Number.isFinite(next) ? next : 1)));
+                                    }}
+                                    className="h-11 w-20 rounded-xl border border-gray-300 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-gray-700 disabled:bg-gray-100"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
+                                    disabled={quantity >= maxQuantity || showOTP}
+                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    +
+                                </button>
+                                <div className="ml-auto text-right">
+                                    <p className="text-xs font-semibold uppercase text-gray-400">Total</p>
+                                    <p className="text-lg font-black text-gray-900">
+                                        {bookingTotal === 0 ? 'Free' : `₹${bookingTotal.toLocaleString('en-IN')}`}
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="mt-2 text-xs text-gray-500">Maximum 10 tickets per booking, subject to availability.</p>
                         </div>
 
                         {showOTP && (

@@ -691,12 +691,23 @@ const TicketPage = () => {
 
             drawLabelAndValue(
                 pdf,
-                'Price',
+                'Total paid',
                 priceText,
                 columnOneX,
                 currentY,
                 65
             );
+
+            drawLabelAndValue(
+                pdf,
+                'Admits',
+                String(Number(booking.quantity || 1)),
+                columnTwoX,
+                currentY,
+                65
+            );
+
+            currentY += 24;
 
             drawLabelAndValue(
                 pdf,
@@ -894,8 +905,11 @@ const TicketPage = () => {
                 booking.userId?.name ||
                 'EventiQ User';
 
+            const ticketQuantity =
+                Number(booking.quantity) || 1;
+
             pdf.text(
-                `${issuedTo} - Admit One`,
+                `${issuedTo} - Admits ${ticketQuantity}`,
                 detailsCenterX,
                 detailsY + 6,
                 {
@@ -911,7 +925,11 @@ const TicketPage = () => {
             );
 
             pdf.text(
-                'This ticket is valid for one attendee only.',
+                `This ticket is valid for ${ticketQuantity} ${
+                    ticketQuantity === 1
+                        ? 'attendee'
+                        : 'attendees'
+                }.`,
                 pageWidth / 2,
                 pageHeight - 12,
                 {
@@ -1136,10 +1154,18 @@ const TicketPage = () => {
                         <div className="mt-5 border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <p className="font-semibold">
-                                    Price
+                                    Total paid
                                 </p>
 
                                 <p>{displayPrice}</p>
+                            </div>
+
+                            <div>
+                                <p className="font-semibold">
+                                    Admits
+                                </p>
+
+                                <p>{Number(booking.quantity || 1)}</p>
                             </div>
 
                             <div>
@@ -1209,7 +1235,10 @@ const TicketPage = () => {
                                         booking.userId
                                             ?.name ||
                                         'EventiQ User'}{' '}
-                                    — Admit One
+                                    — Admits{' '}
+                                    {Number(
+                                        booking.quantity
+                                    ) || 1}
                                 </p>
                             </div>
                         </div>
