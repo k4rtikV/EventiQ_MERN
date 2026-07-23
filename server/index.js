@@ -13,6 +13,7 @@ const wishlistRoutes = require('./routes/wishlist');
 const newsletterRoutes = require(
     './routes/newsletter'
 );
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use(
     '/api/newsletter',
     newsletterRoutes
 );
+app.use('/api/notifications', notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

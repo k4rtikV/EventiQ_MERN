@@ -7,6 +7,7 @@ const SupportRequest = require('../models/SupportRequest');
 const NewsletterSubscriber = require(
     '../models/NewsletterSubscriber'
 );
+const createNotification = require('../utils/createNotification');
 
 const {
     sendBookingEmail,
@@ -532,6 +533,16 @@ exports.bookEvent = async (req, res) => {
             _id: validOTP._id
         });
 
+        await createNotification({
+            user: req.user.id,
+            type: 'booking',
+            title: 'Booking request submitted',
+            message: `Your booking request for ${event.title} has been received. Complete payment to continue.`,
+            link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: event._id
+        });
+
         return res.status(201).json({
             message:
                 'Booking request submitted',
@@ -1023,6 +1034,16 @@ exports.createOrder = async (
                 );
             }
 
+            await createNotification({
+                user: req.user.id,
+                type: 'payment',
+                title: 'Registration completed',
+                message: `Your free registration for ${event.title} is complete and awaiting approval.`,
+                link: '/dashboard',
+                relatedBooking: booking._id,
+                relatedEvent: event._id
+            });
+
             return res.json({
                 free: true,
                 booking
@@ -1404,6 +1425,16 @@ exports.verifyPayment = async (
             );
         }
 
+        await createNotification({
+            user: req.user.id,
+            type: 'payment',
+            title: 'Payment received',
+            message: `Your payment for ${booking.eventId?.title || 'your event'} was successful. Your booking is awaiting approval.`,
+            link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId?._id || booking.eventId
+        });
+
         res.json({
             message:
                 'Payment verified successfully.',
@@ -1691,6 +1722,16 @@ exports.confirmBooking = async (req, res) => {
             );
         }
 
+        await createNotification({
+            user: booking.userId._id,
+            type: 'ticket',
+            title: 'Your ticket is ready',
+            message: `Your booking for ${booking.eventId.title} has been approved.`,
+            link: `/ticket/${booking._id}`,
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId._id
+        });
+
         return res.status(200).json({
             message:
                 'Booking confirmed successfully.',
@@ -1909,6 +1950,21 @@ exports.cancelBooking = async (
         }
     }
 
+        const cancelledBooking = await Booking.findById(booking._id)
+            .populate('eventId', 'title');
+
+        await createNotification({
+            user: booking.userId,
+            type: 'cancellation',
+            title: cancelledByAdmin ? 'Booking cancelled by administrator' : 'Booking cancelled',
+            message: wasPaid
+                ? `Your paid booking for ${cancelledBooking?.eventId?.title || 'the event'} was cancelled. Refund updates will appear here.`
+                : `Your booking for ${cancelledBooking?.eventId?.title || 'the event'} was cancelled.`,
+            link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: cancelledBooking?.eventId?._id || booking.eventId
+        });
+
         res.json({
             message:
                 'Booking cancelled successfully'
@@ -2071,6 +2127,16 @@ exports.initiateRefund = async (req, res) => {
             console.error('Refund initiation email failed:', emailError);
         }
 
+        await createNotification({
+            user: booking.userId._id,
+            type: 'refund',
+            title: 'Refund initiated',
+            message: `Your refund of ₹${refundAmount.toLocaleString('en-IN')} for ${booking.eventId?.title || 'your event'} has been initiated.`,
+            link: `/refund-status/${booking._id}`,
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId?._id || booking.eventId
+        });
+
         const updatedBooking = await Booking.findById(booking._id)
             .populate('userId', 'name email')
             .populate('eventId', 'title');
@@ -2122,6 +2188,18 @@ exports.updateRefundStatus = async (req, res) => {
         booking.refund.completedAt = status === 'completed' ? now : null;
         booking.refund.history.push({ status, note: note || `Refund marked as ${status.replaceAll('_', ' ')}.`, updatedAt: now, updatedBy: req.user._id });
         await booking.save();
+
+        const readableStatus = status.replaceAll('_', ' ');
+
+        await createNotification({
+            user: booking.userId._id,
+            type: 'refund',
+            title: status === 'completed' ? 'Refund completed' : 'Refund status updated',
+            message: `Your refund for ${booking.eventId?.title || 'your event'} is now ${readableStatus}.`,
+            link: `/refund-status/${booking._id}`,
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId?._id || booking.eventId
+        });
 
         return res.json({ message: 'Refund status updated successfully.', booking });
     } catch (error) {

@@ -38,6 +38,7 @@ import InitiateRefund from './pages/InitiateRefund';
 import RefundStatus from './pages/RefundStatus';
 import DelayedRequestsSupport from './pages/DelayedRequestsSupport';
 import NewsletterDashboard from './pages/NewsletterDashboard';
+import NotificationsPage from './pages/NotificationsPage';
 
 function App() {
     return (
@@ -92,6 +93,11 @@ function App() {
                         <Route
                             path="/wishlist"
                             element={<WishlistPage />}
+                        />
+
+                        <Route
+                            path="/notifications"
+                            element={<NotificationsPage />}
                         />
 
                         <Route

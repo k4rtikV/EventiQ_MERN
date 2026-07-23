@@ -21,6 +21,8 @@ import {
     useTheme
 } from '../context/ThemeContext';
 
+import NotificationBell from './NotificationBell';
+
 const Navbar = () => {
     const {
         user,
@@ -79,6 +81,8 @@ const Navbar = () => {
                                 >
                                     Profile
                                 </Link>
+
+                                <NotificationBell />
 
                                 <button
                                     type="button"

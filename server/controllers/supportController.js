@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const SupportRequest = require('../models/SupportRequest');
 const { sendSupportEmail } = require('../utils/email');
 const { generateInvoicePDF, getInvoiceNumber } = require('../utils/generateInvoicePDF');
+const createNotification = require('../utils/createNotification');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -173,6 +174,16 @@ const updateDelayedRequest = async (req, res) => {
             request.resolvedBy = null;
         }
         await request.save();
+
+        await createNotification({
+            user: request.user,
+            type: 'support',
+            title: 'Support request updated',
+            message: `Your ${request.type === 'refund_delay' ? 'refund-delay' : 'ticket-delay'} support request is now ${request.status.replaceAll('_', ' ')}.`,
+            link: '/dashboard',
+            relatedBooking: request.booking
+        });
+
         const populated = await SupportRequest.findById(request._id)
             .populate('user', 'name email')
             .populate({ path: 'booking', populate: [{ path: 'eventId' }, { path: 'userId', select: 'name email' }] })
