@@ -143,42 +143,18 @@ const getPaymentMethodText = (payment) => {
 };
 
 const getRefundDisplay = (booking) => {
-    const isCancelled =
-        booking.status === 'cancelled';
-    const isPaid =
-        booking.paymentStatus === 'paid';
-
-    if (!isCancelled || !isPaid) {
-        return null;
-    }
-
-    const refundInitiated =
-        booking.refund?.status === 'initiated';
-
-    return refundInitiated
-        ? {
-              label: 'Refund Initiated',
-              description: booking.refund?.initiatedAt
-                  ? `Initiated on ${formatDateTime(
-                        booking.refund.initiatedAt
-                    )}`
-                  : 'Your refund has been initiated by the administrator.',
-              badgeClass:
-                  'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300',
-              panelClass:
-                  'border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-950/30 dark:text-green-300',
-              icon: FaCheckCircle
-          }
-        : {
-              label: 'Awaiting Refund Initiation',
-              description:
-                  'Your paid booking was cancelled and is awaiting refund initiation by the administrator.',
-              badgeClass:
-                  'bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300',
-              panelClass:
-                  'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300',
-              icon: FaClock
-          };
+    if (booking.status !== 'cancelled' || booking.paymentStatus !== 'paid') return null;
+    const status = booking.refund?.status || 'not_started';
+    const configs = {
+        not_started: { label: 'Awaiting Refund Initiation', description: 'Your paid booking was cancelled and is awaiting refund initiation by the administrator.', badgeClass: 'bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300', panelClass: 'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300', icon: FaClock },
+        initiated: { label: 'Refund Initiated', description: booking.refund?.initiatedAt ? `Initiated on ${formatDateTime(booking.refund.initiatedAt)}` : 'Your refund has been initiated.', badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300', panelClass: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300', icon: FaCheckCircle },
+        processing: { label: 'Refund Processing', description: 'Your refund is currently being processed.', badgeClass: 'bg-yellow-100 text-yellow-800', panelClass: 'border-yellow-200 bg-yellow-50 text-yellow-900', icon: FaClock },
+        sent_to_bank: { label: 'Sent to Bank', description: 'The refund has been sent to the bank for completion.', badgeClass: 'bg-indigo-100 text-indigo-700', panelClass: 'border-indigo-200 bg-indigo-50 text-indigo-800', icon: FaCheckCircle },
+        completed: { label: 'Refund Completed', description: booking.refund?.completedAt ? `Completed on ${formatDateTime(booking.refund.completedAt)}` : 'Your refund has been completed.', badgeClass: 'bg-green-100 text-green-700', panelClass: 'border-green-200 bg-green-50 text-green-800', icon: FaCheckCircle },
+        on_hold: { label: 'Refund On Hold', description: booking.refund?.note || 'The refund is temporarily on hold.', badgeClass: 'bg-orange-100 text-orange-700', panelClass: 'border-orange-200 bg-orange-50 text-orange-800', icon: FaClock },
+        failed: { label: 'Refund Failed', description: booking.refund?.note || 'The refund could not be completed and is being reviewed.', badgeClass: 'bg-red-100 text-red-700', panelClass: 'border-red-200 bg-red-50 text-red-800', icon: FaTimesCircle }
+    };
+    return configs[status] || configs.not_started;
 };
 
 const UserDashboard = () => {
@@ -1000,7 +976,7 @@ const BookingCard = ({
                         )}
 
                         {isPaid &&
-                            booking.refund?.status !== 'initiated' && (
+                            (!booking.refund?.status || booking.refund.status === 'not_started') && (
                                 <Link
                                     to={`/support/refund-delay/${booking._id}`}
                                     className="group inline-flex items-center justify-center gap-2 w-full bg-red-600 text-white border border-red-600 rounded-xl px-4 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:shadow-md hover:-translate-y-[2px] active:translate-y-0 active:scale-[0.98] transition-all duration-200"
@@ -1009,6 +985,16 @@ const BookingCard = ({
                                     Refund delayed? Contact support
                                 </Link>
                             )}
+
+                        {isPaid && booking.refund?.status && booking.refund.status !== 'not_started' && (
+                            <Link
+                                to={`/refund-status/${booking._id}`}
+                                className="group inline-flex items-center justify-center gap-2 w-full bg-blue-600 text-white border border-blue-600 rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 hover:shadow-md hover:-translate-y-[2px] active:translate-y-0 transition-all duration-200"
+                            >
+                                <FaCheckCircle />
+                                Track Refund
+                            </Link>
+                        )}
                     </>
                 )}
             </div>
@@ -1291,7 +1277,7 @@ const PaymentHistoryCard = ({
                                     {refundDisplay.description}
                                 </p>
                                 {payment.refund?.amount != null &&
-                                    payment.refund?.status === 'initiated' && (
+                                    payment.refund?.status && payment.refund.status !== 'not_started' && (
                                     <p className="mt-2 text-sm font-semibold">
                                         Refund amount:{' '}
                                         {formatCurrency(
@@ -1348,7 +1334,7 @@ const PaymentHistoryCard = ({
                     )}
 
                     {cancelled &&
-                        payment.refund?.status !== 'initiated' && (
+                        (!payment.refund?.status || payment.refund.status === 'not_started') && (
                             <Link
                                 to={`/support/refund-delay/${payment._id}`}
                                 className="group inline-flex items-center justify-center gap-2 flex-1 bg-red-600 text-white border border-red-600 rounded-xl px-5 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200"
@@ -1357,6 +1343,16 @@ const PaymentHistoryCard = ({
                                 Refund delayed? Contact support
                             </Link>
                         )}
+
+                    {cancelled && payment.refund?.status && payment.refund.status !== 'not_started' && (
+                        <Link
+                            to={`/refund-status/${payment._id}`}
+                            className="group inline-flex items-center justify-center gap-2 flex-1 bg-blue-600 text-white border border-blue-600 rounded-xl px-5 py-3 font-semibold hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
+                        >
+                            <FaCheckCircle />
+                            Track Refund
+                        </Link>
+                    )}
 
                     <InvoiceButton
                         booking={payment}

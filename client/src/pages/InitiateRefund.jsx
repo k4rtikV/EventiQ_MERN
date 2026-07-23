@@ -22,6 +22,8 @@ const InitiateRefund = () => {
     const [note, setNote] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [refundStatus, setRefundStatus] = useState('processing');
+    const [statusNote, setStatusNote] = useState('');
 
     useEffect(() => {
         if (!user || user.role !== 'admin') {
@@ -39,6 +41,9 @@ const InitiateRefund = () => {
                 }
 
                 setBooking(data);
+                if (data.refund?.status && data.refund.status !== 'not_started') {
+                    setRefundStatus(data.refund.status);
+                }
             } catch (requestError) {
                 setError(requestError.response?.data?.message || 'Unable to load the booking.');
             } finally {
@@ -82,6 +87,26 @@ const InitiateRefund = () => {
         }
     };
 
+    const handleStatusUpdate = async (event) => {
+        event.preventDefault();
+        setSubmitting(true);
+        setError('');
+        setMessage('');
+        try {
+            const { data } = await api.put(`/bookings/${bookingId}/refund-status`, {
+                status: refundStatus,
+                note: statusNote
+            });
+            setBooking(data.booking);
+            setMessage(data.message);
+            setStatusNote('');
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || 'Unable to update refund status.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     if (loading) {
         return <div className="py-20 text-center text-lg font-semibold">Loading refund details...</div>;
     }
@@ -100,9 +125,9 @@ const InitiateRefund = () => {
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
                 <div className="bg-gray-950 px-6 py-7 text-white sm:px-8">
                     <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Payment Operations</p>
-                    <h1 className="text-3xl font-black">Initiate Refund</h1>
+                    <h1 className="text-3xl font-black">Manage Refund</h1>
                     <p className="mt-2 max-w-2xl text-sm text-gray-300">
-                        Review the cancelled booking and notify the customer that their refund has been initiated.
+                        Initiate a refund, update its progress, and keep the customer-facing tracking page current.
                     </p>
                 </div>
 
@@ -136,60 +161,44 @@ const InitiateRefund = () => {
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="rounded-xl border border-gray-200 p-5 dark:border-gray-700">
-                            <h2 className="mb-5 text-xl font-black text-gray-900 dark:text-white">Refund details</h2>
-
-                            <label className="mb-2 block text-sm font-bold">Refund amount</label>
-                            <div className="mb-5 rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-lg font-black dark:border-gray-700 dark:bg-gray-800">
-                                {formatCurrency(booking.amount)}
-                            </div>
-
-                            <label htmlFor="refund-reason" className="mb-2 block text-sm font-bold">Reason</label>
-                            <select
-                                id="refund-reason"
-                                value={reason}
-                                onChange={(event) => setReason(event.target.value)}
-                                disabled={booking.refund?.status === 'initiated'}
-                                className="mb-5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800"
-                            >
-                                <option>User cancelled the paid booking</option>
-                                <option>Event was cancelled</option>
-                                <option>Duplicate payment</option>
-                                <option>Booking could not be fulfilled</option>
-                                <option>Other approved refund</option>
-                            </select>
-
-                            <label htmlFor="refund-note" className="mb-2 block text-sm font-bold">Internal note <span className="font-normal text-gray-500">(optional)</span></label>
-                            <textarea
-                                id="refund-note"
-                                value={note}
-                                onChange={(event) => setNote(event.target.value)}
-                                maxLength={500}
-                                rows={4}
-                                disabled={booking.refund?.status === 'initiated'}
-                                placeholder="Add a brief note for your records..."
-                                className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800"
-                            />
-                            <p className="mb-5 mt-1 text-right text-xs text-gray-500">{note.length}/500</p>
-
-                            {booking.refund?.status === 'initiated' ? (
-                                <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center text-sm font-bold text-green-700">
-                                    Refund already initiated on {new Date(booking.refund.initiatedAt).toLocaleString()}
+                        {booking.refund?.status && booking.refund.status !== 'not_started' ? (
+                            <form onSubmit={handleStatusUpdate} className="rounded-xl border border-gray-200 p-5 dark:border-gray-700">
+                                <h2 className="mb-5 text-xl font-black text-gray-900 dark:text-white">Refund progress</h2>
+                                <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                                    <p className="font-black">Current: {booking.refund.status.replaceAll('_', ' ')}</p>
+                                    <p className="mt-1">Reference: {booking.refund.referenceId || 'Not available'}</p>
+                                    <p className="mt-1">Last updated: {new Date(booking.refund.lastUpdatedAt || booking.refund.initiatedAt).toLocaleString()}</p>
                                 </div>
-                            ) : (
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="w-full rounded-lg bg-green-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                >
-                                    {submitting ? 'Initiating Refund...' : 'Initiate Refund & Notify User'}
-                                </button>
-                            )}
-
-                            <p className="mt-3 text-center text-xs leading-relaxed text-gray-500">
-                                The customer will receive an email after this action is completed.
-                            </p>
-                        </form>
+                                <label className="mb-2 block text-sm font-bold">Update status</label>
+                                <select value={refundStatus} onChange={(event) => setRefundStatus(event.target.value)} className="mb-5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                                    <option value="initiated">Refund Initiated</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="sent_to_bank">Sent to Bank</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="on_hold">On Hold</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                                <label className="mb-2 block text-sm font-bold">Status note <span className="font-normal text-gray-500">(optional)</span></label>
+                                <textarea value={statusNote} onChange={(event) => setStatusNote(event.target.value)} maxLength={500} rows={4} placeholder="Add an update visible in the refund history..." className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800" />
+                                <p className="mb-5 mt-1 text-right text-xs text-gray-500">{statusNote.length}/500</p>
+                                <button type="submit" disabled={submitting} className="w-full rounded-lg bg-blue-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-blue-700 disabled:opacity-60">{submitting ? 'Updating...' : 'Update Refund Status'}</button>
+                                <button type="button" onClick={() => navigate(`/refund-status/${bookingId}`)} className="mt-3 w-full rounded-lg border border-blue-300 bg-blue-50 px-5 py-3 font-black text-blue-700 hover:bg-blue-600 hover:text-white">Preview User Refund Page</button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="rounded-xl border border-gray-200 p-5 dark:border-gray-700">
+                                <h2 className="mb-5 text-xl font-black text-gray-900 dark:text-white">Refund details</h2>
+                                <label className="mb-2 block text-sm font-bold">Refund amount</label>
+                                <div className="mb-5 rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-lg font-black dark:border-gray-700 dark:bg-gray-800">{formatCurrency(booking.amount)}</div>
+                                <label htmlFor="refund-reason" className="mb-2 block text-sm font-bold">Reason</label>
+                                <select id="refund-reason" value={reason} onChange={(event) => setReason(event.target.value)} className="mb-5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                                    <option>User cancelled the paid booking</option><option>Event was cancelled</option><option>Duplicate payment</option><option>Booking could not be fulfilled</option><option>Other approved refund</option>
+                                </select>
+                                <label htmlFor="refund-note" className="mb-2 block text-sm font-bold">Internal note <span className="font-normal text-gray-500">(optional)</span></label>
+                                <textarea id="refund-note" value={note} onChange={(event) => setNote(event.target.value)} maxLength={500} rows={4} placeholder="Add a brief note for your records..." className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800" />
+                                <p className="mb-5 mt-1 text-right text-xs text-gray-500">{note.length}/500</p>
+                                <button type="submit" disabled={submitting} className="w-full rounded-lg bg-green-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-green-700 disabled:opacity-60">{submitting ? 'Initiating Refund...' : 'Initiate Refund & Notify User'}</button>
+                            </form>
+                        )}
                     </div>
                 )}
             </div>

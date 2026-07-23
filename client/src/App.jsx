@@ -34,6 +34,8 @@ import PendingRequests from './pages/PendingRequests';
 import TicketDelaySupport from './pages/TicketDelaySupport';
 import RefundDelaySupport from './pages/RefundDelaySupport';
 import InitiateRefund from './pages/InitiateRefund';
+import RefundStatus from './pages/RefundStatus';
+import DelayedRequestsSupport from './pages/DelayedRequestsSupport';
 
 function App() {
     return (
@@ -151,6 +153,16 @@ function App() {
                         <Route
                             path="/admin/refunds/:bookingId"
                             element={<InitiateRefund />}
+                        />
+
+                        <Route
+                            path="/refund-status/:bookingId"
+                            element={<RefundStatus />}
+                        />
+
+                        <Route
+                            path="/admin/delayed-support"
+                            element={<DelayedRequestsSupport />}
                         />
 
                         <Route

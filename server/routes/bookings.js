@@ -16,7 +16,9 @@ const {
     confirmBooking,
     cancelBooking,
     repurchaseBooking,
-    initiateRefund
+    initiateRefund,
+    getRefundStatus,
+    updateRefundStatus
 } = require('../controllers/bookingController');
 
 const {
@@ -169,6 +171,19 @@ router.post(
     protect,
     admin,
     initiateRefund
+);
+
+router.get(
+    '/:id/refund-status',
+    protect,
+    getRefundStatus
+);
+
+router.put(
+    '/:id/refund-status',
+    protect,
+    admin,
+    updateRefundStatus
 );
 
 /*

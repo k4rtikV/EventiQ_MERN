@@ -151,6 +151,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [supportRequests, setSupportRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
 
@@ -171,12 +172,14 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const [eventsRes, bookingsRes] = await Promise.all([
+            const [eventsRes, bookingsRes, supportRes] = await Promise.all([
                 api.get('/events'),
-                api.get('/bookings/admin/all') // Admin gets all bookings
+                api.get('/bookings/admin/all'),
+                api.get('/support/admin/requests')
             ]);
             setEvents(eventsRes.data);
             setBookings(bookingsRes.data);
+            setSupportRequests(supportRes.data);
         } catch (error) {
             console.error('Error fetching admin data', error);
         } finally {
@@ -342,7 +345,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Admin Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                 <button onClick={() => navigate('/successful-bookings')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:bg-emerald-200 hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-emerald-400">
                     <div>
                         <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Total Revenue</p>
@@ -363,6 +366,14 @@ const AdminDashboard = () => {
                         <h3 className="text-3xl font-black text-yellow-600">{bookings.filter(b => b.status === 'pending').length}</h3>
                     </div>
                     <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xl font-bold">⏳</div>
+                </button>
+                <button onClick={() => navigate('/admin/delayed-support')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:bg-purple-700 hover:text-white hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <div>
+                        <p className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-1">Delayed Support</p>
+                        <h3 className="text-3xl font-black text-purple-600">{supportRequests.filter((request) => ['open', 'in_progress'].includes(request.status)).length}</h3>
+                        <p className="mt-1 text-xs font-semibold text-gray-400">Open requests</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl font-bold">✉</div>
                 </button>
             </div>
 
@@ -502,19 +513,15 @@ const AdminDashboard = () => {
                                                     This event was booked and paid for by the user and was later cancelled.
                                                 </p>
 
-                                                {booking.refund?.status === 'initiated' ? (
-                                                    <div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700">
-                                                        Refund initiated for ₹{booking.refund.amount} on{' '}
-                                                        {new Date(booking.refund.initiatedAt).toLocaleString()}
+                                                {booking.refund?.status && booking.refund.status !== 'not_started' ? (
+                                                    <div className="mt-3">
+                                                        <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700">
+                                                            Refund {booking.refund.status.replaceAll('_', ' ')} · ₹{booking.refund.amount}
+                                                        </div>
+                                                        <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-2 w-full rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white">Manage Refund</button>
                                                     </div>
                                                 ) : (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleInitiateRefund(booking._id)}
-                                                        className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white"
-                                                    >
-                                                        Initiate Refund
-                                                    </button>
+                                                    <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white">Initiate Refund</button>
                                                 )}
                                             </div>
                                         )}

@@ -188,19 +188,13 @@ const PendingRequests = () => {
                                         This event was booked and paid for by the user and was later cancelled.
                                     </p>
 
-                                    {booking.refund?.status === 'initiated' ? (
-                                        <div className="mt-3 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700">
-                                            Refund initiated for ₹{booking.refund.amount} on{' '}
-                                            {new Date(booking.refund.initiatedAt).toLocaleString()}
+                                    {booking.refund?.status && booking.refund.status !== 'not_started' ? (
+                                        <div className="mt-3">
+                                            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700">Refund {booking.refund.status.replaceAll('_', ' ')} · ₹{booking.refund.amount}</div>
+                                            <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-2 w-full rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white">Manage Refund</button>
                                         </div>
                                     ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleInitiateRefund(booking._id)}
-                                            className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white"
-                                        >
-                                            Initiate Refund
-                                        </button>
+                                        <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white">Initiate Refund</button>
                                     )}
                                 </div>
                             )}

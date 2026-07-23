@@ -102,7 +102,7 @@ const RefundDelaySupport = () => {
                 if (
                     data.paymentStatus !== 'paid' ||
                     data.status !== 'cancelled' ||
-                    data.refund?.status === 'initiated'
+                    data.refund?.status && data.refund.status !== 'not_started'
                 ) {
                     setStatusMessage(
                         'Refund-delay support is available only for cancelled paid bookings that are still awaiting refund initiation.'

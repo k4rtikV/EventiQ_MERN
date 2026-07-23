@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Event = require('../models/Event');
 const OTP = require('../models/OTP');
 const User = require('../models/User');
+const SupportRequest = require('../models/SupportRequest');
 const NewsletterSubscriber = require(
     '../models/NewsletterSubscriber'
 );
@@ -1630,6 +1631,22 @@ exports.confirmBooking = async (req, res) => {
 
         booking.status = 'confirmed';
 
+        await SupportRequest.updateMany(
+            {
+                booking: booking._id,
+                type: 'ticket_delay',
+                status: { $in: ['open', 'in_progress'] }
+            },
+            {
+                $set: {
+                    status: 'resolved',
+                    resolvedAt: new Date(),
+                    resolvedBy: req.user._id,
+                    adminNote: 'Automatically resolved when the booking was confirmed and the ticket was assigned.'
+                }
+            }
+        );
+
         try {
             await sendBookingEmail(
                 booking.userId.email,
@@ -1966,68 +1983,44 @@ exports.initiateRefund = async (req, res) => {
             .populate('userId', 'name email')
             .populate('eventId', 'title');
 
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found.' });
-        }
-
+        if (!booking) return res.status(404).json({ message: 'Booking not found.' });
         if (booking.status !== 'cancelled' || booking.paymentStatus !== 'paid') {
-            return res.status(400).json({
-                message: 'Refunds can be initiated only for paid bookings that have been cancelled.'
-            });
+            return res.status(400).json({ message: 'Refunds can be initiated only for paid bookings that have been cancelled.' });
         }
-
-        if (booking.refund?.status === 'initiated') {
-            return res.status(409).json({
-                message: 'A refund has already been initiated for this booking.'
-            });
+        if (booking.refund?.status && booking.refund.status !== 'not_started') {
+            return res.status(409).json({ message: 'A refund has already been initiated for this booking.' });
         }
 
         const refundAmount = Number(req.body.refundAmount);
         const reason = String(req.body.reason || '').trim();
         const note = String(req.body.note || '').trim();
-
         if (!Number.isFinite(refundAmount) || refundAmount <= 0 || refundAmount > booking.amount) {
-            return res.status(400).json({
-                message: `Refund amount must be greater than zero and cannot exceed ₹${booking.amount}.`
-            });
+            return res.status(400).json({ message: `Refund amount must be greater than zero and cannot exceed ₹${booking.amount}.` });
         }
+        if (reason.length < 3 || reason.length > 150) return res.status(400).json({ message: 'Please select or enter a valid refund reason.' });
+        if (note.length > 500) return res.status(400).json({ message: 'Internal note cannot exceed 500 characters.' });
 
-        if (reason.length < 3 || reason.length > 150) {
-            return res.status(400).json({
-                message: 'Please select or enter a valid refund reason.'
-            });
-        }
+        const now = new Date();
+        const referenceId = `RFND-${booking._id.toString().slice(-8).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+        booking.refund = {
+            ...booking.refund?.toObject?.() || booking.refund,
+            status: 'initiated',
+            amount: refundAmount,
+            reason,
+            note: note || null,
+            referenceId,
+            initiatedAt: now,
+            initiatedBy: req.user._id,
+            completedAt: null,
+            lastUpdatedAt: now,
+            history: [{ status: 'initiated', note: note || 'Refund initiated by administrator.', updatedAt: now, updatedBy: req.user._id }]
+        };
+        await booking.save();
 
-        if (note.length > 500) {
-            return res.status(400).json({
-                message: 'Internal note cannot exceed 500 characters.'
-            });
-        }
-
-        const initiatedAt = new Date();
-
-        const refundUpdate = await Booking.updateOne(
-            {
-                _id: booking._id,
-                'refund.status': { $ne: 'initiated' }
-            },
-            {
-                $set: {
-                    'refund.status': 'initiated',
-                    'refund.amount': refundAmount,
-                    'refund.reason': reason,
-                    'refund.note': note || null,
-                    'refund.initiatedAt': initiatedAt,
-                    'refund.initiatedBy': req.user._id
-                }
-            }
+        await SupportRequest.updateMany(
+            { booking: booking._id, type: 'refund_delay', status: { $in: ['open', 'in_progress'] } },
+            { $set: { status: 'resolved', resolvedAt: now, resolvedBy: req.user._id, adminNote: 'Automatically resolved when the refund was initiated.' } }
         );
-
-        if (refundUpdate.modifiedCount === 0) {
-            return res.status(409).json({
-                message: 'A refund has already been initiated for this booking.'
-            });
-        }
 
         try {
             await sendRefundInitiatedEmail(
@@ -2040,27 +2033,63 @@ exports.initiateRefund = async (req, res) => {
             );
         } catch (emailError) {
             console.error('Refund initiation email failed:', emailError);
-
-            return res.status(502).json({
-                message: 'The refund was recorded as initiated, but the notification email could not be sent. Please contact the user manually.',
-                refundRecorded: true
-            });
         }
 
         const updatedBooking = await Booking.findById(booking._id)
             .populate('userId', 'name email')
             .populate('eventId', 'title');
-
-        return res.status(200).json({
-            message: 'Refund initiated successfully. The user has been notified by email.',
-            booking: updatedBooking
-        });
+        return res.status(200).json({ message: 'Refund initiated successfully. The user has been notified by email.', booking: updatedBooking });
     } catch (error) {
         console.error('Initiate refund error:', error);
+        return res.status(500).json({ message: 'Unable to initiate the refund.', error: error.message });
+    }
+};
 
-        return res.status(500).json({
-            message: 'Unable to initiate the refund.',
-            error: error.message
-        });
+exports.getRefundStatus = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id)
+            .populate('eventId', 'title date location')
+            .populate('userId', 'name email');
+        if (!booking) return res.status(404).json({ message: 'Booking not found.' });
+        const ownsBooking = booking.userId?._id?.toString() === req.user._id.toString();
+        if (!ownsBooking && req.user.role !== 'admin') return res.status(403).json({ message: 'You are not authorized to view this refund.' });
+        if (booking.status !== 'cancelled' || booking.paymentStatus !== 'paid' || !booking.refund?.status || booking.refund.status === 'not_started') {
+            return res.status(400).json({ message: 'Refund tracking is not available for this booking yet.' });
+        }
+        return res.json(booking);
+    } catch (error) {
+        console.error('Get refund status error:', error);
+        return res.status(500).json({ message: 'Unable to load refund status.' });
+    }
+};
+
+exports.updateRefundStatus = async (req, res) => {
+    try {
+        const allowed = ['initiated', 'processing', 'sent_to_bank', 'completed', 'on_hold', 'failed'];
+        const status = String(req.body.status || '').trim();
+        const note = String(req.body.note || '').trim();
+        if (!allowed.includes(status)) return res.status(400).json({ message: 'Invalid refund status.' });
+        if (note.length > 500) return res.status(400).json({ message: 'Refund note cannot exceed 500 characters.' });
+
+        const booking = await Booking.findById(req.params.id)
+            .populate('userId', 'name email')
+            .populate('eventId', 'title');
+        if (!booking) return res.status(404).json({ message: 'Booking not found.' });
+        if (booking.status !== 'cancelled' || booking.paymentStatus !== 'paid' || !booking.refund?.status || booking.refund.status === 'not_started') {
+            return res.status(400).json({ message: 'The refund must be initiated before its status can be updated.' });
+        }
+
+        const now = new Date();
+        booking.refund.status = status;
+        booking.refund.note = note || booking.refund.note || null;
+        booking.refund.lastUpdatedAt = now;
+        booking.refund.completedAt = status === 'completed' ? now : null;
+        booking.refund.history.push({ status, note: note || `Refund marked as ${status.replaceAll('_', ' ')}.`, updatedAt: now, updatedBy: req.user._id });
+        await booking.save();
+
+        return res.json({ message: 'Refund status updated successfully.', booking });
+    } catch (error) {
+        console.error('Update refund status error:', error);
+        return res.status(500).json({ message: 'Unable to update refund status.' });
     }
 };

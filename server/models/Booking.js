@@ -171,38 +171,29 @@ const bookingSchema = new mongoose.Schema(
         refund: {
             status: {
                 type: String,
-                enum: ['not_started', 'initiated'],
+                enum: ['not_started', 'initiated', 'processing', 'sent_to_bank', 'completed', 'on_hold', 'failed'],
                 default: 'not_started'
             },
-
-            amount: {
-                type: Number,
-                default: null,
-                min: 0
-            },
-
-            reason: {
-                type: String,
-                default: null,
-                trim: true
-            },
-
-            note: {
-                type: String,
-                default: null,
-                trim: true
-            },
-
-            initiatedAt: {
-                type: Date,
-                default: null
-            },
-
-            initiatedBy: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-                default: null
-            }
+            amount: { type: Number, default: null, min: 0 },
+            reason: { type: String, default: null, trim: true },
+            note: { type: String, default: null, trim: true },
+            referenceId: { type: String, default: null, trim: true },
+            initiatedAt: { type: Date, default: null },
+            initiatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+            completedAt: { type: Date, default: null },
+            lastUpdatedAt: { type: Date, default: null },
+            history: [
+                {
+                    status: {
+                        type: String,
+                        enum: ['initiated', 'processing', 'sent_to_bank', 'completed', 'on_hold', 'failed'],
+                        required: true
+                    },
+                    note: { type: String, default: null, trim: true },
+                    updatedAt: { type: Date, default: Date.now },
+                    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
+                }
+            ]
         },
 
         allowNoAddress: {
