@@ -9,6 +9,7 @@ import {
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import EventiQChatbot from './components/EventiQChatbot';
 
 import Home from './pages/Home';
 import EventsPage from './pages/EventsPage';
@@ -203,6 +204,8 @@ function App() {
                 </main>
 
                 <Footer />
+
+                <EventiQChatbot />
             </div>
         </Router>
     );
