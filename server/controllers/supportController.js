@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const Booking = require('../models/Booking');
 const SupportRequest = require('../models/SupportRequest');
+const User = require('../models/User');
 const { sendSupportEmail } = require('../utils/email');
 const { generateInvoicePDF, getInvoiceNumber } = require('../utils/generateInvoicePDF');
 const createNotification = require('../utils/createNotification');
@@ -106,6 +107,34 @@ const createDelayedRequest = async ({ req, res, type }) => {
         console.error('Delayed support email error:', emailError);
         await SupportRequest.findByIdAndDelete(request._id);
         return res.status(502).json({ message: 'Unable to send the support request email right now. Please try again.' });
+    }
+
+    try {
+        const admins = await User.find({ role: 'admin' }).select('_id');
+
+        const notificationTitle = isTicket
+            ? 'New ticket-delay request'
+            : 'New refund-delay request';
+
+        const notificationMessage = isTicket
+            ? `${booking.userId.name} reported a ticket assignment delay for ${booking.eventId?.title || 'an event'}.`
+            : `${booking.userId.name} reported a refund initiation delay for ${booking.eventId?.title || 'an event'}.`;
+
+        await Promise.all(
+            admins.map((adminUser) =>
+                createNotification({
+                    user: adminUser._id,
+                    type: 'support',
+                    title: notificationTitle,
+                    message: notificationMessage,
+                    link: '/admin/delayed-support',
+                    relatedBooking: booking._id,
+                    relatedEvent: booking.eventId?._id || null
+                })
+            )
+        );
+    } catch (notificationError) {
+        console.error('Admin delayed-request notification error:', notificationError);
     }
 
     return res.status(201).json({

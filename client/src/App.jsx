@@ -3,7 +3,8 @@ import React from 'react';
 import {
     BrowserRouter as Router,
     Route,
-    Routes
+    Routes,
+    useLocation
 } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
@@ -40,9 +41,12 @@ import DelayedRequestsSupport from './pages/DelayedRequestsSupport';
 import NewsletterDashboard from './pages/NewsletterDashboard';
 import NotificationsPage from './pages/NotificationsPage';
 
-function App() {
+function AppContent() {
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith('/admin');
+
     return (
-        <Router>
+        <>
             <ScrollToTop />
 
             <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col transition-colors duration-300">
@@ -211,8 +215,16 @@ function App() {
 
                 <Footer />
 
-                <EventiQChatbot />
+                {!isAdminRoute && <EventiQChatbot />}
             </div>
+        </>
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 }
