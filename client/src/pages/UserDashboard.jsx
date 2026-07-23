@@ -142,6 +142,45 @@ const getPaymentMethodText = (payment) => {
         : 'Online Payment';
 };
 
+const getRefundDisplay = (booking) => {
+    const isCancelled =
+        booking.status === 'cancelled';
+    const isPaid =
+        booking.paymentStatus === 'paid';
+
+    if (!isCancelled || !isPaid) {
+        return null;
+    }
+
+    const refundInitiated =
+        booking.refund?.status === 'initiated';
+
+    return refundInitiated
+        ? {
+              label: 'Refund Initiated',
+              description: booking.refund?.initiatedAt
+                  ? `Initiated on ${formatDateTime(
+                        booking.refund.initiatedAt
+                    )}`
+                  : 'Your refund has been initiated by the administrator.',
+              badgeClass:
+                  'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300',
+              panelClass:
+                  'border-green-200 bg-green-50 text-green-800 dark:border-green-900 dark:bg-green-950/30 dark:text-green-300',
+              icon: FaCheckCircle
+          }
+        : {
+              label: 'Awaiting Refund Initiation',
+              description:
+                  'Your paid booking was cancelled and is awaiting refund initiation by the administrator.',
+              badgeClass:
+                  'bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300',
+              panelClass:
+                  'border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300',
+              icon: FaClock
+          };
+};
+
 const UserDashboard = () => {
     const {
         user
@@ -762,6 +801,10 @@ const BookingCard = ({
         booking.status === 'pending';
     const isCancelled =
         booking.status === 'cancelled';
+    const refundDisplay =
+        getRefundDisplay(booking);
+    const RefundIcon =
+        refundDisplay?.icon;
 
     return (
         <article
@@ -788,18 +831,23 @@ const BookingCard = ({
                                     {booking.status}
                                 </span>
 
-                                {!isCancelled && (
+                                <span
+                                    className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${
+                                        isPaid
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
+                                            : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
+                                    }`}
+                                >
+                                    {isPaid
+                                        ? 'Paid'
+                                        : 'Not Paid'}
+                                </span>
+
+                                {refundDisplay && (
                                     <span
-                                        className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${
-                                            isPaid
-                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
-                                                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'
-                                        }`}
+                                        className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${refundDisplay.badgeClass}`}
                                     >
-                                        {booking.paymentStatus.replace(
-                                            '_',
-                                            ' '
-                                        )}
+                                        {refundDisplay.label}
                                     </span>
                                 )}
                             </div>
@@ -916,9 +964,52 @@ const BookingCard = ({
                 )}
 
                 {isCancelled && (
-                    <div className="w-full text-center text-sm text-gray-500 dark:text-gray-400 italic py-2">
-                        Booking Cancelled
-                    </div>
+                    <>
+                        <div className="w-full text-center text-sm font-semibold text-red-600 dark:text-red-400 py-1">
+                            Booking Cancelled
+                        </div>
+
+                        {refundDisplay && (
+                            <div
+                                className={`w-full rounded-xl border p-3 text-sm ${refundDisplay.panelClass}`}
+                            >
+                                <div className="flex items-start gap-2">
+                                    <RefundIcon className="mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="font-bold">
+                                            {refundDisplay.label}
+                                        </p>
+                                        <p className="mt-1 text-xs leading-relaxed opacity-90">
+                                            {refundDisplay.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {isPaid && (
+                            <InvoiceButton
+                                booking={booking}
+                                downloadInvoice={
+                                    downloadInvoice
+                                }
+                                downloadingInvoiceId={
+                                    downloadingInvoiceId
+                                }
+                            />
+                        )}
+
+                        {isPaid &&
+                            booking.refund?.status !== 'initiated' && (
+                                <Link
+                                    to={`/support/refund-delay/${booking._id}`}
+                                    className="group inline-flex items-center justify-center gap-2 w-full bg-red-600 text-white border border-red-600 rounded-xl px-4 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:shadow-md hover:-translate-y-[2px] active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                                >
+                                    <FaExclamationTriangle className="transition-transform group-hover:scale-110" />
+                                    Refund delayed? Contact support
+                                </Link>
+                            )}
+                    </>
                 )}
             </div>
         </article>
@@ -996,6 +1087,10 @@ const PaymentHistoryCard = ({
         payment.status === 'pending';
     const cancelled =
         payment.status === 'cancelled';
+    const refundDisplay =
+        getRefundDisplay(payment);
+    const RefundIcon =
+        refundDisplay?.icon;
 
     return (
         <article className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
@@ -1022,8 +1117,24 @@ const PaymentHistoryCard = ({
                     <div className="flex flex-wrap gap-2">
                         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs font-black uppercase tracking-wide">
                             <FaCheckCircle />
-                            Successful
+                            Paid
                         </span>
+
+                        {cancelled && (
+                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wide">
+                                <FaTimesCircle />
+                                Cancelled
+                            </span>
+                        )}
+
+                        {refundDisplay && (
+                            <span
+                                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wide ${refundDisplay.badgeClass}`}
+                            >
+                                <RefundIcon />
+                                {refundDisplay.label}
+                            </span>
+                        )}
 
                         <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase">
                             {getBookingReference(
@@ -1166,6 +1277,33 @@ const PaymentHistoryCard = ({
                     />
                 </div>
 
+                {refundDisplay && (
+                    <div
+                        className={`mb-5 rounded-xl border p-4 ${refundDisplay.panelClass}`}
+                    >
+                        <div className="flex items-start gap-3">
+                            <RefundIcon className="mt-0.5 shrink-0" />
+                            <div>
+                                <p className="font-bold">
+                                    {refundDisplay.label}
+                                </p>
+                                <p className="mt-1 text-sm leading-relaxed opacity-90">
+                                    {refundDisplay.description}
+                                </p>
+                                {payment.refund?.amount != null &&
+                                    payment.refund?.status === 'initiated' && (
+                                    <p className="mt-2 text-sm font-semibold">
+                                        Refund amount:{' '}
+                                        {formatCurrency(
+                                            payment.refund.amount
+                                        )}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-3 pt-5 border-t border-gray-200 dark:border-gray-800">
                     {ticketReady && (
                         <Link
@@ -1198,6 +1336,27 @@ const PaymentHistoryCard = ({
                             Booking Cancelled
                         </button>
                     )}
+
+                    {ticketPending && (
+                        <Link
+                            to={`/support/ticket-delay/${payment._id}`}
+                            className="group inline-flex items-center justify-center gap-2 flex-1 bg-red-600 text-white border border-red-600 rounded-xl px-5 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                        >
+                            <FaExclamationTriangle className="transition-transform group-hover:scale-110" />
+                            Ticket delayed? Contact support
+                        </Link>
+                    )}
+
+                    {cancelled &&
+                        payment.refund?.status !== 'initiated' && (
+                            <Link
+                                to={`/support/refund-delay/${payment._id}`}
+                                className="group inline-flex items-center justify-center gap-2 flex-1 bg-red-600 text-white border border-red-600 rounded-xl px-5 py-3 font-semibold hover:bg-red-700 hover:border-red-700 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                            >
+                                <FaExclamationTriangle className="transition-transform group-hover:scale-110" />
+                                Refund delayed? Contact support
+                            </Link>
+                        )}
 
                     <InvoiceButton
                         booking={payment}

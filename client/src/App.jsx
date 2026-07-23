@@ -32,6 +32,7 @@ import SuccessfulBookings from './pages/SuccessfulBookings';
 import PaidClients from './pages/PaidClients';
 import PendingRequests from './pages/PendingRequests';
 import TicketDelaySupport from './pages/TicketDelaySupport';
+import RefundDelaySupport from './pages/RefundDelaySupport';
 import InitiateRefund from './pages/InitiateRefund';
 
 function App() {
@@ -137,6 +138,13 @@ function App() {
                             path="/support/ticket-delay/:bookingId"
                             element={
                                 <TicketDelaySupport />
+                            }
+                        />
+
+                        <Route
+                            path="/support/refund-delay/:bookingId"
+                            element={
+                                <RefundDelaySupport />
                             }
                         />
 

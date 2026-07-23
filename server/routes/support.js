@@ -4,7 +4,8 @@ const router = express.Router();
 
 const {
     supportRequest,
-    ticketDelaySupportRequest
+    ticketDelaySupportRequest,
+    refundDelaySupportRequest
 } = require('../controllers/supportController');
 
 const {
@@ -20,6 +21,12 @@ router.post(
     '/ticket-delay/:bookingId',
     protect,
     ticketDelaySupportRequest
+);
+
+router.post(
+    '/refund-delay/:bookingId',
+    protect,
+    refundDelaySupportRequest
 );
 
 module.exports = router;
