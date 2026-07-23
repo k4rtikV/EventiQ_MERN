@@ -4,6 +4,8 @@ import api from '../utils/axios';
 import { AuthContext } from '../context/AuthContext';
 import { FaCalendarAlt, FaMapMarkerAlt, FaChair, FaMoneyBillWave } from 'react-icons/fa';
 
+const RECENTLY_VIEWED_KEY = 'eventiq-recently-viewed-events';
+
 const EventDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -22,6 +24,48 @@ const EventDetail = () => {
             try {
                 const { data } = await api.get(`/events/${id}`);
                 setEvent(data);
+
+                if (data?._id) {
+                    try {
+                        const storedEvents = JSON.parse(
+                            localStorage.getItem(RECENTLY_VIEWED_KEY) || '[]'
+                        );
+
+                        const currentEvents = Array.isArray(storedEvents)
+                            ? storedEvents
+                            : [];
+
+                        const recentlyViewedEvent = {
+                            _id: data._id,
+                            title: data.title,
+                            category: data.category,
+                            image: data.image,
+                            date: data.date,
+                            location: data.location,
+                            ticketPrice: data.ticketPrice,
+                            availableSeats: data.availableSeats,
+                            totalSeats: data.totalSeats,
+                            viewedAt: new Date().toISOString()
+                        };
+
+                        const updatedEvents = [
+                            recentlyViewedEvent,
+                            ...currentEvents.filter(
+                                (savedEvent) => savedEvent?._id !== data._id
+                            )
+                        ].slice(0, 3);
+
+                        localStorage.setItem(
+                            RECENTLY_VIEWED_KEY,
+                            JSON.stringify(updatedEvents)
+                        );
+                    } catch (storageError) {
+                        console.error(
+                            'Failed to save recently viewed event:',
+                            storageError
+                        );
+                    }
+                }
             } catch (err) {
                 setError('Failed to load event details.');
             } finally {

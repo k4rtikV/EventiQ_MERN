@@ -10,10 +10,13 @@ import {
     FaShieldAlt
 } from 'react-icons/fa';
 
+const RECENTLY_VIEWED_KEY = 'eventiq-recently-viewed-events';
+
 const Home = () => {
     const [events, setEvents] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [recentlyViewed, setRecentlyViewed] = useState([]);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -22,6 +25,36 @@ const Home = () => {
 
         return () => clearTimeout(timeoutId);
     }, [search]);
+
+
+    useEffect(() => {
+        const loadRecentlyViewed = () => {
+            try {
+                const storedEvents = JSON.parse(
+                    localStorage.getItem(RECENTLY_VIEWED_KEY) || '[]'
+                );
+
+                setRecentlyViewed(
+                    Array.isArray(storedEvents)
+                        ? storedEvents.filter((event) => event?._id).slice(0, 3)
+                        : []
+                );
+            } catch (error) {
+                console.error('Failed to load recently viewed events:', error);
+                setRecentlyViewed([]);
+            }
+        };
+
+        loadRecentlyViewed();
+
+        window.addEventListener('storage', loadRecentlyViewed);
+        window.addEventListener('focus', loadRecentlyViewed);
+
+        return () => {
+            window.removeEventListener('storage', loadRecentlyViewed);
+            window.removeEventListener('focus', loadRecentlyViewed);
+        };
+    }, []);
 
     const fetchEvents = async () => {
         try {
@@ -302,6 +335,151 @@ const Home = () => {
                         </Link>
                     </div>
                 </>
+            )}
+
+
+            {/* Recently Viewed Events */}
+            {recentlyViewed.length > 0 && (
+                <section className="mt-16">
+                    <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900">
+                                Recently Viewed Events
+                            </h2>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Continue exploring events you recently opened.
+                            </p>
+                        </div>
+
+                        <div className="text-gray-500 font-medium">
+                            Showing up to 3 events
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {recentlyViewed.slice(0, 3).map((event) => {
+                            const seatPercentage =
+                                event.totalSeats > 0
+                                    ? Math.min(
+                                          100,
+                                          Math.max(
+                                              0,
+                                              (event.availableSeats /
+                                                  event.totalSeats) *
+                                                  100
+                                          )
+                                      )
+                                    : 0;
+
+                            return (
+                                <Link
+                                    key={event._id}
+                                    to={`/events/${event._id}`}
+                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer"
+                                >
+                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                        {event.image ? (
+                                            <img
+                                                src={event.image}
+                                                alt={event.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                                {event.category || 'Event'}
+                                            </div>
+                                        )}
+
+                                        <div className="event-price-badge absolute top-4 right-4 z-10 rounded-full px-3 py-1.5 text-sm font-extrabold shadow-md backdrop-blur-sm">
+                                            {Number(event.ticketPrice) === 0 ? (
+                                                <span className="event-price-badge-free">
+                                                    FREE
+                                                </span>
+                                            ) : (
+                                                <span>
+                                                    ₹
+                                                    {Number(
+                                                        event.ticketPrice || 0
+                                                    ).toLocaleString('en-IN')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 flex-grow flex flex-col">
+                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                            {event.category}
+                                        </div>
+
+                                        <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                            {event.title}
+                                        </h2>
+
+                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                            <div className="flex items-start gap-2">
+                                                <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
+                                                <span>
+                                                    {event.date
+                                                        ? new Date(
+                                                              event.date
+                                                          ).toLocaleDateString(
+                                                              undefined,
+                                                              {
+                                                                  weekday:
+                                                                      'long',
+                                                                  year: 'numeric',
+                                                                  month: 'long',
+                                                                  day: 'numeric'
+                                                              }
+                                                          )
+                                                        : 'Date unavailable'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-start gap-2">
+                                                <FaMapMarkerAlt className="text-gray-400 mt-1 flex-shrink-0" />
+                                                <span>
+                                                    {event.location ||
+                                                        'Location unavailable'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-auto">
+                                            {Number.isFinite(
+                                                Number(event.totalSeats)
+                                            ) &&
+                                                Number.isFinite(
+                                                    Number(event.availableSeats)
+                                                ) && (
+                                                    <>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                                            <div
+                                                                className="bg-gray-700 h-2 rounded-full"
+                                                                style={{
+                                                                    width: `${seatPercentage}%`
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        <p className="text-xs text-gray-500 mb-4">
+                                                            {event.availableSeats}{' '}
+                                                            of {event.totalSeats}{' '}
+                                                            seats remaining
+                                                        </p>
+                                                    </>
+                                                )}
+
+                                            <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition">
+                                                View Again
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
             )}
 
             {/* Footer Section */}
