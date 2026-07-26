@@ -111,7 +111,7 @@ const WishlistPage = () => {
 
     if (loading) {
         return (
-            <div className="text-center py-20 text-xl font-semibold text-gray-600">
+            <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
                 Loading your wishlist...
             </div>
         );
@@ -142,7 +142,7 @@ const WishlistPage = () => {
 
                     <Link
                         to="/dashboard"
-                        className="inline-flex justify-center bg-white text-gray-900 font-bold px-5 py-3 rounded-xl hover:bg-gray-100 transition"
+                        className="inline-flex justify-center bg-white text-gray-900 font-bold px-5 py-3 rounded-xl hover:bg-gray-100 transition dark:bg-gray-900 dark:text-gray-100"
                     >
                         Back to Dashboard
                     </Link>
@@ -158,13 +158,13 @@ const WishlistPage = () => {
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7 border-b border-gray-200 pb-5">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7 border-b border-gray-200 pb-5 dark:border-gray-700">
                 <div>
-                    <h2 className="text-2xl font-extrabold text-gray-900">
+                    <h2 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
                         Saved Events
                     </h2>
 
-                    <p className="text-gray-500 mt-1">
+                    <p className="text-gray-500 mt-1 dark:text-gray-400">
                         {wishlist.length}{' '}
                         {wishlist.length === 1
                             ? 'event saved'
@@ -181,16 +181,16 @@ const WishlistPage = () => {
             </div>
 
             {wishlist.length === 0 ? (
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-6 py-16 text-center">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-6 py-16 text-center dark:bg-gray-900 dark:border-gray-700">
                     <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
                         <FaHeart className="text-red-200 text-3xl" />
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3 dark:text-gray-100">
                         Your wishlist is empty
                     </h2>
 
-                    <p className="text-gray-500 max-w-md mx-auto mb-7">
+                    <p className="text-gray-500 max-w-md mx-auto mb-7 dark:text-gray-400">
                         Select the heart icon on an event
                         to save it here for later.
                     </p>
@@ -224,9 +224,9 @@ const WishlistPage = () => {
                         return (
                             <article
                                 key={event._id}
-                                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col dark:bg-gray-900"
                             >
-                                <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                <div className="h-48 bg-gray-200 overflow-hidden relative dark:bg-gray-700">
                                     <Link
                                         to={`/events/${event._id}`}
                                         className="block w-full h-full"
@@ -242,7 +242,7 @@ const WishlistPage = () => {
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl dark:bg-gray-700 dark:text-gray-300">
                                                 {event.category ||
                                                     'Event'}
                                             </div>
@@ -289,7 +289,7 @@ const WishlistPage = () => {
                                 </div>
 
                                 <div className="p-6 flex-grow flex flex-col">
-                                    <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                    <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 dark:text-gray-200">
                                         {event.category}
                                     </div>
 
@@ -297,12 +297,12 @@ const WishlistPage = () => {
                                         to={`/events/${event._id}`}
                                         className="hover:text-blue-600 transition"
                                     >
-                                        <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                        <h2 className="text-xl font-bold text-gray-800 mb-3 dark:text-gray-100">
                                             {event.title}
                                         </h2>
                                     </Link>
 
-                                    <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                    <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm dark:text-gray-300">
                                         <div className="flex items-start gap-2">
                                             <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
 
@@ -334,7 +334,7 @@ const WishlistPage = () => {
                                     </div>
 
                                     <div className="mt-auto">
-                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden dark:bg-gray-700">
                                             <div
                                                 className="bg-gray-700 h-2 rounded-full"
                                                 style={{
@@ -343,7 +343,7 @@ const WishlistPage = () => {
                                             />
                                         </div>
 
-                                        <p className="text-xs text-gray-500 mb-4">
+                                        <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">
                                             {
                                                 event.availableSeats
                                             }{' '}

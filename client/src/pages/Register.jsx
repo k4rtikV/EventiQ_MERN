@@ -144,10 +144,10 @@ const Register = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-16 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="max-w-md mx-auto mt-16 bg-white p-8 rounded-xl shadow-lg border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Create an Account</h2>
-                <p className="text-gray-500">Join EventiQ today</p>
+                <h2 className="text-3xl font-extrabold text-gray-900 mb-2 dark:text-gray-100">Create an Account</h2>
+                <p className="text-gray-500 dark:text-gray-400">Join EventiQ today</p>
             </div>
 
             {error && (
@@ -160,7 +160,7 @@ const Register = () => {
                 {!showOTP ? (
                     <>
                         <div>
-                            <label htmlFor="register-name" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="register-name" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Full Name
                             </label>
                             <input
@@ -168,14 +168,14 @@ const Register = () => {
                                 type="text"
                                 required
                                 autoComplete="name"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm dark:border-gray-600"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="register-email" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="register-email" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Email Address
                             </label>
                             <input
@@ -185,7 +185,7 @@ const Register = () => {
                                 autoComplete="email"
                                 maxLength="254"
                                 placeholder="you@example.com"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm dark:border-gray-600"
                                 value={email}
                                 onChange={(e) => {
                                     setEmail(e.target.value);
@@ -210,7 +210,7 @@ const Register = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="register-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="register-password" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Password
                             </label>
                             <div className="relative">
@@ -221,7 +221,7 @@ const Register = () => {
                                     autoComplete="new-password"
                                     minLength="8"
                                     maxLength="128"
-                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm"
+                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm dark:border-gray-600"
                                     value={password}
                                     onChange={(e) => {
                                         setPassword(e.target.value);
@@ -231,20 +231,20 @@ const Register = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((visible) => !visible)}
-                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition"
+                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition dark:text-gray-400"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                 >
                                     {showPassword ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
                                 </button>
                             </div>
-                            <p className="mt-2 text-xs text-gray-500">
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 Use 8–128 characters with uppercase, lowercase, number, and special character.
                             </p>
                         </div>
 
                         <div>
-                            <label htmlFor="register-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="register-confirm-password" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Confirm Password
                             </label>
                             <div className="relative">
@@ -254,7 +254,7 @@ const Register = () => {
                                     required
                                     autoComplete="new-password"
                                     maxLength="128"
-                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm"
+                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm dark:border-gray-600"
                                     value={confirmPassword}
                                     onChange={(e) => {
                                         setConfirmPassword(e.target.value);
@@ -264,7 +264,7 @@ const Register = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword((visible) => !visible)}
-                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition"
+                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition dark:text-gray-400"
                                     aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                                     aria-pressed={showConfirmPassword}
                                 >
@@ -278,7 +278,7 @@ const Register = () => {
                         <p className="text-sm text-green-700 bg-green-50 p-3 mb-4 rounded border border-green-200">
                             An OTP has been sent to your email. Please verify your account.
                         </p>
-                        <label htmlFor="register-otp" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="register-otp" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                             Verification Code (OTP)
                         </label>
                         <input
@@ -286,7 +286,7 @@ const Register = () => {
                             type="text"
                             required
                             placeholder="6-digit code"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg"
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg dark:border-gray-600"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             maxLength="6"
@@ -304,9 +304,9 @@ const Register = () => {
             </form>
 
             {!showOTP && (
-                <p className="text-center mt-6 text-gray-600">
+                <p className="text-center mt-6 text-gray-600 dark:text-gray-300">
                     Already have an account?{' '}
-                    <Link to="/login" className="text-gray-900 font-bold hover:underline">
+                    <Link to="/login" className="text-gray-900 font-bold hover:underline dark:text-gray-100">
                         Sign in
                     </Link>
                 </p>

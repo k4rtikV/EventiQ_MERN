@@ -34,37 +34,37 @@ const ContactUs = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8 dark:bg-gray-900">
             <h1 className="text-4xl font-bold mb-6">Contact Us</h1>
-            <p className="text-gray-700 leading-8 mb-8">
+            <p className="text-gray-700 leading-8 mb-8 dark:text-gray-200">
                 Have a question or need support? Fill out the form below and we’ll get back to you as soon as possible.
             </p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <div>
                         <h2 className="text-2xl font-semibold mb-3">Customer Support</h2>
-                        <p className="text-gray-700 leading-7">Email: kavx1734@gmail.com</p>
-                        <p className="text-gray-700 leading-7">Phone: +91 91679 63477</p>
-                        <p className="text-gray-700 leading-7">Address: Thane, Mumbai 400604</p>
+                        <p className="text-gray-700 leading-7 dark:text-gray-200">Email: kavx1734@gmail.com</p>
+                        <p className="text-gray-700 leading-7 dark:text-gray-200">Phone: +91 91679 63477</p>
+                        <p className="text-gray-700 leading-7 dark:text-gray-200">Address: Thane, Mumbai 400604</p>
                     </div>
                     <div>
                         <h2 className="text-2xl font-semibold mb-3">Office Hours</h2>
-                        <p className="text-gray-700 leading-7">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                        <p className="text-gray-700 leading-7">Saturday: 10:00 AM - 4:00 PM</p>
+                        <p className="text-gray-700 leading-7 dark:text-gray-200">Monday - Friday: 9:00 AM - 6:00 PM</p>
+                        <p className="text-gray-700 leading-7 dark:text-gray-200">Saturday: 10:00 AM - 4:00 PM</p>
                     </div>
                 </div>
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200">
+                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                     {submitted ? (
                         <div className="text-center">
                             <h2 className="text-2xl font-semibold mb-3">Thanks for reaching out!</h2>
-                            <p className="text-gray-700 leading-7">{statusMessage}</p>
+                            <p className="text-gray-700 leading-7 dark:text-gray-200">{statusMessage}</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Name</label>
                                 <input
-                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700"
+                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 dark:border-gray-600"
                                     type="text"
                                     name="name"
                                     value={formData.name}
@@ -73,9 +73,9 @@ const ContactUs = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Email</label>
                                 <input
-                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700"
+                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 dark:border-gray-600"
                                     type="email"
                                     name="email"
                                     value={formData.email}
@@ -84,9 +84,9 @@ const ContactUs = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Message</label>
                                 <textarea
-                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 min-h-[160px]"
+                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 min-h-[160px] dark:border-gray-600"
                                     name="message"
                                     value={formData.message}
                                     onChange={handleChange}

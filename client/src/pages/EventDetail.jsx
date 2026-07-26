@@ -108,7 +108,7 @@ const EventDetail = () => {
     const bookingTotal = Number(event.ticketPrice || 0) * quantity;
 
     return (
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mt-8 dark:bg-gray-900">
             {event.image ? (
                 <img src={event.image} alt={event.title} className="w-full h-80 object-cover" />
             ) : (
@@ -120,62 +120,62 @@ const EventDetail = () => {
             <div className="p-8 md:p-12">
                 <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
                     <div>
-                        <div className="inline-block bg-gray-200 text-gray-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-3">
+                        <div className="inline-block bg-gray-200 text-gray-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-3 dark:bg-gray-700 dark:text-gray-100">
                             {event.category}
                         </div>
-                        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{event.title}</h1>
-                        <p className="text-gray-600 text-lg leading-relaxed mb-6">{event.description}</p>
+                        <h1 className="text-4xl font-extrabold text-gray-900 mb-4 dark:text-gray-100">{event.title}</h1>
+                        <p className="text-gray-600 text-lg leading-relaxed mb-6 dark:text-gray-300">{event.description}</p>
                     </div>
 
-                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 min-w-[300px] w-full md:w-auto shrink-0 shadow-sm">
-                        <h3 className="text-xl font-bold text-gray-800 mb-6">Booking Details</h3>
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 min-w-[300px] w-full md:w-auto shrink-0 shadow-sm dark:bg-gray-800 dark:border-gray-800">
+                        <h3 className="text-xl font-bold text-gray-800 mb-6 dark:text-gray-100">Booking Details</h3>
 
                         <div className="space-y-4 mb-8">
-                            <div className="flex items-center gap-4 text-gray-600">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0">
+                            <div className="flex items-center gap-4 text-gray-600 dark:text-gray-300">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0 dark:bg-gray-700 dark:text-gray-100">
                                     <FaMoneyBillWave />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-400 uppercase">Ticket Price</p>
-                                    <p className="font-bold text-gray-800 text-lg">{event.ticketPrice === 0 ? <span className="text-green-500">Free</span> : `₹${event.ticketPrice}`}</p>
+                                    <p className="font-bold text-gray-800 text-lg dark:text-gray-100">{event.ticketPrice === 0 ? <span className="text-green-500">Free</span> : `₹${event.ticketPrice}`}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 text-gray-600">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0">
+                            <div className="flex items-center gap-4 text-gray-600 dark:text-gray-300">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0 dark:bg-gray-700 dark:text-gray-100">
                                     <FaChair />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-400 uppercase">Availability</p>
-                                    <p className="font-bold text-gray-800">
+                                    <p className="font-bold text-gray-800 dark:text-gray-100">
                                         <span className={event.availableSeats < 10 ? 'text-orange-500' : ''}>{event.availableSeats}</span> / {event.totalSeats}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 text-gray-600">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0">
+                            <div className="flex items-center gap-4 text-gray-600 dark:text-gray-300">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0 dark:bg-gray-700 dark:text-gray-100">
                                     <FaCalendarAlt />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-400 uppercase">Date</p>
-                                    <p className="font-bold text-gray-800">{new Date(event.date).toLocaleDateString()}</p>
+                                    <p className="font-bold text-gray-800 dark:text-gray-100">{new Date(event.date).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 text-gray-600">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0">
+                            <div className="flex items-center gap-4 text-gray-600 dark:text-gray-300">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-900 shrink-0 dark:bg-gray-700 dark:text-gray-100">
                                     <FaMapMarkerAlt />
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-400 uppercase">Location</p>
-                                    <p className="font-bold text-gray-800">{event.location}</p>
+                                    <p className="font-bold text-gray-800 dark:text-gray-100">{event.location}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="mb-5">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Number of tickets
                             </label>
                             <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ const EventDetail = () => {
                                     type="button"
                                     onClick={() => setQuantity((current) => Math.max(1, current - 1))}
                                     disabled={quantity <= 1 || showOTP}
-                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
                                 >
                                     −
                                 </button>
@@ -197,34 +197,34 @@ const EventDetail = () => {
                                         const next = Number(e.target.value);
                                         setQuantity(Math.min(maxQuantity, Math.max(1, Number.isFinite(next) ? next : 1)));
                                     }}
-                                    className="h-11 w-20 rounded-xl border border-gray-300 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-gray-700 disabled:bg-gray-100"
+                                    className="h-11 w-20 rounded-xl border border-gray-300 text-center text-lg font-bold outline-none focus:ring-2 focus:ring-gray-700 disabled:bg-gray-100 dark:border-gray-600"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}
                                     disabled={quantity >= maxQuantity || showOTP}
-                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="h-11 w-11 rounded-xl border border-gray-300 bg-white text-xl font-bold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
                                 >
                                     +
                                 </button>
                                 <div className="ml-auto text-right">
                                     <p className="text-xs font-semibold uppercase text-gray-400">Total</p>
-                                    <p className="text-lg font-black text-gray-900">
+                                    <p className="text-lg font-black text-gray-900 dark:text-gray-100">
                                         {bookingTotal === 0 ? 'Free' : `₹${bookingTotal.toLocaleString('en-IN')}`}
                                     </p>
                                 </div>
                             </div>
-                            <p className="mt-2 text-xs text-gray-500">Maximum 10 tickets per booking, subject to availability.</p>
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Maximum 10 tickets per booking, subject to availability.</p>
                         </div>
 
                         {showOTP && (
                             <div className="mb-4">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Enter OTP to Confirm</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">Enter OTP to Confirm</label>
                                 <input
                                     type="text"
                                     required
                                     placeholder="6-digit code"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg dark:border-gray-700"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
                                     maxLength="6"

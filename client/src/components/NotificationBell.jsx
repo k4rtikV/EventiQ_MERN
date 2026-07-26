@@ -98,7 +98,7 @@ const NotificationBell = () => {
                 <FaBell />
 
                 {unreadCount > 0 && (
-                    <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-white text-gray-900 text-[11px] font-black inline-flex items-center justify-center border-2 border-gray-900">
+                    <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-white text-gray-900 text-[11px] font-black inline-flex items-center justify-center border-2 border-gray-900 dark:bg-gray-900 dark:text-gray-100">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -130,7 +130,7 @@ const NotificationBell = () => {
 
                     <div className="max-h-[420px] overflow-y-auto">
                         {loading ? (
-                            <div className="px-5 py-10 text-center text-sm text-gray-500">
+                            <div className="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Loading notifications...
                             </div>
                         ) : notifications.length === 0 ? (
@@ -139,7 +139,7 @@ const NotificationBell = () => {
                                 <p className="font-bold text-gray-700 dark:text-gray-200">
                                     No notifications yet
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                                     Booking and refund updates will appear here.
                                 </p>
                             </div>

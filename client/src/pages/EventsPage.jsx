@@ -433,7 +433,7 @@ const EventsPage = () => {
                         <input
                             type="text"
                             placeholder="Search by title, location or category..."
-                            className="w-full pl-14 pr-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                            className="w-full pl-14 pr-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
                             value={search}
                             onChange={(event) =>
                                 setSearch(
@@ -459,7 +459,7 @@ const EventsPage = () => {
                                     event.target.value
                                 )
                             }
-                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
                         >
                             {categories.map(
                                 (category) => (
@@ -493,7 +493,7 @@ const EventsPage = () => {
                                     event.target.value
                                 )
                             }
-                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                            className="w-full px-5 py-4 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-900 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
                         >
                             <option value="default">
                                 Sort By Price
@@ -512,13 +512,13 @@ const EventsPage = () => {
             </section>
 
             {/* Results Header */}
-            <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-2 border-b border-gray-200 pb-4">
+            <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-2 border-b border-gray-200 pb-4 dark:border-gray-700">
                 <div>
-                    <h2 className="text-3xl font-extrabold text-gray-900">
+                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
                         All Events
                     </h2>
 
-                    <p className="text-gray-500 font-medium mt-1">
+                    <p className="text-gray-500 font-medium mt-1 dark:text-gray-400">
                         {
                             filteredAndSortedEvents.length
                         }{' '}
@@ -533,7 +533,7 @@ const EventsPage = () => {
                     <button
                         type="button"
                         onClick={resetFilters}
-                        className="self-start sm:self-auto px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-900 hover:text-white hover:border-gray-900 transition"
+                        className="self-start sm:self-auto px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-900 hover:text-white hover:border-gray-900 transition dark:bg-gray-900 dark:text-gray-200 dark:border-gray-600"
                     >
                         Clear Filters
                     </button>
@@ -542,17 +542,17 @@ const EventsPage = () => {
 
             {/* Event Results */}
             {loading ? (
-                <div className="text-center py-20 text-xl font-semibold text-gray-600">
+                <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
                     Loading events...
                 </div>
             ) : filteredAndSortedEvents.length ===
               0 ? (
-                <div className="bg-white border border-gray-200 rounded-2xl text-center py-20 px-6 shadow-sm">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                <div className="bg-white border border-gray-200 rounded-2xl text-center py-20 px-6 shadow-sm dark:bg-gray-900 dark:border-gray-700">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2 dark:text-gray-100">
                         No events found
                     </h3>
 
-                    <p className="text-gray-500 mb-6">
+                    <p className="text-gray-500 mb-6 dark:text-gray-400">
                         No events match your current
                         search or filters.
                     </p>
@@ -594,9 +594,9 @@ const EventsPage = () => {
                             return (
                                 <article
                                     key={event._id}
-                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col"
+                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col dark:bg-gray-900"
                                 >
-                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                    <div className="h-48 bg-gray-200 overflow-hidden relative dark:bg-gray-700">
                                         <Link
                                             to={`/events/${event._id}`}
                                             className="block w-full h-full"
@@ -612,7 +612,7 @@ const EventsPage = () => {
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl dark:bg-gray-700 dark:text-gray-300">
                                                     {event.category ||
                                                         'Event'}
                                                 </div>
@@ -677,7 +677,7 @@ const EventsPage = () => {
                                     </div>
 
                                     <div className="p-6 flex-grow flex flex-col">
-                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 dark:text-gray-200">
                                             {
                                                 event.category
                                             }
@@ -687,14 +687,14 @@ const EventsPage = () => {
                                             to={`/events/${event._id}`}
                                             className="hover:text-blue-600 transition"
                                         >
-                                            <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                            <h2 className="text-xl font-bold text-gray-800 mb-3 dark:text-gray-100">
                                                 {
                                                     event.title
                                                 }
                                             </h2>
                                         </Link>
 
-                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm dark:text-gray-300">
                                             <div className="flex items-start gap-2">
                                                 <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
 
@@ -726,7 +726,7 @@ const EventsPage = () => {
                                         </div>
 
                                         <div className="mt-auto">
-                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden dark:bg-gray-700">
                                                 <div
                                                     className="bg-gray-700 h-2 rounded-full"
                                                     style={{
@@ -735,7 +735,7 @@ const EventsPage = () => {
                                                 />
                                             </div>
 
-                                            <p className="text-xs text-gray-500 mb-4">
+                                            <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">
                                                 {
                                                     event.availableSeats
                                                 }{' '}
@@ -748,7 +748,7 @@ const EventsPage = () => {
 
                                             <Link
                                                 to={`/events/${event._id}`}
-                                                className="block w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition"
+                                                className="block w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition dark:bg-gray-800 dark:text-gray-100"
                                             >
                                                 View Details
                                             </Link>

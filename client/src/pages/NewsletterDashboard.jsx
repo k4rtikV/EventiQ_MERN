@@ -153,7 +153,7 @@ const NewsletterDashboard = () => {
 
     return (
         <div className="mx-auto max-w-7xl">
-            <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+            <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <button
                     type="button"
                     onClick={() => navigate('/admin')}
@@ -174,7 +174,7 @@ const NewsletterDashboard = () => {
                 <button
                     type="button"
                     onClick={() => navigate('/admin')}
-                    className="rounded-xl border border-white/20 bg-white px-5 py-3 font-extrabold text-slate-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                    className="rounded-xl border border-white/20 bg-white px-5 py-3 font-extrabold text-slate-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-blue-300/50 dark:bg-gray-900"
                 >
                     Back to Admin Dashboard
                 </button>
@@ -194,8 +194,8 @@ const NewsletterDashboard = () => {
                     ['Promo Used', stats.promoUsed || 0, 'text-purple-600'],
                     ['Campaigns Sent', stats.campaignsSent || 0, 'text-blue-600']
                 ].map(([label, value, valueClass]) => (
-                    <div key={label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                        <p className="text-xs font-extrabold uppercase tracking-wider text-gray-500">{label}</p>
+                    <div key={label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+                        <p className="text-xs font-extrabold uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</p>
                         <p className={`mt-2 text-3xl font-black ${valueClass}`}>{value}</p>
                     </div>
                 ))}
@@ -203,13 +203,13 @@ const NewsletterDashboard = () => {
 
             <div className="grid grid-cols-1 gap-8 xl:grid-cols-[0.9fr_1.3fr]">
                 <div className="space-y-8">
-                    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:bg-gray-900 dark:border-gray-800">
                         <h2 className="text-2xl font-black text-slate-900">Compose Newsletter</h2>
-                        <p className="mt-1 text-sm text-gray-500">The message will be sent individually to every active subscriber.</p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">The message will be sent individually to every active subscriber.</p>
 
                         <form onSubmit={handleSendNewsletter} className="mt-6 space-y-5">
                             <div>
-                                <label htmlFor="newsletter-subject" className="mb-2 block text-sm font-bold text-gray-700">Subject</label>
+                                <label htmlFor="newsletter-subject" className="mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200">Subject</label>
                                 <input
                                     id="newsletter-subject"
                                     type="text"
@@ -217,13 +217,13 @@ const NewsletterDashboard = () => {
                                     value={subject}
                                     onChange={(event) => setSubject(event.target.value)}
                                     placeholder="e.g., This Weekend's Featured Events"
-                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600"
                                 />
                                 <p className="mt-1 text-right text-xs text-gray-400">{subject.length}/150</p>
                             </div>
 
                             <div>
-                                <label htmlFor="newsletter-message" className="mb-2 block text-sm font-bold text-gray-700">Message</label>
+                                <label htmlFor="newsletter-message" className="mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200">Message</label>
                                 <textarea
                                     id="newsletter-message"
                                     rows="11"
@@ -231,7 +231,7 @@ const NewsletterDashboard = () => {
                                     value={message}
                                     onChange={(event) => setMessage(event.target.value)}
                                     placeholder="Write the newsletter message shown to your subscribers..."
-                                    className="w-full resize-y rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                    className="w-full resize-y rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600"
                                 />
                                 <p className="mt-1 text-right text-xs text-gray-400">{message.length}/10000</p>
                             </div>
@@ -246,19 +246,19 @@ const NewsletterDashboard = () => {
                         </form>
                     </section>
 
-                    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:bg-gray-900 dark:border-gray-800">
                         <h2 className="text-xl font-black text-slate-900">Recent Campaigns</h2>
                         <div className="mt-5 space-y-3">
                             {campaigns.length === 0 ? (
-                                <p className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500">No newsletter campaigns have been sent yet.</p>
+                                <p className="rounded-xl bg-gray-50 p-5 text-center text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">No newsletter campaigns have been sent yet.</p>
                             ) : (
                                 campaigns.map((campaign) => (
-                                    <article key={campaign._id} className="rounded-xl border border-gray-200 p-4">
+                                    <article key={campaign._id} className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
                                         <div className="flex items-start justify-between gap-3">
                                             <h3 className="font-extrabold text-slate-900">{campaign.subject}</h3>
-                                            <span className="shrink-0 text-xs text-gray-500">{new Date(campaign.sentAt).toLocaleString()}</span>
+                                            <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">{new Date(campaign.sentAt).toLocaleString()}</span>
                                         </div>
-                                        <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm text-gray-600">{campaign.message}</p>
+                                        <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm text-gray-600 dark:text-gray-300">{campaign.message}</p>
                                         <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
                                             <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">Recipients: {campaign.recipientCount}</span>
                                             <span className="rounded-full bg-green-50 px-3 py-1 text-green-700">Delivered: {campaign.deliveredCount}</span>
@@ -273,11 +273,11 @@ const NewsletterDashboard = () => {
                     </section>
                 </div>
 
-                <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:bg-gray-900 dark:border-gray-800">
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                         <div>
                             <h2 className="text-2xl font-black text-slate-900">Subscribers</h2>
-                            <p className="mt-1 text-sm text-gray-500">Search, deactivate, reactivate, or permanently remove subscribers.</p>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Search, deactivate, reactivate, or permanently remove subscribers.</p>
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <input
@@ -285,12 +285,12 @@ const NewsletterDashboard = () => {
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                                 placeholder="Search name or email"
-                                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-600"
                             />
                             <select
                                 value={statusFilter}
                                 onChange={(event) => setStatusFilter(event.target.value)}
-                                className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-900 dark:border-gray-600"
                             >
                                 <option value="all">All statuses</option>
                                 <option value="active">Active</option>
@@ -302,7 +302,7 @@ const NewsletterDashboard = () => {
                     <div className="mt-6 overflow-x-auto">
                         <table className="w-full min-w-[760px] text-left">
                             <thead>
-                                <tr className="border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
+                                <tr className="border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 dark:border-gray-700">
                                     <th className="px-3 py-3">Subscriber</th>
                                     <th className="px-3 py-3">Joined</th>
                                     <th className="px-3 py-3">Promo</th>
@@ -313,16 +313,16 @@ const NewsletterDashboard = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {filteredSubscribers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="px-3 py-10 text-center text-gray-500">No subscribers match the selected filters.</td>
+                                        <td colSpan="5" className="px-3 py-10 text-center text-gray-500 dark:text-gray-400">No subscribers match the selected filters.</td>
                                     </tr>
                                 ) : (
                                     filteredSubscribers.map((subscriber) => (
-                                        <tr key={subscriber._id} className="transition hover:bg-gray-50">
+                                        <tr key={subscriber._id} className="transition hover:bg-gray-50 dark:hover:bg-gray-800">
                                             <td className="px-3 py-4">
                                                 <p className="font-bold text-slate-900">{subscriber.name}</p>
-                                                <p className="text-sm text-gray-500">{subscriber.email}</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">{subscriber.email}</p>
                                             </td>
-                                            <td className="px-3 py-4 text-sm text-gray-600">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
+                                            <td className="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">{new Date(subscriber.createdAt).toLocaleDateString()}</td>
                                             <td className="px-3 py-4">
                                                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${subscriber.promoUsed ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
                                                     {subscriber.promoUsed ? 'Used' : 'Unused'}

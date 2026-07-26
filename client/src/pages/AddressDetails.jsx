@@ -319,7 +319,7 @@ const AddressDetails = () => {
     };
 
     const inputClass = (fieldName) =>
-        `mt-2 block w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition ${
+        `mt-2 block w-full rounded-2xl border bg-gray-50 dark:bg-gray-800 px-4 py-3 outline-none transition ${
             fieldErrors[fieldName]
                 ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
                 : 'border-gray-200 focus:border-gray-900 focus:ring-2 focus:ring-gray-200'
@@ -349,13 +349,13 @@ const AddressDetails = () => {
     }
 
     return (
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-6 sm:p-8 mt-10 border border-gray-100">
+        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-6 sm:p-8 mt-10 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
             <div className="mb-8 text-center">
-                <h1 className="text-3xl font-extrabold text-gray-900">
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
                     Enter Your Address
                 </h1>
 
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-500 mt-2 dark:text-gray-400">
                     One more step before payment.
                 </p>
             </div>
@@ -376,7 +376,7 @@ const AddressDetails = () => {
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             Street Address
                         </span>
 
@@ -408,7 +408,7 @@ const AddressDetails = () => {
                     </label>
 
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             City
                         </span>
 
@@ -442,7 +442,7 @@ const AddressDetails = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             State
                         </span>
 
@@ -474,7 +474,7 @@ const AddressDetails = () => {
                     </label>
 
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             PIN Code
                         </span>
 
@@ -499,7 +499,7 @@ const AddressDetails = () => {
                             )}
                         />
 
-                        <span className="block mt-2 text-xs text-gray-500">
+                        <span className="block mt-2 text-xs text-gray-500 dark:text-gray-400">
                             Enter a 6-digit Indian
                             PIN code.
                         </span>
@@ -512,7 +512,7 @@ const AddressDetails = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             Country
                         </span>
 
@@ -544,12 +544,12 @@ const AddressDetails = () => {
                     </label>
 
                     <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                             Mobile Number
                         </span>
 
                         <div className="relative mt-2">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 font-semibold pointer-events-none">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 font-semibold pointer-events-none dark:text-gray-400">
                                 +91
                             </span>
 
@@ -575,7 +575,7 @@ const AddressDetails = () => {
                             />
                         </div>
 
-                        <span className="block mt-2 text-xs text-gray-500">
+                        <span className="block mt-2 text-xs text-gray-500 dark:text-gray-400">
                             Enter 10 digits without
                             `+91` or a leading zero.
                         </span>

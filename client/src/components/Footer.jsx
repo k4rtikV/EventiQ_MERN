@@ -170,7 +170,7 @@ const Footer = () => {
                                         disabled={
                                             newsletterLoading
                                         }
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-gray-900 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-gray-900 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900 dark:text-gray-100"
                                     >
                                         <FiSend />
 
@@ -280,7 +280,7 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div className="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+                <div className="mt-10 border-t border-gray-800 pt-6 text-center text-sm text-gray-500 dark:text-gray-400">
                     ©{' '}
                     {new Date().getFullYear()}{' '}
                     EventiQ. All rights reserved.

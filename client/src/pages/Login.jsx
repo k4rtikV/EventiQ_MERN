@@ -68,10 +68,10 @@ const Login = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome Back</h2>
-                <p className="text-gray-500">Sign in to your EventiQ account</p>
+                <h2 className="text-3xl font-extrabold text-gray-900 mb-2 dark:text-gray-100">Welcome Back</h2>
+                <p className="text-gray-500 dark:text-gray-400">Sign in to your EventiQ account</p>
             </div>
 
             {error && (
@@ -84,7 +84,7 @@ const Login = () => {
                 {!showOTP ? (
                     <>
                         <div>
-                            <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Email Address
                             </label>
                             <input
@@ -94,7 +94,7 @@ const Login = () => {
                                 autoComplete="email"
                                 maxLength="254"
                                 placeholder="you@example.com"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 transition shadow-sm"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 transition shadow-sm dark:border-gray-600"
                                 value={email}
                                 onChange={(e) => {
                                     setEmail(e.target.value);
@@ -105,7 +105,7 @@ const Login = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                                 Password
                             </label>
                             <div className="relative">
@@ -115,7 +115,7 @@ const Login = () => {
                                     required
                                     autoComplete="current-password"
                                     maxLength="128"
-                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 transition shadow-sm"
+                                    className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:border-gray-700 transition shadow-sm dark:border-gray-600"
                                     value={password}
                                     onChange={(e) => {
                                         setPassword(e.target.value);
@@ -125,7 +125,7 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((visible) => !visible)}
-                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition"
+                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition dark:text-gray-400"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                 >
@@ -136,7 +136,7 @@ const Login = () => {
                     </>
                 ) : (
                     <div>
-                        <label htmlFor="login-otp" className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label htmlFor="login-otp" className="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-200">
                             Verification Code (OTP)
                         </label>
                         <input
@@ -144,7 +144,7 @@ const Login = () => {
                             type="text"
                             required
                             placeholder="6-digit code"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg"
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm font-bold tracking-widest text-center text-lg dark:border-gray-600"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             maxLength="6"
@@ -161,9 +161,9 @@ const Login = () => {
                 </button>
             </form>
 
-            <p className="text-center mt-8 text-gray-600">
+            <p className="text-center mt-8 text-gray-600 dark:text-gray-300">
                 Don&apos;t have an account?{' '}
-                <Link to="/register" className="text-gray-900 font-bold hover:underline">
+                <Link to="/register" className="text-gray-900 font-bold hover:underline dark:text-gray-100">
                     Sign up
                 </Link>
             </p>

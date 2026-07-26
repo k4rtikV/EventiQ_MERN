@@ -116,12 +116,12 @@ const Home = () => {
                     </p>
 
                     <div className="w-full max-w-2xl mx-auto relative flex items-center shadow-2xl group">
-                        <FaSearch className="absolute left-6 text-gray-500 text-xl group-focus-within:text-black transition-colors" />
+                        <FaSearch className="absolute left-6 text-gray-500 text-xl group-focus-within:text-black transition-colors dark:text-gray-400" />
 
                         <input
                             type="text"
                             placeholder="Search events by title..."
-                            className="w-full pl-16 pr-6 py-5 rounded-full text-lg text-black bg-white/95 backdrop-blur-sm border-2 border-transparent focus:border-gray-500 focus:outline-none transition-all placeholder-gray-400 font-medium"
+                            className="w-full pl-16 pr-6 py-5 rounded-full text-lg text-black dark:text-white bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-2 border-transparent focus:border-gray-500 focus:outline-none transition-all placeholder-gray-400 font-medium dark:text-white"
                             value={search}
                             onChange={(event) =>
                                 setSearch(event.target.value)
@@ -133,47 +133,47 @@ const Home = () => {
 
             {/* Features */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 px-4">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300 dark:bg-gray-900 dark:border-gray-800">
                     <div className="w-16 h-16 bg-gray-900 text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-md shadow-gray-200/50">
                         <FaRegClock />
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 dark:text-gray-100">
                         Fast Booking
                     </h3>
 
-                    <p className="text-gray-500 text-sm leading-relaxed">
+                    <p className="text-gray-500 text-sm leading-relaxed dark:text-gray-400">
                         Secure your tickets instantly with our fast,
                         streamlined booking infrastructure built for
                         speed.
                     </p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300 dark:bg-gray-900 dark:border-gray-800">
                     <div className="w-16 h-16 bg-gray-900 text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-md shadow-gray-200/50">
                         <FaTicketAlt />
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 dark:text-gray-100">
                         Seamless Access
                     </h3>
 
-                    <p className="text-gray-500 text-sm leading-relaxed">
+                    <p className="text-gray-500 text-sm leading-relaxed dark:text-gray-400">
                         Download tickets instantly or manage them
                         directly from your personal dashboard with ease.
                     </p>
                 </div>
 
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:-translate-y-1 transition duration-300 dark:bg-gray-900 dark:border-gray-800">
                     <div className="w-16 h-16 bg-gray-900 text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-md shadow-gray-200/50">
                         <FaShieldAlt />
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 dark:text-gray-100">
                         Secure Platform
                     </h3>
 
-                    <p className="text-gray-500 text-sm leading-relaxed">
+                    <p className="text-gray-500 text-sm leading-relaxed dark:text-gray-400">
                         Transactions and registrations are protected by
                         secure payment processing and OTP verification.
                     </p>
@@ -181,23 +181,23 @@ const Home = () => {
             </div>
 
             {/* Featured Events Header */}
-            <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
-                <h2 className="text-3xl font-extrabold text-gray-900">
+            <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4 dark:border-gray-700">
+                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
                     Featured Events
                 </h2>
 
-                <div className="text-gray-500 font-medium">
+                <div className="text-gray-500 font-medium dark:text-gray-400">
                     Showing up to 3 events
                 </div>
             </div>
 
             {/* Featured Events */}
             {loading ? (
-                <div className="text-center py-20 text-xl font-semibold text-gray-600">
+                <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
                     Loading events...
                 </div>
             ) : events.length === 0 ? (
-                <div className="text-center py-20 text-xl text-gray-500">
+                <div className="text-center py-20 text-xl text-gray-500 dark:text-gray-400">
                     No events found matching your search.
                 </div>
             ) : (
@@ -221,9 +221,9 @@ const Home = () => {
                                 <Link
                                     key={event._id}
                                     to={`/events/${event._id}`}
-                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer"
+                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer dark:bg-gray-900"
                                 >
-                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                    <div className="h-48 bg-gray-200 overflow-hidden relative dark:bg-gray-700">
                                         {event.image ? (
                                             <img
                                                 src={event.image}
@@ -231,7 +231,7 @@ const Home = () => {
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl dark:bg-gray-700 dark:text-gray-300">
                                                 {event.category ||
                                                     'Event'}
                                             </div>
@@ -256,15 +256,15 @@ const Home = () => {
                                     </div>
 
                                     <div className="p-6 flex-grow flex flex-col">
-                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 dark:text-gray-200">
                                             {event.category}
                                         </div>
 
-                                        <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                        <h2 className="text-xl font-bold text-gray-800 mb-3 dark:text-gray-100">
                                             {event.title}
                                         </h2>
 
-                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm dark:text-gray-300">
                                             <div className="flex items-start gap-2">
                                                 <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
 
@@ -294,7 +294,7 @@ const Home = () => {
                                         </div>
 
                                         <div className="mt-auto">
-                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden dark:bg-gray-700">
                                                 <div
                                                     className="bg-gray-700 h-2 rounded-full"
                                                     style={{
@@ -303,13 +303,13 @@ const Home = () => {
                                                 />
                                             </div>
 
-                                            <p className="text-xs text-gray-500 mb-4">
+                                            <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">
                                                 {event.availableSeats} of{' '}
                                                 {event.totalSeats} seats
                                                 remaining
                                             </p>
 
-                                            <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition">
+                                            <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition dark:bg-gray-800 dark:text-gray-100">
                                                 View Details
                                             </div>
                                         </div>
@@ -341,17 +341,17 @@ const Home = () => {
             {/* Recently Viewed Events */}
             {recentlyViewed.length > 0 && (
                 <section className="mt-16">
-                    <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
+                    <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4 dark:border-gray-700">
                         <div>
-                            <h2 className="text-3xl font-extrabold text-gray-900">
+                            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
                                 Recently Viewed Events
                             </h2>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 Continue exploring events you recently opened.
                             </p>
                         </div>
 
-                        <div className="text-gray-500 font-medium">
+                        <div className="text-gray-500 font-medium dark:text-gray-400">
                             Showing up to 3 events
                         </div>
                     </div>
@@ -375,9 +375,9 @@ const Home = () => {
                                 <Link
                                     key={event._id}
                                     to={`/events/${event._id}`}
-                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer"
+                                    className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col no-underline text-inherit cursor-pointer dark:bg-gray-900"
                                 >
-                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+                                    <div className="h-48 bg-gray-200 overflow-hidden relative dark:bg-gray-700">
                                         {event.image ? (
                                             <img
                                                 src={event.image}
@@ -385,7 +385,7 @@ const Home = () => {
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl">
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600 font-bold text-2xl dark:bg-gray-700 dark:text-gray-300">
                                                 {event.category || 'Event'}
                                             </div>
                                         )}
@@ -407,15 +407,15 @@ const Home = () => {
                                     </div>
 
                                     <div className="p-6 flex-grow flex flex-col">
-                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                                        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 dark:text-gray-200">
                                             {event.category}
                                         </div>
 
-                                        <h2 className="text-xl font-bold text-gray-800 mb-3">
+                                        <h2 className="text-xl font-bold text-gray-800 mb-3 dark:text-gray-100">
                                             {event.title}
                                         </h2>
 
-                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm">
+                                        <div className="flex flex-col gap-2 mb-4 text-gray-600 text-sm dark:text-gray-300">
                                             <div className="flex items-start gap-2">
                                                 <FaCalendarAlt className="text-gray-400 mt-1 flex-shrink-0" />
                                                 <span>
@@ -453,7 +453,7 @@ const Home = () => {
                                                     Number(event.availableSeats)
                                                 ) && (
                                                     <>
-                                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden">
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 overflow-hidden dark:bg-gray-700">
                                                             <div
                                                                 className="bg-gray-700 h-2 rounded-full"
                                                                 style={{
@@ -462,7 +462,7 @@ const Home = () => {
                                                             />
                                                         </div>
 
-                                                        <p className="text-xs text-gray-500 mb-4">
+                                                        <p className="text-xs text-gray-500 mb-4 dark:text-gray-400">
                                                             {event.availableSeats}{' '}
                                                             of {event.totalSeats}{' '}
                                                             seats remaining
@@ -470,7 +470,7 @@ const Home = () => {
                                                     </>
                                                 )}
 
-                                            <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition">
+                                            <div className="w-full text-center bg-gray-100 group-hover:bg-gray-900 group-hover:text-white text-gray-900 font-semibold py-2 rounded-lg transition dark:bg-gray-800 dark:text-gray-100">
                                                 View Again
                                             </div>
                                         </div>
@@ -483,16 +483,16 @@ const Home = () => {
             )}
 
             {/* Footer Section */}
-            <footer className="mt-auto pt-16 pb-8 border-t border-gray-200 text-center">
+            <footer className="mt-auto pt-16 pb-8 border-t border-gray-200 text-center dark:border-gray-700">
                 <div className="flex justify-center items-center gap-2 mb-4">
-                    <FaTicketAlt className="text-gray-800 text-2xl" />
+                    <FaTicketAlt className="text-gray-800 text-2xl dark:text-gray-100" />
 
-                    <span className="text-xl font-bold text-gray-900">
+                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
                         EventiQ
                     </span>
                 </div>
 
-                <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
+                <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto dark:text-gray-400">
                     The simplest, most dynamic way to manage, discover,
                     and host world-class events in your local city.
                     Let&apos;s make memories together.

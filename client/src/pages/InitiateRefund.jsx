@@ -145,14 +145,14 @@ const InitiateRefund = () => {
                             <h2 className="mb-4 text-xl font-black text-gray-900 dark:text-white">Booking summary</h2>
 
                             <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-800">
-                                <div><p className="text-xs font-bold uppercase text-gray-500">Event</p><p className="mt-1 font-bold">{booking.eventId?.title || 'Deleted Event'}</p></div>
+                                <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Event</p><p className="mt-1 font-bold">{booking.eventId?.title || 'Deleted Event'}</p></div>
                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <div><p className="text-xs font-bold uppercase text-gray-500">Customer</p><p className="mt-1 font-semibold">{booking.userId?.name}</p><p className="text-sm text-gray-500">{booking.userId?.email}</p></div>
-                                    <div><p className="text-xs font-bold uppercase text-gray-500">Invoice</p><p className="mt-1 font-semibold">{invoiceNumber}</p></div>
+                                    <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Customer</p><p className="mt-1 font-semibold">{booking.userId?.name}</p><p className="text-sm text-gray-500 dark:text-gray-400">{booking.userId?.email}</p></div>
+                                    <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Invoice</p><p className="mt-1 font-semibold">{invoiceNumber}</p></div>
                                 </div>
                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <div><p className="text-xs font-bold uppercase text-gray-500">Payment ID</p><p className="mt-1 break-all text-sm font-semibold">{booking.razorpayPaymentId || 'Not available'}</p></div>
-                                    <div><p className="text-xs font-bold uppercase text-gray-500">Amount paid</p><p className="mt-1 text-xl font-black text-green-600">{formatCurrency(booking.amount)}</p></div>
+                                    <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Payment ID</p><p className="mt-1 break-all text-sm font-semibold">{booking.razorpayPaymentId || 'Not available'}</p></div>
+                                    <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Amount paid</p><p className="mt-1 text-xl font-black text-green-600">{formatCurrency(booking.amount)}</p></div>
                                 </div>
                             </div>
 
@@ -178,9 +178,9 @@ const InitiateRefund = () => {
                                     <option value="on_hold">On Hold</option>
                                     <option value="failed">Failed</option>
                                 </select>
-                                <label className="mb-2 block text-sm font-bold">Status note <span className="font-normal text-gray-500">(optional)</span></label>
+                                <label className="mb-2 block text-sm font-bold">Status note <span className="font-normal text-gray-500 dark:text-gray-400">(optional)</span></label>
                                 <textarea value={statusNote} onChange={(event) => setStatusNote(event.target.value)} maxLength={500} rows={4} placeholder="Add an update visible in the refund history..." className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800" />
-                                <p className="mb-5 mt-1 text-right text-xs text-gray-500">{statusNote.length}/500</p>
+                                <p className="mb-5 mt-1 text-right text-xs text-gray-500 dark:text-gray-400">{statusNote.length}/500</p>
                                 <button type="submit" disabled={submitting} className="w-full rounded-lg bg-blue-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-blue-700 disabled:opacity-60">{submitting ? 'Updating...' : 'Update Refund Status'}</button>
                                 <button type="button" onClick={() => navigate(`/refund-status/${bookingId}`)} className="mt-3 w-full rounded-lg border border-blue-300 bg-blue-50 px-5 py-3 font-black text-blue-700 hover:bg-blue-600 hover:text-white">Preview User Refund Page</button>
                             </form>
@@ -193,9 +193,9 @@ const InitiateRefund = () => {
                                 <select id="refund-reason" value={reason} onChange={(event) => setReason(event.target.value)} className="mb-5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
                                     <option>User cancelled the paid booking</option><option>Event was cancelled</option><option>Duplicate payment</option><option>Booking could not be fulfilled</option><option>Other approved refund</option>
                                 </select>
-                                <label htmlFor="refund-note" className="mb-2 block text-sm font-bold">Internal note <span className="font-normal text-gray-500">(optional)</span></label>
+                                <label htmlFor="refund-note" className="mb-2 block text-sm font-bold">Internal note <span className="font-normal text-gray-500 dark:text-gray-400">(optional)</span></label>
                                 <textarea id="refund-note" value={note} onChange={(event) => setNote(event.target.value)} maxLength={500} rows={4} placeholder="Add a brief note for your records..." className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800" />
-                                <p className="mb-5 mt-1 text-right text-xs text-gray-500">{note.length}/500</p>
+                                <p className="mb-5 mt-1 text-right text-xs text-gray-500 dark:text-gray-400">{note.length}/500</p>
                                 <button type="submit" disabled={submitting} className="w-full rounded-lg bg-green-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-green-700 disabled:opacity-60">{submitting ? 'Initiating Refund...' : 'Initiate Refund & Notify User'}</button>
                             </form>
                         )}

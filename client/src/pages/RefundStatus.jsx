@@ -51,12 +51,12 @@ const RefundStatus = () => {
                 {error ? <div className="m-6 rounded-xl border border-red-200 bg-red-50 p-4 font-semibold text-red-700">{error}</div> : booking && (
                     <div className="p-6 sm:p-9">
                         <div className="grid gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-5 sm:grid-cols-2 dark:border-gray-700 dark:bg-gray-800">
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Event</p><p className="mt-1 font-black">{booking.eventId?.title || 'Deleted Event'}</p></div>
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Booking ID</p><p className="mt-1 break-all font-semibold">{booking._id}</p></div>
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Refund amount</p><p className="mt-1 text-xl font-black text-green-600">{money(booking.refund?.amount)}</p></div>
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Refund reference</p><p className="mt-1 font-black text-blue-700 dark:text-blue-300">{booking.refund?.referenceId || 'Being generated'}</p></div>
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Current status</p><p className="mt-1 font-black">{labels[booking.refund?.status]}</p></div>
-                            <div><p className="text-xs font-bold uppercase text-gray-500">Last updated</p><p className="mt-1 font-semibold">{new Date(booking.refund?.lastUpdatedAt || booking.refund?.initiatedAt).toLocaleString()}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Event</p><p className="mt-1 font-black">{booking.eventId?.title || 'Deleted Event'}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Booking ID</p><p className="mt-1 break-all font-semibold">{booking._id}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Refund amount</p><p className="mt-1 text-xl font-black text-green-600">{money(booking.refund?.amount)}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Refund reference</p><p className="mt-1 font-black text-blue-700 dark:text-blue-300">{booking.refund?.referenceId || 'Being generated'}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Current status</p><p className="mt-1 font-black">{labels[booking.refund?.status]}</p></div>
+                            <div><p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Last updated</p><p className="mt-1 font-semibold">{new Date(booking.refund?.lastUpdatedAt || booking.refund?.initiatedAt).toLocaleString()}</p></div>
                         </div>
 
                         {['on_hold', 'failed'].includes(booking.refund?.status) && (
@@ -76,7 +76,7 @@ const RefundStatus = () => {
                                                 <div className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-black ${complete ? 'border-green-600 bg-green-600 text-white' : 'border-gray-300 bg-white text-gray-400 dark:bg-gray-900'}`}>{complete ? '✓' : index + 1}</div>
                                                 {index < mainSteps.length - 1 && <div className={`h-14 w-0.5 ${activeIndex > index ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`} />}
                                             </div>
-                                            <div className="pt-1"><p className="font-black">{labels[step]}</p><p className="mt-1 text-sm text-gray-500">{booking.refund?.history?.find((item) => item.status === step)?.note || (complete ? 'Stage completed.' : 'Pending')}</p></div>
+                                            <div className="pt-1"><p className="font-black">{labels[step]}</p><p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{booking.refund?.history?.find((item) => item.status === step)?.note || (complete ? 'Stage completed.' : 'Pending')}</p></div>
                                         </div>
                                     );
                                 })}
@@ -89,7 +89,7 @@ const RefundStatus = () => {
                                 <div className="space-y-3">
                                     {[...booking.refund.history].reverse().map((item, index) => (
                                         <div key={`${item.status}-${item.updatedAt}-${index}`} className="rounded-xl bg-gray-50 p-3 dark:bg-gray-800">
-                                            <div className="flex flex-wrap justify-between gap-2"><span className="font-black">{labels[item.status]}</span><span className="text-xs text-gray-500">{new Date(item.updatedAt).toLocaleString()}</span></div>
+                                            <div className="flex flex-wrap justify-between gap-2"><span className="font-black">{labels[item.status]}</span><span className="text-xs text-gray-500 dark:text-gray-400">{new Date(item.updatedAt).toLocaleString()}</span></div>
                                             {item.note && <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{item.note}</p>}
                                         </div>
                                     ))}

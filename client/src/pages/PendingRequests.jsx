@@ -116,15 +116,15 @@ const PendingRequests = () => {
 
     return (
         <div className="max-w-7xl mx-auto">
-            <div className="mb-4 text-sm text-gray-500 flex flex-wrap items-center gap-2">
+            <div className="mb-4 text-sm text-gray-500 flex flex-wrap items-center gap-2 dark:text-gray-400">
                 <button onClick={() => navigate('/admin')} className="font-medium text-yellow-700 hover:text-yellow-900 transition">Admin Dashboard</button>
                 <span className="text-gray-300">›</span>
                 <span>Pending Requests</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 dark:bg-gray-900 dark:border-gray-800">
                 <div>
                     <h1 className="text-2xl font-extrabold">Pending Requests</h1>
-                    <p className="text-gray-500 mt-1">
+                    <p className="text-gray-500 mt-1 dark:text-gray-400">
                         Review pending bookings and process refunds for paid bookings cancelled by users.
                     </p>
                 </div>
@@ -133,23 +133,23 @@ const PendingRequests = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-900 dark:border-gray-800">
                 <ul className="divide-y divide-gray-100">
                     {requests.length === 0 ? (
-                        <li className="p-6 text-gray-500 text-center">
+                        <li className="p-6 text-gray-500 text-center dark:text-gray-400">
                             No pending requests or paid cancellations requiring review.
                         </li>
                     ) : requests.map(booking => (
                         <li
                             key={booking._id}
-                            className={`p-6 hover:bg-gray-50 transition border-l-4 ${
+                            className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition border-l-4 ${
                                 booking.status === 'cancelled'
                                     ? 'border-l-red-400'
                                     : 'border-l-yellow-400'
                             }`}
                         >
                             <div className="flex justify-between items-start mb-3">
-                                <h4 className="font-bold text-gray-900 text-lg leading-tight">{booking.eventId?.title || 'Deleted Event'}</h4>
+                                <h4 className="font-bold text-gray-900 text-lg leading-tight dark:text-gray-100">{booking.eventId?.title || 'Deleted Event'}</h4>
                                 <div className="flex flex-col gap-1 items-end shrink-0 ml-4">
                                     <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${
                                         booking.status === 'cancelled'
@@ -167,22 +167,22 @@ const PendingRequests = () => {
                                     </span>
                                 </div>
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100 text-sm">
-                                <p className="text-gray-700 flex items-center gap-2 mb-1">
-                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs">User:</span>
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100 text-sm dark:bg-gray-800 dark:border-gray-800">
+                                <p className="text-gray-700 flex items-center gap-2 mb-1 dark:text-gray-200">
+                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs dark:text-gray-400">User:</span>
                                     <span className="font-semibold">{booking.userId?.name}</span>
                                     <span className="text-gray-400">({booking.userId?.email})</span>
                                 </p>
-                                <p className="text-gray-700 flex items-center gap-2 mb-1">
-                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs">Amount:</span>
+                                <p className="text-gray-700 flex items-center gap-2 mb-1 dark:text-gray-200">
+                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs dark:text-gray-400">Amount:</span>
                                     <span className={`font-semibold ${booking.amount === 0 ? 'text-green-600' : ''}`}>{booking.amount === 0 ? 'Free' : `₹${booking.amount}`}</span>
                                 </p>
-                                <p className="text-gray-700 flex items-center gap-2 mb-1">
-                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs">Tickets:</span>
+                                <p className="text-gray-700 flex items-center gap-2 mb-1 dark:text-gray-200">
+                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs dark:text-gray-400">Tickets:</span>
                                     <span className="font-semibold">{Number(booking.quantity || 1)}</span>
                                 </p>
-                                <p className="text-gray-700 flex items-center gap-2 mb-1">
-                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs">Date:</span>
+                                <p className="text-gray-700 flex items-center gap-2 mb-1 dark:text-gray-200">
+                                    <span className="font-bold w-16 text-gray-500 uppercase text-xs dark:text-gray-400">Date:</span>
                                     <span>{new Date(booking.bookedAt).toLocaleString()}</span>
                                 </p>
                             </div>
@@ -198,7 +198,7 @@ const PendingRequests = () => {
                                             <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-2 w-full rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white">Manage Refund</button>
                                         </div>
                                     ) : (
-                                        <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white">Initiate Refund</button>
+                                        <button type="button" onClick={() => handleInitiateRefund(booking._id)} className="mt-3 w-full rounded-lg border border-amber-300 bg-white px-3 py-2.5 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-600 hover:text-white dark:bg-gray-900">Initiate Refund</button>
                                     )}
                                 </div>
                             )}
@@ -223,7 +223,7 @@ const PendingRequests = () => {
                                             ✓ Approve as Paid
                                         </button>
                                     )}
-                                    <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                    <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
                                         ✓ Approve Undecided
                                     </button>
                                     <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">

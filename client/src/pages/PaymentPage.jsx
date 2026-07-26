@@ -353,13 +353,13 @@ const PaymentPage = () => {
               )}`;
 
     return (
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-8 mt-10">
+        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-8 mt-10 dark:bg-gray-900 dark:border-gray-800">
             <div className="mb-8 text-center">
-                <h1 className="text-3xl font-extrabold text-gray-900">
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
                     Complete Your Payment
                 </h1>
 
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-500 mt-2 dark:text-gray-400">
                     Apply a promo code and
                     continue securely with
                     Razorpay.
@@ -367,19 +367,19 @@ const PaymentPage = () => {
             </div>
 
             <div className="grid gap-6 mb-6">
-                <div className="rounded-3xl border border-gray-200 p-6 bg-gray-50">
-                    <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
+                <div className="rounded-3xl border border-gray-200 p-6 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                    <p className="text-sm uppercase tracking-wider text-gray-500 mb-2 dark:text-gray-400">
                         Event
                     </p>
 
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {booking.eventId
                             ?.title || 'Event'}
                     </h2>
 
                     {booking.eventId
                         ?.location && (
-                        <p className="text-gray-600 mt-3">
+                        <p className="text-gray-600 mt-3 dark:text-gray-300">
                             {
                                 booking.eventId
                                     .location
@@ -388,14 +388,14 @@ const PaymentPage = () => {
                     )}
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 p-6 bg-white">
+                <div className="rounded-3xl border border-gray-200 p-6 bg-white dark:bg-gray-900 dark:border-gray-700">
                     <div className="flex items-center justify-between gap-4 mb-4">
                         <div>
-                            <p className="text-sm uppercase tracking-wider text-gray-500">
+                            <p className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                 Promo code
                             </p>
 
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">
                                 Enter the code
                                 received from the
                                 EventiQ newsletter.
@@ -418,7 +418,7 @@ const PaymentPage = () => {
                             }
                             maxLength={40}
                             placeholder="Enter promo code"
-                            className="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 font-semibold uppercase tracking-wide outline-none transition focus:border-gray-700 focus:ring-2 focus:ring-gray-200 disabled:bg-gray-100 disabled:text-gray-500"
+                            className="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 font-semibold uppercase tracking-wide outline-none transition focus:border-gray-700 focus:ring-2 focus:ring-gray-200 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600"
                         />
 
                         {hasPromo ? (
@@ -469,25 +469,25 @@ const PaymentPage = () => {
                     )}
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 p-6 bg-white">
-                    <p className="text-sm uppercase tracking-wider text-gray-500 mb-4">
+                <div className="rounded-3xl border border-gray-200 p-6 bg-white dark:bg-gray-900 dark:border-gray-700">
+                    <p className="text-sm uppercase tracking-wider text-gray-500 mb-4 dark:text-gray-400">
                         Payment summary
                     </p>
 
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-4 text-gray-700">
+                        <div className="flex items-center justify-between gap-4 text-gray-700 dark:text-gray-200">
                             <span>Ticket price</span>
-                            <span className="font-semibold text-gray-900">{formatPrice(unitPrice)}</span>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{formatPrice(unitPrice)}</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 text-gray-700">
+                        <div className="flex items-center justify-between gap-4 text-gray-700 dark:text-gray-200">
                             <span>Quantity</span>
-                            <span className="font-semibold text-gray-900">{quantity}</span>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{quantity}</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 text-gray-700">
+                        <div className="flex items-center justify-between gap-4 text-gray-700 dark:text-gray-200">
                             <span>Subtotal</span>
-                            <span className="font-semibold text-gray-900">{formatPrice(originalAmount)}</span>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{formatPrice(originalAmount)}</span>
                         </div>
 
                         {discountAmount >
@@ -507,12 +507,12 @@ const PaymentPage = () => {
                             </div>
                         )}
 
-                        <div className="border-t border-gray-200 pt-4 flex items-center justify-between gap-4">
-                            <span className="text-lg font-bold text-gray-900">
+                        <div className="border-t border-gray-200 pt-4 flex items-center justify-between gap-4 dark:border-gray-700">
+                            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                 Total payable
                             </span>
 
-                            <span className="text-3xl font-black text-gray-900">
+                            <span className="text-3xl font-black text-gray-900 dark:text-gray-100">
                                 {finalAmount ===
                                 0
                                     ? 'Free'
@@ -556,7 +556,7 @@ const PaymentPage = () => {
                       : paymentButtonText}
             </button>
 
-            <p className="mt-4 text-center text-sm text-gray-500">
+            <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                 The payable amount is
                 verified by the EventiQ
                 server before Razorpay is

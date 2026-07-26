@@ -994,7 +994,7 @@ const TicketPage = () => {
                     Ticket not available yet
                 </h2>
 
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-6 dark:text-gray-300">
                     Your booking is currently{' '}
                     <strong>
                         {booking.status}
@@ -1071,10 +1071,10 @@ const TicketPage = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-4">
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="overflow-hidden h-40 bg-gray-100">
+                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden dark:bg-gray-900 dark:border-gray-800">
+                    <div className="overflow-hidden h-40 bg-gray-100 dark:bg-gray-800">
                         {imageLoading ? (
-                            <div className="w-full h-full bg-gray-100 animate-pulse" />
+                            <div className="w-full h-full bg-gray-100 animate-pulse dark:bg-gray-800" />
                         ) : ticketImageUrl ? (
                             <img
                                 src={ticketImageUrl}
@@ -1082,25 +1082,25 @@ const TicketPage = () => {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center px-6 text-center text-sm text-gray-500">
+                            <div className="w-full h-full flex items-center justify-center px-6 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Event image unavailable
                             </div>
                         )}
                     </div>
 
                     <div className="p-5 md:p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2 dark:text-gray-100">
                             {event.title}
                         </h2>
 
-                        <p className="text-gray-500 text-sm mb-5">
+                        <p className="text-gray-500 text-sm mb-5 dark:text-gray-400">
                             {event.category ||
                                 'Event'}
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-200">
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Date
                                 </p>
 
@@ -1112,7 +1112,7 @@ const TicketPage = () => {
                             </div>
 
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Time
                                 </p>
 
@@ -1131,7 +1131,7 @@ const TicketPage = () => {
                             </div>
 
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Location
                                 </p>
 
@@ -1141,17 +1141,17 @@ const TicketPage = () => {
                             </div>
 
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Status
                                 </p>
 
-                                <p className="inline-flex px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">
+                                <p className="inline-flex px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold dark:bg-gray-800">
                                     {booking.status}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="mt-5 border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div className="mt-5 border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm dark:border-gray-800">
                             <div>
                                 <p className="font-semibold">
                                     Total paid
@@ -1173,7 +1173,7 @@ const TicketPage = () => {
                                     Booking ID
                                 </p>
 
-                                <p className="text-xs text-gray-500 break-all">
+                                <p className="text-xs text-gray-500 break-all dark:text-gray-400">
                                     {booking._id}
                                 </p>
                             </div>
@@ -1181,10 +1181,10 @@ const TicketPage = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between">
+                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between dark:bg-gray-900 dark:border-gray-800">
                     <div className="p-5">
-                        <div className="bg-gray-50 rounded-3xl p-4 text-center">
-                            <div className="inline-flex items-center justify-center bg-white p-3 rounded-3xl border border-gray-200">
+                        <div className="bg-gray-50 rounded-3xl p-4 text-center dark:bg-gray-800">
+                            <div className="inline-flex items-center justify-center bg-white p-3 rounded-3xl border border-gray-200 dark:bg-white dark:border-gray-300">
                                 {qrCodeUrl ? (
                                     <img
                                         src={qrCodeUrl}
@@ -1194,18 +1194,18 @@ const TicketPage = () => {
                                         height="130"
                                     />
                                 ) : (
-                                    <div className="w-[130px] h-[130px] bg-gray-100 animate-pulse rounded-xl" />
+                                    <div className="w-[130px] h-[130px] bg-gray-100 animate-pulse rounded-xl dark:bg-gray-800" />
                                 )}
                             </div>
 
-                            <p className="text-gray-500 text-xs mt-2">
+                            <p className="text-gray-500 text-xs mt-2 dark:text-gray-400">
                                 Scan QR code at the entrance.
                             </p>
                         </div>
 
-                        <div className="mt-5 text-center text-sm text-gray-700 space-y-4">
+                        <div className="mt-5 text-center text-sm text-gray-700 space-y-4 dark:text-gray-200">
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Seat
                                 </p>
 
@@ -1216,7 +1216,7 @@ const TicketPage = () => {
                             </div>
 
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Venue
                                 </p>
 
@@ -1226,7 +1226,7 @@ const TicketPage = () => {
                             </div>
 
                             <div>
-                                <p className="font-semibold text-gray-900">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">
                                     Issued to
                                 </p>
 
@@ -1244,7 +1244,7 @@ const TicketPage = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+                    <div className="border-t border-gray-100 px-5 py-4 space-y-3 dark:border-gray-800">
                         <button
                             type="button"
                             onClick={handleDownload}
@@ -1253,7 +1253,7 @@ const TicketPage = () => {
                                     'started' ||
                                 !qrCodeUrl
                             }
-                            className="w-full bg-white border border-gray-200 text-gray-900 py-3 rounded-3xl font-semibold hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full bg-white border border-gray-200 text-gray-900 py-3 rounded-3xl font-semibold hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
                         >
                             {downloadStatus ===
                             'started'

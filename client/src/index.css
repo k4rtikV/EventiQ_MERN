@@ -131,3 +131,34 @@ html.dark .wishlist-heart-button:hover {
     color: #ffffff;
     transform: scale(1.06);
 }
+/* Consistent form controls across every dark-mode page. */
+html.dark input:not([type='checkbox']):not([type='radio']),
+html.dark textarea,
+html.dark select {
+    background-color: #111827;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+html.dark input:disabled,
+html.dark textarea:disabled,
+html.dark select:disabled {
+    background-color: #1f2937;
+    color: #9ca3af;
+    opacity: 1;
+}
+
+html.dark select option {
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark textarea:-webkit-autofill,
+html.dark select:-webkit-autofill {
+    -webkit-text-fill-color: #f9fafb;
+    -webkit-box-shadow: 0 0 0 1000px #111827 inset;
+    caret-color: #f9fafb;
+}

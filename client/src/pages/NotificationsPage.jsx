@@ -134,7 +134,7 @@ const NotificationsPage = () => {
 
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {loading ? (
-                        <div className="py-20 text-center text-gray-500 font-semibold">
+                        <div className="py-20 text-center text-gray-500 font-semibold dark:text-gray-400">
                             Loading notifications...
                         </div>
                     ) : visibleNotifications.length === 0 ? (
@@ -143,7 +143,7 @@ const NotificationsPage = () => {
                             <h2 className="text-xl font-black text-gray-800 dark:text-white">
                                 {filter === 'unread' ? 'You are all caught up' : 'No notifications yet'}
                             </h2>
-                            <p className="text-gray-500 mt-2">
+                            <p className="text-gray-500 mt-2 dark:text-gray-400">
                                 New booking and account updates will appear here.
                             </p>
                         </div>
