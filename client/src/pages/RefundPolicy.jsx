@@ -4,7 +4,7 @@ import { FiAlertCircle, FiCheckCircle, FiClock, FiRefreshCcw } from 'react-icons
 
 const RefundPolicy = () => {
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="mx-auto max-w-5xl space-y-8 text-gray-900 dark:text-gray-100">
             <section className="rounded-3xl bg-gray-900 px-7 py-11 text-white shadow-xl sm:px-10">
                 <FiRefreshCcw className="text-4xl" />
                 <h1 className="mt-5 text-4xl font-bold sm:text-5xl">Refund Policy</h1>
@@ -20,7 +20,7 @@ const RefundPolicy = () => {
                 <div className="rounded-3xl bg-white p-6 shadow-lg dark:bg-gray-900"><FiAlertCircle className="text-3xl" /><h2 className="mt-4 text-xl font-bold">Provider timelines</h2><p className="mt-3 leading-7 text-gray-600 dark:text-gray-300">After initiation, the final credit time is controlled by the gateway, payment method and bank.</p></div>
             </section>
 
-            <section className="rounded-3xl bg-white p-7 shadow-xl dark:bg-gray-900 sm:p-9 space-y-8">
+            <section className="space-y-8 rounded-3xl border border-gray-200 bg-white p-7 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-9">
                 <div><h2 className="text-2xl font-bold">1. Scope of this policy</h2><p className="mt-3 leading-8 text-gray-700 dark:text-gray-200">This policy applies to bookings made through EventiQ. An event listing or organizer may provide additional cancellation conditions. Where event-specific conditions are displayed, users should review them before booking.</p></div>
                 <div><h2 className="text-2xl font-bold">2. User-initiated cancellation</h2><p className="mt-3 leading-8 text-gray-700 dark:text-gray-200">A cancellation option is shown only when the booking is eligible under the current platform workflow. Cancelling an unpaid booking closes the request without creating a refund. Cancelling a paid booking records that the booking was previously paid and may create a refund action for administrator review.</p></div>
                 <div><h2 className="text-2xl font-bold">3. Event cancellation or material change</h2><p className="mt-3 leading-8 text-gray-700 dark:text-gray-200">When an organizer cancels an event or makes a material change, affected users may be notified. Refund handling will depend on the organizer’s decision, the booking status and the payment record. Users should retain their booking and payment details until the matter is resolved.</p></div>

@@ -19,7 +19,7 @@ const sections = [
 ];
 
 const PrivacyPolicy = () => (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 text-gray-900 dark:text-gray-100">
         <section className="rounded-3xl bg-gray-900 px-7 py-11 text-white shadow-xl sm:px-10">
             <FiShield className="text-4xl" />
             <h1 className="mt-5 text-4xl font-bold sm:text-5xl">Privacy Policy</h1>
@@ -29,7 +29,7 @@ const PrivacyPolicy = () => (
         <section className="rounded-3xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800">
             <div className="flex gap-4"><FiLock className="mt-1 shrink-0 text-2xl" /><p className="leading-7 text-gray-700 dark:text-gray-200">Do not send passwords, payment OTPs, CVV values or full card details through support forms, emails or chat messages.</p></div>
         </section>
-        <section className="rounded-3xl bg-white p-7 shadow-xl dark:bg-gray-900 sm:p-9 space-y-8">
+        <section className="space-y-8 rounded-3xl border border-gray-200 bg-white p-7 shadow-xl dark:border-gray-800 dark:bg-gray-900 sm:p-9">
             {sections.map(([title, text]) => <div key={title}><h2 className="text-2xl font-bold">{title}</h2><p className="mt-3 leading-8 text-gray-700 dark:text-gray-200">{text}</p></div>)}
         </section>
         <Link to="/contact-us" className="inline-flex rounded-2xl bg-gray-900 px-6 py-3 font-bold text-white transition hover:bg-black dark:bg-white dark:text-gray-900">Contact Us</Link>

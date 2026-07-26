@@ -60,7 +60,7 @@ const values = [
 
 const AboutUs = () => {
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-gray-950 dark:text-gray-100">
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-800 px-6 py-20 text-white">
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-fuchsia-400/10 blur-3xl" />
@@ -100,25 +100,25 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="px-6 py-16 transition-colors dark:bg-gray-950">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700 dark:text-purple-400">
               Our purpose
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
               One platform for the complete event journey
             </h2>
 
-            <p className="mt-5 leading-8 text-slate-600">
+            <p className="mt-5 leading-8 text-slate-600 dark:text-gray-300">
               EventiQ was created to reduce the confusion often associated with
               online event registrations. Instead of separating bookings,
               payments, tickets, invoices, notifications, and support across
               different systems, the platform keeps them together.
             </p>
 
-            <p className="mt-4 leading-8 text-slate-600">
+            <p className="mt-4 leading-8 text-slate-600 dark:text-gray-300">
               Users can follow the complete lifecycle of a booking, while
               administrators can manage requests, approve registrations,
               assign tickets, handle cancellations, initiate refunds, and
@@ -126,32 +126,32 @@ const AboutUs = () => {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/60 transition-colors dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/20">
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="rounded-2xl bg-indigo-50 p-5">
+              <div className="rounded-2xl bg-indigo-50 p-5 dark:bg-indigo-950/60">
                 <p className="text-3xl font-extrabold text-indigo-700">1</p>
-                <p className="mt-2 font-semibold text-slate-900">
+                <p className="mt-2 font-semibold text-slate-900 dark:text-gray-100">
                   Unified booking platform
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-purple-50 p-5">
+              <div className="rounded-2xl bg-purple-50 p-5 dark:bg-purple-950/60">
                 <p className="text-3xl font-extrabold text-purple-700">24/7</p>
-                <p className="mt-2 font-semibold text-slate-900">
+                <p className="mt-2 font-semibold text-slate-900 dark:text-gray-100">
                   Dashboard access
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-emerald-50 p-5">
+              <div className="rounded-2xl bg-emerald-50 p-5 dark:bg-emerald-950/50">
                 <p className="text-3xl font-extrabold text-emerald-700">QR</p>
-                <p className="mt-2 font-semibold text-slate-900">
+                <p className="mt-2 font-semibold text-slate-900 dark:text-gray-100">
                   Digital ticket support
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-amber-50 p-5">
+              <div className="rounded-2xl bg-amber-50 p-5 dark:bg-amber-950/50">
                 <p className="text-3xl font-extrabold text-amber-700">Live</p>
-                <p className="mt-2 font-semibold text-slate-900">
+                <p className="mt-2 font-semibold text-slate-900 dark:text-gray-100">
                   Status notifications
                 </p>
               </div>
@@ -160,18 +160,18 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="bg-white px-6 py-16">
+      <section className="bg-white px-6 py-16 transition-colors dark:bg-gray-900">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700 dark:text-purple-400">
               What EventiQ offers
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
               Designed around real booking needs
             </h2>
 
-            <p className="mt-4 leading-7 text-slate-600">
+            <p className="mt-4 leading-7 text-slate-600 dark:text-gray-300">
               Every major feature supports a specific stage of the event
               booking and management process.
             </p>
@@ -181,17 +181,17 @@ const AboutUs = () => {
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition duration-300 hover:-translate-y-1 hover:border-purple-200 hover:bg-white hover:shadow-xl"
+                className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition duration-300 hover:-translate-y-1 hover:border-purple-200 hover:bg-white hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:border-purple-500/60 dark:hover:bg-gray-800 dark:hover:shadow-black/30"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-700 to-purple-600 text-sm font-extrabold text-white shadow-md">
                   {feature.symbol}
                 </div>
 
-                <h3 className="mt-5 text-xl font-bold text-slate-900">
+                <h3 className="mt-5 text-xl font-bold text-slate-900 dark:text-white">
                   {feature.title}
                 </h3>
 
-                <p className="mt-3 leading-7 text-slate-600">
+                <p className="mt-3 leading-7 text-slate-600 dark:text-gray-300">
                   {feature.description}
                 </p>
               </article>
@@ -200,9 +200,9 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="px-6 py-16 transition-colors dark:bg-gray-950">
         <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-slate-900 px-8 py-12 text-white sm:px-12">
+          <div className="rounded-3xl bg-slate-900 px-8 py-12 text-white ring-1 ring-white/5 sm:px-12 dark:bg-black">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-300">
@@ -225,14 +225,14 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="bg-white px-6 py-16">
+      <section className="bg-white px-6 py-16 transition-colors dark:bg-gray-900">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-purple-700 dark:text-purple-400">
               Our values
             </p>
 
-            <h2 className="mt-3 text-3xl font-bold text-slate-900">
+            <h2 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               What guides the platform
             </h2>
           </div>
@@ -241,13 +241,13 @@ const AboutUs = () => {
             {values.map((value) => (
               <div
                 key={value.title}
-                className="rounded-2xl border border-slate-200 p-7 text-center shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm transition-colors dark:border-gray-700 dark:bg-gray-800"
               >
-                <h3 className="text-xl font-bold text-slate-900">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   {value.title}
                 </h3>
 
-                <p className="mt-3 leading-7 text-slate-600">
+                <p className="mt-3 leading-7 text-slate-600 dark:text-gray-300">
                   {value.description}
                 </p>
               </div>
@@ -256,7 +256,7 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="px-6 py-16 transition-colors dark:bg-gray-950">
         <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-r from-indigo-700 to-purple-700 px-8 py-12 text-center text-white shadow-xl">
           <h2 className="text-3xl font-bold">
             Ready to discover your next event?

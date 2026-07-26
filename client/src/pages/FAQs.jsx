@@ -56,7 +56,7 @@ const FAQs = () => {
     const [openItem, setOpenItem] = useState('Bookings-0');
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="mx-auto max-w-5xl space-y-8 text-gray-900 dark:text-gray-100">
             <section className="rounded-3xl bg-gray-900 px-7 py-11 text-white shadow-xl sm:px-10">
                 <FiHelpCircle className="text-4xl" />
                 <h1 className="mt-5 text-4xl font-bold sm:text-5xl">Frequently Asked Questions</h1>
@@ -66,25 +66,25 @@ const FAQs = () => {
             </section>
 
             {faqGroups.map((group) => (
-                <section key={group.title} className="rounded-3xl bg-white p-6 shadow-lg dark:bg-gray-900 sm:p-8">
+                <section key={group.title} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-800 dark:bg-gray-900 sm:p-8">
                     <h2 className="text-2xl font-bold">{group.title}</h2>
-                    <div className="mt-5 divide-y divide-gray-200 rounded-2xl border border-gray-200 dark:divide-gray-700 dark:border-gray-700">
+                    <div className="mt-5 overflow-hidden rounded-2xl border border-gray-200 bg-white divide-y divide-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:divide-gray-700">
                         {group.items.map((item, index) => {
                             const itemId = `${group.title}-${index}`;
                             const isOpen = openItem === itemId;
                             return (
-                                <article key={item.q}>
+                                <article key={item.q} className="bg-white dark:bg-gray-900">
                                     <button
                                         type="button"
                                         onClick={() => setOpenItem(isOpen ? '' : itemId)}
                                         aria-expanded={isOpen}
-                                        className="flex w-full items-center justify-between gap-5 px-5 py-5 text-left font-bold transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                                        className={`flex w-full items-center justify-between gap-5 px-5 py-5 text-left font-bold transition-colors ${isOpen ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800'}`}
                                     >
                                         <span>{item.q}</span>
                                         <FiChevronDown className={`shrink-0 text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     {isOpen && (
-                                        <div className="px-5 pb-5 leading-8 text-gray-700 dark:text-gray-200">
+                                        <div className="bg-gray-50 px-5 pb-5 leading-8 text-gray-700 dark:bg-gray-800 dark:text-gray-200">
                                             {item.a}
                                         </div>
                                     )}

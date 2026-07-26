@@ -9,30 +9,30 @@ import {
 } from "react-icons/fi";
 
 const Section = ({ icon, title, children }) => (
-  <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-100">
+  <div className="mb-6 rounded-xl border border-gray-100 bg-white p-6 shadow-md transition-colors dark:border-gray-700 dark:bg-gray-900">
     <div className="flex items-center gap-3 mb-4">
-      <div className="text-blue-600 text-2xl">{icon}</div>
-      <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+      <div className="text-2xl text-blue-600 dark:text-blue-400">{icon}</div>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{title}</h2>
     </div>
-    <div className="text-gray-600 leading-7">{children}</div>
+    <div className="leading-7 text-gray-600 dark:text-gray-300">{children}</div>
   </div>
 );
 
 const TermsAndConditions = () => {
   return (
-    <div className="bg-gray-50 min-h-screen py-12">
+    <div className="min-h-screen bg-gray-50 py-12 text-gray-900 transition-colors dark:bg-gray-950 dark:text-gray-100">
       <div className="max-w-5xl mx-auto px-6">
 
         <div className="text-center mb-12">
           <div className="flex justify-center mb-4">
-            <FiClipboard className="text-5xl text-blue-600" />
+            <FiClipboard className="text-5xl text-blue-600 dark:text-blue-400" />
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-800 mb-3">
+          <h1 className="mb-3 text-4xl font-bold text-gray-800 dark:text-white">
             Terms & Conditions
           </h1>
 
-          <p className="text-gray-600 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-gray-600 dark:text-gray-300">
             Please read these Terms and Conditions carefully before using
             EventiQ. By creating an account or booking an event, you agree
             to comply with the policies outlined below.

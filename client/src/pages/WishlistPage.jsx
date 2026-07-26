@@ -142,7 +142,7 @@ const WishlistPage = () => {
 
                     <Link
                         to="/dashboard"
-                        className="inline-flex justify-center bg-white text-gray-900 font-bold px-5 py-3 rounded-xl hover:bg-gray-100 transition dark:bg-gray-900 dark:text-gray-100"
+                        className="inline-flex justify-center bg-white text-gray-900 font-bold px-5 py-3 rounded-xl hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
                     >
                         Back to Dashboard
                     </Link>
