@@ -43,7 +43,10 @@ const formatTimeAgo = (value) => {
 const NotificationBell = () => {
     const navigate = useNavigate();
     const panelRef = useRef(null);
+    const closeTimerRef = useRef(null);
+
     const [open, setOpen] = useState(false);
+    const [panelVisible, setPanelVisible] = useState(false);
 
     const {
         notifications,
@@ -54,24 +57,46 @@ const NotificationBell = () => {
         markAllAsRead
     } = useNotifications();
 
+    const closePanel = () => {
+        setPanelVisible(false);
+
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = window.setTimeout(() => {
+            setOpen(false);
+        }, 150);
+    };
+
     useEffect(() => {
         const handleOutsideClick = (event) => {
             if (panelRef.current && !panelRef.current.contains(event.target)) {
-                setOpen(false);
+                closePanel();
             }
         };
 
         document.addEventListener('mousedown', handleOutsideClick);
-        return () => document.removeEventListener('mousedown', handleOutsideClick);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            window.clearTimeout(closeTimerRef.current);
+        };
     }, []);
 
     const togglePanel = async () => {
-        const nextOpen = !open;
-        setOpen(nextOpen);
-
-        if (nextOpen) {
-            await fetchNotifications(5);
+        if (open) {
+            closePanel();
+            return;
         }
+
+        window.clearTimeout(closeTimerRef.current);
+        setOpen(true);
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                setPanelVisible(true);
+            });
+        });
+
+        await fetchNotifications(5);
     };
 
     const openNotification = async (notification) => {
@@ -79,11 +104,21 @@ const NotificationBell = () => {
             await markAsRead(notification._id);
         }
 
-        setOpen(false);
+        closePanel();
 
         if (notification.link) {
-            navigate(notification.link);
+            window.setTimeout(() => {
+                navigate(notification.link);
+            }, 150);
         }
+    };
+
+    const handleViewAll = () => {
+        closePanel();
+
+        window.setTimeout(() => {
+            navigate('/notifications');
+        }, 150);
     };
 
     return (
@@ -91,21 +126,49 @@ const NotificationBell = () => {
             <button
                 type="button"
                 onClick={togglePanel}
-                aria-label="Open notifications"
+                aria-label={open ? 'Close notifications' : 'Open notifications'}
+                aria-expanded={open}
                 title="Notifications"
-                className="relative w-10 h-10 rounded-lg border border-gray-600 bg-gray-800 hover:bg-gray-700 text-white inline-flex items-center justify-center transition"
+                className={[
+                    'relative w-10 h-10 rounded-xl',
+                    'border border-white/10',
+                    'bg-white/5 hover:bg-white/10',
+                    'hover:border-white/20',
+                    'text-white inline-flex items-center justify-center',
+                    'transition-all duration-200 ease-out',
+                    'hover:-translate-y-0.5',
+                    'hover:shadow-md hover:shadow-black/15',
+                    'focus:outline-none focus-visible:ring-2',
+                    'focus-visible:ring-blue-400 focus-visible:ring-offset-2',
+                    'focus-visible:ring-offset-gray-900',
+                    open
+                        ? 'bg-white/10 border-white/20'
+                        : ''
+                ].join(' ')}
             >
                 <FaBell />
 
                 {unreadCount > 0 && (
-                    <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-white text-gray-900 text-[11px] font-black inline-flex items-center justify-center border-2 border-gray-900 dark:bg-gray-900 dark:text-gray-100">
+                    <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-black inline-flex items-center justify-center border-2 border-gray-900 shadow-md shadow-red-950/30">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-3 w-[min(92vw,380px)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 text-left">
+                <div
+                    className={[
+                        'absolute right-0 mt-3 w-[min(92vw,380px)]',
+                        'bg-white dark:bg-gray-900',
+                        'border border-gray-200 dark:border-gray-700',
+                        'rounded-2xl shadow-2xl overflow-hidden z-50 text-left',
+                        'origin-top-right transform-gpu',
+                        'transition-all duration-150 ease-out',
+                        panelVisible
+                            ? 'opacity-100 scale-100 translate-y-0'
+                            : 'pointer-events-none opacity-0 scale-95 translate-y-2'
+                    ].join(' ')}
+                >
                     <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
                         <div>
                             <h3 className="font-black text-gray-900 dark:text-white">
@@ -120,7 +183,7 @@ const NotificationBell = () => {
                             <button
                                 type="button"
                                 onClick={markAllAsRead}
-                                className="text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white inline-flex items-center gap-1.5"
+                                className="text-xs font-bold text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white inline-flex items-center gap-1.5 transition-colors"
                             >
                                 <FaCheck />
                                 Mark all read
@@ -188,10 +251,7 @@ const NotificationBell = () => {
 
                     <button
                         type="button"
-                        onClick={() => {
-                            setOpen(false);
-                            navigate('/notifications');
-                        }}
+                        onClick={handleViewAll}
                         className="w-full py-3.5 bg-gray-900 hover:bg-black text-white font-bold text-sm transition"
                     >
                         View all notifications

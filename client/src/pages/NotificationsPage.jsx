@@ -63,12 +63,12 @@ const NotificationsPage = () => {
 
     return (
         <div className="max-w-5xl mx-auto">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-xl overflow-hidden">
-                <div className="px-6 md:px-10 py-8 border-b border-gray-200 dark:border-gray-800">
+            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-3xl shadow-xl dark:shadow-black/30 overflow-hidden">
+                <div className="px-6 md:px-10 py-8 border-b border-gray-200 dark:border-slate-700">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
                         <div>
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gray-900 text-white flex items-center justify-center text-xl">
+                                <div className="w-12 h-12 rounded-2xl bg-gray-900 text-white dark:bg-white/10 dark:text-gray-100 dark:border dark:border-white/10 dark:shadow-inner flex items-center justify-center text-xl">
                                     <FaBell />
                                 </div>
                                 <div>
@@ -87,7 +87,7 @@ const NotificationsPage = () => {
                                 <button
                                     type="button"
                                     onClick={markAllAsRead}
-                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 font-bold text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 font-bold text-sm hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:border-white/20 transition-all duration-200"
                                 >
                                     <FaCheck />
                                     Mark all read
@@ -97,7 +97,7 @@ const NotificationsPage = () => {
                             <button
                                 type="button"
                                 onClick={clearReadNotifications}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-black text-white font-bold text-sm transition"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-black text-white dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/10 dark:hover:border-white/20 font-bold text-sm transition-all duration-200"
                             >
                                 <FaTrash />
                                 Clear read
@@ -109,10 +109,10 @@ const NotificationsPage = () => {
                         <button
                             type="button"
                             onClick={() => setFilter('all')}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
+                            className={`px-5 py-2.5 rounded-xl border border-transparent font-bold text-sm transition-all duration-200 ${
                                 filter === 'all'
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+                                    ? 'bg-gray-900 text-white shadow-sm dark:bg-white/[0.88] dark:text-slate-900 dark:shadow-lg dark:shadow-black/20 dark:border dark:border-white/30'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:border dark:border-white/5'
                             }`}
                         >
                             All ({notifications.length})
@@ -121,10 +121,10 @@ const NotificationsPage = () => {
                         <button
                             type="button"
                             onClick={() => setFilter('unread')}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
+                            className={`px-5 py-2.5 rounded-xl border border-transparent font-bold text-sm transition-all duration-200 ${
                                 filter === 'unread'
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200'
+                                    ? 'bg-gray-900 text-white shadow-sm dark:bg-white/[0.88] dark:text-slate-900 dark:shadow-lg dark:shadow-black/20 dark:border dark:border-white/30'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:border dark:border-white/5'
                             }`}
                         >
                             Unread ({unreadCount})
@@ -132,14 +132,14 @@ const NotificationsPage = () => {
                     </div>
                 </div>
 
-                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="divide-y divide-gray-100 dark:divide-slate-700">
                     {loading ? (
                         <div className="py-20 text-center text-gray-500 font-semibold dark:text-gray-400">
                             Loading notifications...
                         </div>
                     ) : visibleNotifications.length === 0 ? (
                         <div className="py-20 px-6 text-center">
-                            <FaBell className="mx-auto text-5xl text-gray-300 mb-5" />
+                            <FaBell className="mx-auto text-5xl text-gray-300 dark:text-gray-500 mb-5" />
                             <h2 className="text-xl font-black text-gray-800 dark:text-white">
                                 {filter === 'unread' ? 'You are all caught up' : 'No notifications yet'}
                             </h2>
@@ -156,8 +156,8 @@ const NotificationsPage = () => {
                                     key={notification._id}
                                     className={`p-6 md:px-10 flex items-start gap-4 ${
                                         notification.isRead
-                                            ? 'bg-white dark:bg-gray-900'
-                                            : 'bg-gray-50 dark:bg-gray-800/60'
+                                            ? 'bg-white dark:bg-slate-900'
+                                            : 'bg-gray-50 dark:bg-slate-800/80'
                                     }`}
                                 >
                                     <button
@@ -165,7 +165,7 @@ const NotificationsPage = () => {
                                         onClick={() => handleOpen(notification)}
                                         className="flex items-start gap-4 flex-1 text-left min-w-0"
                                     >
-                                        <div className="w-12 h-12 rounded-2xl bg-gray-900 text-white flex items-center justify-center shrink-0">
+                                        <div className="w-12 h-12 rounded-2xl bg-gray-900 text-white dark:bg-white/10 dark:text-gray-100 dark:border dark:border-white/10 flex items-center justify-center shrink-0">
                                             <Icon />
                                         </div>
 
@@ -175,7 +175,7 @@ const NotificationsPage = () => {
                                                     {notification.title}
                                                 </h2>
                                                 {!notification.isRead && (
-                                                    <span className="w-2.5 h-2.5 rounded-full bg-gray-900 dark:bg-white shrink-0" />
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-gray-900 dark:bg-blue-400 dark:shadow-[0_0_8px_rgba(96,165,250,0.7)] shrink-0" />
                                                 )}
                                             </div>
 
@@ -195,7 +195,7 @@ const NotificationsPage = () => {
                                                 type="button"
                                                 onClick={() => markAsRead(notification._id)}
                                                 title="Mark as read"
-                                                className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 inline-flex items-center justify-center transition"
+                                                className="w-9 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:border-white/20 inline-flex items-center justify-center transition-all duration-200"
                                             >
                                                 <FaCheck />
                                             </button>
@@ -205,7 +205,7 @@ const NotificationsPage = () => {
                                             type="button"
                                             onClick={() => removeNotification(notification._id)}
                                             title="Delete notification"
-                                            className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 inline-flex items-center justify-center transition"
+                                            className="w-9 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-500/15 dark:hover:text-red-400 dark:hover:border-red-500/30 inline-flex items-center justify-center transition-all duration-200"
                                         >
                                             <FaTimes />
                                         </button>
