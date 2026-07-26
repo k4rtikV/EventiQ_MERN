@@ -8,6 +8,7 @@ const NewsletterSubscriber = require(
     '../models/NewsletterSubscriber'
 );
 const createNotification = require('../utils/createNotification');
+const { createAdminNotifications } = require('../utils/createNotification');
 
 const {
     sendBookingEmail,
@@ -543,6 +544,15 @@ exports.bookEvent = async (req, res) => {
             relatedEvent: event._id
         });
 
+        await createAdminNotifications({
+            type: 'booking',
+            title: 'New booking request',
+            message: `${req.user.name || 'A user'} submitted a booking request for ${event.title}.`,
+            link: '/pending-requests',
+            relatedBooking: booking._id,
+            relatedEvent: event._id
+        });
+
         return res.status(201).json({
             message:
                 'Booking request submitted',
@@ -654,6 +664,16 @@ exports.updateBookingAddress = async (
 
         await booking.save();
 
+        await createNotification({
+            user: req.user.id,
+            type: 'booking',
+            title: 'Booking address saved',
+            message: 'Your billing and contact address was saved for this booking.',
+            link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId
+        });
+
         res.json({
             message:
                 'Address saved successfully',
@@ -756,6 +776,16 @@ exports.applyPromoCode = async (
             undefined;
 
         await booking.save();
+
+        await createNotification({
+            user: req.user.id,
+            type: 'payment',
+            title: 'Promo code applied',
+            message: `${result.code} saved you ₹${result.discountAmount.toLocaleString('en-IN')} on this booking.`,
+            link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId?._id || booking.eventId
+        });
 
         res.json({
             message:
@@ -1040,6 +1070,15 @@ exports.createOrder = async (
                 title: 'Registration completed',
                 message: `Your free registration for ${event.title} is complete and awaiting approval.`,
                 link: '/dashboard',
+                relatedBooking: booking._id,
+                relatedEvent: event._id
+            });
+
+            await createAdminNotifications({
+                type: 'payment',
+                title: 'Free registration awaiting approval',
+                message: `${req.user.name || 'A user'} completed a free registration for ${event.title}.`,
+                link: '/pending-requests',
                 relatedBooking: booking._id,
                 relatedEvent: event._id
             });
@@ -1431,6 +1470,15 @@ exports.verifyPayment = async (
             title: 'Payment received',
             message: `Your payment for ${booking.eventId?.title || 'your event'} was successful. Your booking is awaiting approval.`,
             link: '/dashboard',
+            relatedBooking: booking._id,
+            relatedEvent: booking.eventId?._id || booking.eventId
+        });
+
+        await createAdminNotifications({
+            type: 'payment',
+            title: 'Paid booking awaiting approval',
+            message: `${req.user.name || 'A user'} paid ₹${Number(booking.amount || 0).toLocaleString('en-IN')} for ${booking.eventId?.title || 'an event'}.`,
+            link: '/pending-requests',
             relatedBooking: booking._id,
             relatedEvent: booking.eventId?._id || booking.eventId
         });
@@ -1964,6 +2012,19 @@ exports.cancelBooking = async (
             relatedBooking: booking._id,
             relatedEvent: cancelledBooking?.eventId?._id || booking.eventId
         });
+
+        if (!cancelledByAdmin) {
+            await createAdminNotifications({
+                type: 'cancellation',
+                title: wasPaid ? 'Paid booking cancelled — refund required' : 'Booking cancelled by user',
+                message: wasPaid
+                    ? `A paid booking for ${cancelledBooking?.eventId?.title || 'an event'} was cancelled and is awaiting refund initiation.`
+                    : `A user cancelled their booking for ${cancelledBooking?.eventId?.title || 'an event'}.`,
+                link: wasPaid ? '/paid-clients' : '/pending-requests',
+                relatedBooking: booking._id,
+                relatedEvent: cancelledBooking?.eventId?._id || booking.eventId
+            });
+        }
 
         res.json({
             message:

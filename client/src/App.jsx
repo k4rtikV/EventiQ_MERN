@@ -28,6 +28,8 @@ import PaymentPage from './pages/PaymentPage';
 import AboutUs from './pages/AboutUs';
 import FAQs from './pages/FAQs';
 import RefundPolicy from './pages/RefundPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
 import ContactUs from './pages/ContactUs';
 import TicketPage from './pages/TicketPage';
 import PurchasedEvent from './pages/PurchasedEvent';
@@ -177,6 +179,16 @@ function AppContent() {
                         <Route
                             path="/refund-policy"
                             element={<RefundPolicy />}
+                        />
+
+                        <Route
+                            path="/privacy-policy"
+                            element={<PrivacyPolicy />}
+                        />
+
+                        <Route
+                            path="/terms-and-conditions"
+                            element={<TermsAndConditions />}
                         />
 
                         <Route

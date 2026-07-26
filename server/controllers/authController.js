@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendOTPEmail } = require('../utils/email');
 const { validateName, validateDefaultAddress } = require('../utils/profileValidation');
+const { createAdminNotifications } = require('../utils/createNotification');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_PATTERN =
@@ -339,6 +340,13 @@ exports.verifyOTP = async (req, res) => {
 
         await OTP.deleteOne({
             _id: validOTP._id
+        });
+
+        await createAdminNotifications({
+            type: 'general',
+            title: 'New verified user',
+            message: `${user.name} (${user.email}) completed account verification.`,
+            link: '/admin',
         });
 
         res.json({

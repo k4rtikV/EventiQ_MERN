@@ -204,43 +204,25 @@ const Footer = () => {
                             Quick Links
                         </h3>
 
-                        <ul className="space-y-3 text-gray-400">
-                            <li>
-                                <Link
-                                    to="/about-us"
-                                    className="transition hover:text-white"
-                                >
-                                    About Us
-                                </Link>
-                            </li>
-
-                            <li>
-                                <Link
-                                    to="/faqs"
-                                    className="transition hover:text-white"
-                                >
-                                    FAQs
-                                </Link>
-                            </li>
-
-                            <li>
-                                <Link
-                                    to="/refund-policy"
-                                    className="transition hover:text-white"
-                                >
-                                    Refund Policy
-                                </Link>
-                            </li>
-
-                            <li>
-                                <Link
-                                    to="/contact-us"
-                                    className="transition hover:text-white"
-                                >
-                                    Contact Us
-                                </Link>
-                            </li>
-                        </ul>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1">
+                            <div>
+                                <p className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Platform</p>
+                                <ul className="space-y-3 text-gray-400">
+                                    <li><Link to="/about-us" className="transition hover:text-white">About Us</Link></li>
+                                    <li><Link to="/events" className="transition hover:text-white">Browse Events</Link></li>
+                                    <li><Link to="/faqs" className="transition hover:text-white">FAQs</Link></li>
+                                    <li><Link to="/contact-us" className="transition hover:text-white">Contact Us</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Legal &amp; Support</p>
+                                <ul className="space-y-3 text-gray-400">
+                                    <li><Link to="/refund-policy" className="transition hover:text-white">Refund Policy</Link></li>
+                                    <li><Link to="/privacy-policy" className="transition hover:text-white">Privacy Policy</Link></li>
+                                    <li><Link to="/terms-and-conditions" className="transition hover:text-white">Terms &amp; Conditions</Link></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="w-full max-w-sm mx-auto">

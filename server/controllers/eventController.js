@@ -1,4 +1,7 @@
 const Event = require('../models/Event');
+const User = require('../models/User');
+const Booking = require('../models/Booking');
+const { createNotificationsForUsers } = require('../utils/createNotification');
 const axios = require('axios');
 
 const EVENT_CATEGORIES = [
@@ -287,19 +290,43 @@ exports.createEvent = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
     try {
-        const event =
-            await Event.findByIdAndUpdate(
-                req.params.id,
-                req.body,
-                {
-                    new: true,
-                    runValidators: true
-                }
-            );
+        const previousEvent = await Event.findById(req.params.id).lean();
 
-        if (!event) {
-            return res.status(404).json({
-                message: 'Event not found'
+        if (!previousEvent) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        const event = await Event.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        const importantFields = ['title', 'date', 'location'];
+        const changedFields = importantFields.filter((field) =>
+            req.body[field] !== undefined &&
+            String(previousEvent[field] || '') !== String(event[field] || '')
+        );
+
+        if (changedFields.length) {
+            const [wishlistedUsers, activeBookings] = await Promise.all([
+                User.find({ wishlist: event._id }).select('_id').lean(),
+                Booking.find({
+                    eventId: event._id,
+                    status: { $ne: 'cancelled' }
+                }).select('userId').lean()
+            ]);
+
+            await createNotificationsForUsers({
+                users: [
+                    ...wishlistedUsers.map((user) => user._id),
+                    ...activeBookings.map((booking) => booking.userId)
+                ],
+                type: 'event',
+                title: 'Event details updated',
+                message: `${event.title} has updated ${changedFields.join(', ')} information. Please review the latest details.`,
+                link: `/events/${event._id}`,
+                relatedEvent: event._id
             });
         }
 
@@ -319,21 +346,36 @@ exports.updateEvent = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
     try {
-        const event =
-            await Event.findByIdAndDelete(
-                req.params.id
-            );
+        const event = await Event.findById(req.params.id);
 
         if (!event) {
-            return res.status(404).json({
-                message: 'Event not found'
-            });
+            return res.status(404).json({ message: 'Event not found' });
         }
 
-        res.json({
-            message:
-                'Event deleted successfully'
+        const [wishlistedUsers, activeBookings] = await Promise.all([
+            User.find({ wishlist: event._id }).select('_id').lean(),
+            Booking.find({
+                eventId: event._id,
+                status: { $ne: 'cancelled' }
+            }).select('userId').lean()
+        ]);
+
+        await createNotificationsForUsers({
+            users: [
+                ...wishlistedUsers.map((user) => user._id),
+                ...activeBookings.map((booking) => booking.userId)
+            ],
+            type: 'event',
+            title: 'Event no longer available',
+            message: `${event.title} has been removed from EventiQ. Check your dashboard for any related booking status.`,
+            link: '/events',
+            relatedEvent: event._id
         });
+
+        await Event.findByIdAndDelete(event._id);
+        await User.updateMany({ wishlist: event._id }, { $pull: { wishlist: event._id } });
+
+        res.json({ message: 'Event deleted successfully' });
     } catch (error) {
         console.error(
             'Delete event error:',

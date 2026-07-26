@@ -109,6 +109,16 @@ const createDelayedRequest = async ({ req, res, type }) => {
         return res.status(502).json({ message: 'Unable to send the support request email right now. Please try again.' });
     }
 
+    await createNotification({
+        user: req.user._id,
+        type: 'support',
+        title: 'Support request received',
+        message: `Your ${isTicket ? 'ticket-delay' : 'refund-delay'} request was submitted successfully. We will post status updates here.`,
+        link: '/dashboard',
+        relatedBooking: booking._id,
+        relatedEvent: booking.eventId?._id || null
+    });
+
     try {
         const admins = await User.find({ role: 'admin' }).select('_id');
 
