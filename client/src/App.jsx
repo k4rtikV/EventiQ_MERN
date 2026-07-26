@@ -18,6 +18,7 @@ import EventDetail from './pages/EventDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UserDashboard from './pages/UserDashboard';
+import ProfileDetails from './pages/ProfileDetails';
 import WishlistPage from './pages/WishlistPage';
 import AdminDashboard from './pages/AdminDashboard';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -122,6 +123,11 @@ function AppContent() {
                         <Route
                             path="/dashboard"
                             element={<UserDashboard />}
+                        />
+
+                        <Route
+                            path="/profile"
+                            element={<ProfileDetails />}
                         />
 
                         <Route

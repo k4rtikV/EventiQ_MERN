@@ -3,6 +3,7 @@ const OTP = require('../models/OTP');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendOTPEmail } = require('../utils/email');
+const { validateName, validateDefaultAddress } = require('../utils/profileValidation');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_PATTERN =
@@ -353,6 +354,75 @@ exports.verifyOTP = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: 'Server Error'
+        });
+    }
+};
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select(
+            'name email role isVerified defaultAddress createdAt'
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.json(user);
+    } catch (error) {
+        console.error('Get profile error:', error);
+        return res.status(500).json({
+            message: 'Unable to load profile details.'
+        });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const nameResult = validateName(req.body.name);
+        const addressResult = validateDefaultAddress(req.body.defaultAddress);
+        const errors = {};
+
+        if (nameResult.error) {
+            errors.name = nameResult.error;
+        }
+
+        if (!addressResult.isValid) {
+            errors.defaultAddress = addressResult.errors;
+        }
+
+        if (Object.keys(errors).length > 0) {
+            return res.status(400).json({
+                message: 'Please correct the highlighted profile details.',
+                errors
+            });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.name = nameResult.value;
+        user.defaultAddress = addressResult.value;
+        await user.save();
+
+        return res.json({
+            message: 'Profile updated successfully.',
+            user: {
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isVerified: user.isVerified,
+                defaultAddress: user.defaultAddress
+            }
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        return res.status(500).json({
+            message: 'Unable to update profile details.'
         });
     }
 };

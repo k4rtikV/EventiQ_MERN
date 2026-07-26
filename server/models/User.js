@@ -4,7 +4,10 @@ const userSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true
+            required: true,
+            trim: true,
+            minlength: 2,
+            maxlength: 50
         },
 
         email: {
@@ -29,6 +32,15 @@ const userSchema = new mongoose.Schema(
         isVerified: {
             type: Boolean,
             default: false
+        },
+
+        defaultAddress: {
+            street: { type: String, trim: true, default: '' },
+            city: { type: String, trim: true, default: '' },
+            state: { type: String, trim: true, default: '' },
+            zip: { type: String, trim: true, default: '' },
+            country: { type: String, trim: true, default: 'India' },
+            phone: { type: String, trim: true, default: '' }
         },
 
         wishlist: [

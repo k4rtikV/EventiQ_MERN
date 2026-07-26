@@ -38,10 +38,15 @@ const validateAddress = (req, res, next) => {
                 ? country.trim().replace(/\s+/g, ' ')
                 : '',
 
-        phone:
-            typeof phone === 'string'
+        phone: (() => {
+            const digits = typeof phone === 'string'
                 ? phone.replace(/\D/g, '')
-                : String(phone || '').replace(/\D/g, '')
+                : String(phone || '').replace(/\D/g, '');
+
+            return digits.length === 12 && digits.startsWith('91')
+                ? digits.slice(2)
+                : digits;
+        })()
     };
 
     const errors = {};

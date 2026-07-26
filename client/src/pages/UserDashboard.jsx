@@ -24,7 +24,8 @@ import {
     FaReceipt,
     FaTag,
     FaTicketAlt,
-    FaTimesCircle
+    FaTimesCircle,
+    FaUserEdit
 } from 'react-icons/fa';
 
 import {
@@ -519,7 +520,7 @@ const UserDashboard = () => {
 
     return (
         <div className="max-w-6xl mx-auto">
-            <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-6 sm:p-8 mb-8 border border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center text-center sm:text-left gap-6 transition-colors">
+            <section className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 sm:p-8 mb-8 border-2 border-blue-100 dark:border-gray-800 ring-1 ring-blue-50 dark:ring-gray-800/60 flex flex-col sm:flex-row sm:items-center text-center sm:text-left gap-6 transition-all duration-200 before:absolute before:inset-y-0 before:left-0 before:w-1.5 before:bg-gradient-to-b before:from-blue-500 before:via-indigo-500 before:to-purple-500">
                 <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shrink-0">
                         <img
@@ -555,6 +556,15 @@ const UserDashboard = () => {
                     >
                         <FaHeart />
                         My Wishlist
+                    </Link>
+
+
+                    <Link
+                        to="/profile"
+                        className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 border border-purple-600 dark:border-purple-500 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] transition-all duration-200"
+                    >
+                        <FaUserEdit />
+                        Edit Details
                     </Link>
                 </div>
             </section>
