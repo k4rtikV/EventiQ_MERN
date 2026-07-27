@@ -3,12 +3,9 @@ const SupportRequest = require('../models/SupportRequest');
 const User = require('../models/User');
 const { sendSupportEmail } = require('../utils/email');
 const sendBrevoEmail = require('../utils/sendBrevoEmail');
+const { delayedSupportTemplate } = require('../utils/emailTemplates');
 const { generateInvoicePDF, getInvoiceNumber } = require('../utils/generateInvoicePDF');
 const createNotification = require('../utils/createNotification');
-
-const escapeHtml = (value = '') => String(value)
-    .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 
 const supportRequest = async (req, res) => {
     const { name, email, message } = req.body;
@@ -82,20 +79,31 @@ const createDelayedRequest = async ({ req, res, type }) => {
             to: supportRecipient,
             replyTo: booking.userId.email,
             subject: `${subject} - ${booking._id}`,
-            html: `
-                <div style="font-family:Arial,sans-serif;line-height:1.6;padding:20px;color:#111827">
-                    <h2>${isTicket ? 'Ticket Assignment Delay Request' : 'Refund Initiation Delay Request'}</h2>
-                    <p><strong>Name:</strong> ${escapeHtml(booking.userId.name)}</p>
-                    <p><strong>Email:</strong> ${escapeHtml(booking.userId.email)}</p>
-                    <p><strong>Event:</strong> ${escapeHtml(booking.eventId?.title || 'N/A')}</p>
-                    <p><strong>Booking ID:</strong> ${escapeHtml(booking._id)}</p>
-                    <p><strong>Payment ID:</strong> ${escapeHtml(booking.razorpayPaymentId || 'Not available')}</p>
-                    <p><strong>Invoice:</strong> ${escapeHtml(invoiceNumber)}</p>
-                    <p><strong>Amount paid:</strong> INR ${Number(booking.amount || 0).toFixed(2)}</p>
-                    <p><strong>Current status:</strong> ${isTicket ? 'Paid - Pending approval' : 'Cancelled - Awaiting refund initiation'}</p>
-                    <p><strong>Customer message:</strong></p>
-                    <p style="white-space:pre-wrap">${escapeHtml(message)}</p>
-                </div>`,
+            html: delayedSupportTemplate({
+                isTicket,
+                name: booking.userId.name,
+                email: booking.userId.email,
+                eventTitle: booking.eventId?.title || 'N/A',
+                bookingId: booking._id,
+                paymentId: booking.razorpayPaymentId || 'Not available',
+                invoiceNumber,
+                amount: booking.amount,
+                message
+            }),
+            text: [
+                isTicket ? 'Ticket Assignment Delay Request' : 'Refund Initiation Delay Request',
+                '',
+                `Name: ${booking.userId.name}`,
+                `Email: ${booking.userId.email}`,
+                `Event: ${booking.eventId?.title || 'N/A'}`,
+                `Booking ID: ${booking._id}`,
+                `Payment ID: ${booking.razorpayPaymentId || 'Not available'}`,
+                `Invoice: ${invoiceNumber}`,
+                `Amount paid: ₹${Number(booking.amount || 0).toFixed(2)}`,
+                `Current status: ${isTicket ? 'Paid - Pending approval' : 'Cancelled - Awaiting refund initiation'}`,
+                '',
+                `Customer message: ${message}`
+            ].join('\n'),
             attachments: [{ filename: `${invoiceNumber}.pdf`, content: invoiceBuffer, contentType: 'application/pdf' }]
         });
     } catch (emailError) {
