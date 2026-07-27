@@ -1,19 +1,10 @@
-const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 const axios = require('axios');
+const sendBrevoEmail = require('./sendBrevoEmail');
 
 dotenv.config();
-
-const transporter =
-    nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
 
 const escapeHtml = (value = '') =>
     String(value)
@@ -258,7 +249,7 @@ const sendBookingEmail = async (
             escapeHtml(userName);
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: userEmail,
             subject: `Booking Confirmed: ${eventTitle}`,
             html: `
@@ -308,7 +299,7 @@ const sendBookingEmail = async (
             ]
         };
 
-        await transporter.sendMail(
+        await sendBrevoEmail(
             mailOptions
         );
 
@@ -345,7 +336,7 @@ const sendOTPEmail = async (
                 : 'Please use the following OTP to verify and confirm your event booking.';
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: userEmail,
             subject: title,
             html: `
@@ -371,7 +362,7 @@ const sendOTPEmail = async (
             `
         };
 
-        await transporter.sendMail(
+        await sendBrevoEmail(
             mailOptions
         );
 
@@ -396,10 +387,10 @@ const sendSupportEmail = async (
     try {
         const supportRecipient =
             process.env.SUPPORT_EMAIL ||
-            process.env.EMAIL_USER;
+            process.env.EMAIL_FROM_ADDRESS;
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: supportRecipient,
             replyTo: userEmail,
             subject: `Support query from ${name}`,
@@ -430,7 +421,7 @@ const sendSupportEmail = async (
             `
         };
 
-        await transporter.sendMail(
+        await sendBrevoEmail(
             mailOptions
         );
 
@@ -462,7 +453,7 @@ const sendCancellationEmail = async (
                 : 'Your booking has been cancelled. You will be refunded the amount minus processing fees.';
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: userEmail,
             subject: `Booking cancelled for ${eventTitle}`,
             html: `
@@ -510,7 +501,7 @@ const sendCancellationEmail = async (
             `
         };
 
-        await transporter.sendMail(
+        await sendBrevoEmail(
             mailOptions
         );
 
@@ -538,7 +529,7 @@ const sendRefundInitiatedEmail = async (
 ) => {
     try {
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: userEmail,
             subject: `Refund initiated for ${eventTitle}`,
             html: `
@@ -576,7 +567,7 @@ const sendRefundInitiatedEmail = async (
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendBrevoEmail(mailOptions);
         console.log('Refund initiation email sent to', userEmail);
     } catch (error) {
         console.error('Error sending refund initiation email:', error);
@@ -595,7 +586,7 @@ const sendPaymentReceivedEmail =
         try {
             const mailOptions = {
                 from: process.env
-                    .EMAIL_USER,
+                    .EMAIL_FROM_ADDRESS,
                 to: userEmail,
                 subject:
                     'Payment Received – Your Booking is Being Processed',
@@ -703,7 +694,7 @@ const sendPaymentReceivedEmail =
                 `
             };
 
-            await transporter.sendMail(
+            await sendBrevoEmail(
                 mailOptions
             );
 
@@ -769,7 +760,7 @@ const sendNewsletterPromoEmail =
 
             const mailOptions = {
                 from: process.env
-                    .EMAIL_USER,
+                    .EMAIL_FROM_ADDRESS,
                 to: userEmail,
                 subject:
                     'Welcome to EventiQ – Your Discount Code',
@@ -856,7 +847,7 @@ const sendNewsletterPromoEmail =
                 `
             };
 
-            await transporter.sendMail(
+            await sendBrevoEmail(
                 mailOptions
             );
 
@@ -885,8 +876,8 @@ const sendNewsletterCampaignEmail = async (
     const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(message).replaceAll('\n', '<br />');
 
-    await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+    await sendBrevoEmail({
+        from: process.env.EMAIL_FROM_ADDRESS,
         to: userEmail,
         subject,
         html: `

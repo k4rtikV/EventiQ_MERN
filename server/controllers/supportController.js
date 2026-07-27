@@ -1,15 +1,10 @@
-const nodemailer = require('nodemailer');
 const Booking = require('../models/Booking');
 const SupportRequest = require('../models/SupportRequest');
 const User = require('../models/User');
 const { sendSupportEmail } = require('../utils/email');
+const sendBrevoEmail = require('../utils/sendBrevoEmail');
 const { generateInvoicePDF, getInvoiceNumber } = require('../utils/generateInvoicePDF');
 const createNotification = require('../utils/createNotification');
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-});
 
 const escapeHtml = (value = '') => String(value)
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
@@ -81,9 +76,9 @@ const createDelayedRequest = async ({ req, res, type }) => {
     try {
         const invoiceBuffer = await generateInvoicePDF(booking);
         const invoiceNumber = getInvoiceNumber(booking);
-        const supportRecipient = process.env.SUPPORT_EMAIL || process.env.EMAIL_USER;
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+        const supportRecipient = process.env.SUPPORT_EMAIL || process.env.EMAIL_FROM_ADDRESS;
+        await sendBrevoEmail({
+            from: process.env.EMAIL_FROM_ADDRESS,
             to: supportRecipient,
             replyTo: booking.userId.email,
             subject: `${subject} - ${booking._id}`,
