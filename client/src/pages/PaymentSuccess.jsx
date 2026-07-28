@@ -10,10 +10,10 @@ const PaymentSuccess = () => {
                 <h1 className="text-4xl font-black text-gray-900 mb-4 dark:text-gray-100">Booking Confirmed!</h1>
                 <p className="text-gray-500 mb-8 text-lg dark:text-gray-400">Your ticket has been booked successfully. A confirmation email has been sent to your registered email address.</p>
                 <div className="space-y-4">
-                    <Link to="/dashboard" className="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg hover:shadow-xl">
+                    <Link to="/dashboard" className="block w-full rounded-xl border border-green-400 bg-green-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-green-500 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 dark:border-green-400/60 dark:focus-visible:ring-offset-gray-900">
                         View My Tickets
                     </Link>
-                    <Link to="/" className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl transition dark:bg-gray-800 dark:text-gray-200">
+                    <Link to="/" className="block w-full rounded-xl border border-gray-300 bg-white px-6 py-4 font-bold text-gray-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-cyan-500 dark:hover:bg-gray-700 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-gray-900">
                         Discover More Events
                     </Link>
                 </div>

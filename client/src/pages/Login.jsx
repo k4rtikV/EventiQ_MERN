@@ -125,7 +125,7 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((visible) => !visible)}
-                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition dark:text-gray-400"
+                                    className="absolute inset-y-1.5 right-1.5 z-10 flex w-10 items-center justify-center rounded-md bg-white/90 text-gray-600 hover:bg-gray-100 hover:text-gray-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700 dark:hover:text-white"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                 >
@@ -155,7 +155,7 @@ const Login = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black focus:ring-4 focus:ring-gray-200 transition shadow-md disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                    className="w-full rounded-lg bg-gradient-to-r from-blue-600 via-violet-600 to-cyan-600 py-3 font-bold text-white shadow-md shadow-blue-500/20 transition hover:-translate-y-0.5 hover:from-blue-500 hover:via-violet-500 hover:to-cyan-500 hover:shadow-lg hover:shadow-cyan-500/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 dark:border dark:border-white/15 dark:shadow-black/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
                     {loading ? 'Processing...' : (showOTP ? 'Verify OTP & Log In' : 'Sign In')}
                 </button>
@@ -163,7 +163,7 @@ const Login = () => {
 
             <p className="text-center mt-8 text-gray-600 dark:text-gray-300">
                 Don&apos;t have an account?{' '}
-                <Link to="/register" className="text-gray-900 font-bold hover:underline dark:text-gray-100">
+                <Link to="/register" className="font-bold text-blue-700 hover:text-blue-800 hover:underline dark:text-cyan-300 dark:hover:text-cyan-200">
                     Sign up
                 </Link>
             </p>

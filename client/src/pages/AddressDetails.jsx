@@ -487,7 +487,7 @@ const AddressDetails = () => {
                 <button
                     type="submit"
                     disabled={saving || (addressMode === 'saved' && !hasSavedAddress)}
-                    className="mt-8 w-full rounded-2xl bg-gray-900 px-5 py-3.5 font-bold text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    className="mt-8 w-full rounded-2xl border border-blue-500/70 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-blue-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:translate-y-0 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none disabled:shadow-none dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
                 >
                     {saving
                         ? 'Saving Address...'

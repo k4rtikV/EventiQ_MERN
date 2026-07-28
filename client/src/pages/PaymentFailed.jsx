@@ -10,10 +10,10 @@ const PaymentFailed = () => {
                 <h1 className="text-4xl font-black text-gray-900 mb-4 dark:text-gray-100">Booking Failed</h1>
                 <p className="text-gray-500 mb-8 text-lg dark:text-gray-400">We couldn't process your payment. Please ensure your payment details are correct and try again.</p>
                 <div className="space-y-4">
-                    <Link to="/" className="block w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg hover:shadow-xl">
+                    <Link to="/" className="block w-full rounded-xl border border-red-400 bg-red-600 px-6 py-4 font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 dark:border-red-400/60 dark:focus-visible:ring-offset-gray-900">
                         Return to Events
                     </Link>
-                    <Link to="/dashboard" className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl transition dark:bg-gray-800 dark:text-gray-200">
+                    <Link to="/dashboard" className="block w-full rounded-xl border border-gray-300 bg-white px-6 py-4 font-bold text-gray-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-cyan-500 dark:hover:bg-gray-700 dark:hover:text-cyan-200 dark:focus-visible:ring-offset-gray-900">
                         Go to Dashboard
                     </Link>
                 </div>

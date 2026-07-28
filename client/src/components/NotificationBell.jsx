@@ -252,7 +252,7 @@ const NotificationBell = () => {
                     <button
                         type="button"
                         onClick={handleViewAll}
-                        className="w-full py-3.5 bg-gray-900 hover:bg-black text-white font-bold text-sm transition"
+                        className="w-full border-t border-blue-500/30 bg-blue-600 py-3.5 text-sm font-bold text-white transition-colors duration-200 hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400 dark:border-cyan-400/20 dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         View all notifications
                     </button>

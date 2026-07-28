@@ -87,7 +87,7 @@ const NotificationsPage = () => {
                                 <button
                                     type="button"
                                     onClick={markAllAsRead}
-                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 font-bold text-sm hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:border-white/20 transition-all duration-200"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-cyan-400/35 dark:bg-cyan-400/10 dark:text-cyan-200 dark:hover:border-cyan-300/60 dark:hover:bg-cyan-400/20"
                                 >
                                     <FaCheck />
                                     Mark all read
@@ -97,7 +97,7 @@ const NotificationsPage = () => {
                             <button
                                 type="button"
                                 onClick={clearReadNotifications}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 hover:bg-black text-white dark:bg-white/10 dark:hover:bg-white/15 dark:border dark:border-white/10 dark:hover:border-white/20 font-bold text-sm transition-all duration-200"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-900 bg-gray-900 px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-violet-100 dark:hover:border-violet-300/60 dark:hover:bg-violet-500/30"
                             >
                                 <FaTrash />
                                 Clear read
@@ -154,7 +154,7 @@ const NotificationsPage = () => {
                             return (
                                 <div
                                     key={notification._id}
-                                    className={`p-6 md:px-10 flex items-start gap-4 ${
+                                    className={`p-5 sm:p-6 md:px-10 flex flex-col sm:flex-row sm:items-start gap-4 ${
                                         notification.isRead
                                             ? 'bg-white dark:bg-slate-900'
                                             : 'bg-gray-50 dark:bg-slate-800/80'
@@ -163,7 +163,7 @@ const NotificationsPage = () => {
                                     <button
                                         type="button"
                                         onClick={() => handleOpen(notification)}
-                                        className="flex items-start gap-4 flex-1 text-left min-w-0"
+                                        className="flex w-full min-w-0 flex-1 items-start gap-3 text-left sm:gap-4"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-gray-900 text-white dark:bg-white/10 dark:text-gray-100 dark:border dark:border-white/10 flex items-center justify-center shrink-0">
                                             <Icon />
@@ -189,15 +189,17 @@ const NotificationsPage = () => {
                                         </div>
                                     </button>
 
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex w-full items-center justify-end gap-2 border-t border-gray-200 pt-3 dark:border-white/10 sm:w-auto sm:shrink-0 sm:border-t-0 sm:pt-0">
                                         {!notification.isRead && (
                                             <button
                                                 type="button"
                                                 onClick={() => markAsRead(notification._id)}
                                                 title="Mark as read"
-                                                className="w-9 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:border-white/20 inline-flex items-center justify-center transition-all duration-200"
+                                                aria-label={`Mark ${notification.title} as read`}
+                                                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-emerald-400/40 dark:bg-emerald-400/10 dark:text-emerald-200 dark:hover:border-emerald-300/60 dark:hover:bg-emerald-400/20 sm:h-10 sm:w-10 sm:flex-none sm:px-0"
                                             >
                                                 <FaCheck />
+                                                <span className="sm:hidden">Mark as read</span>
                                             </button>
                                         )}
 
@@ -205,7 +207,8 @@ const NotificationsPage = () => {
                                             type="button"
                                             onClick={() => removeNotification(notification._id)}
                                             title="Delete notification"
-                                            className="w-9 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-700 dark:text-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-500/15 dark:hover:text-red-400 dark:hover:border-red-500/30 inline-flex items-center justify-center transition-all duration-200"
+                                            aria-label={`Delete ${notification.title}`}
+                                            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:border-red-400/60 dark:hover:bg-red-500/20 dark:hover:text-red-200"
                                         >
                                             <FaTimes />
                                         </button>

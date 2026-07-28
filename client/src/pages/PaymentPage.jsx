@@ -418,7 +418,7 @@ const PaymentPage = () => {
                             }
                             maxLength={40}
                             placeholder="Enter promo code"
-                            className="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 font-semibold uppercase tracking-wide outline-none transition focus:border-gray-700 focus:ring-2 focus:ring-gray-200 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600"
+                            className="min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 font-semibold uppercase tracking-wide text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-cyan-400 dark:focus:ring-cyan-950 dark:disabled:bg-gray-800/60 dark:disabled:text-gray-500"
                         />
 
                         {hasPromo ? (
@@ -430,7 +430,7 @@ const PaymentPage = () => {
                                 disabled={
                                     promoLoading
                                 }
-                                className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="rounded-xl border border-red-300 bg-red-50 px-5 py-3 font-bold text-red-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none dark:border-red-700 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-600 dark:hover:text-white dark:focus-visible:ring-offset-gray-900"
                             >
                                 {promoLoading
                                     ? 'Removing...'
@@ -447,7 +447,7 @@ const PaymentPage = () => {
                                     booking.paymentStatus ===
                                         'paid'
                                 }
-                                className="rounded-xl bg-gray-900 px-6 py-3 font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+                                className="rounded-xl border border-blue-500/70 bg-blue-600 px-6 py-3 font-bold text-white shadow-md shadow-blue-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none dark:border-cyan-400/40 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus-visible:ring-offset-gray-900"
                             >
                                 {promoLoading
                                     ? 'Applying...'
@@ -457,7 +457,7 @@ const PaymentPage = () => {
                     </div>
 
                     {hasPromo && (
-                        <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                        <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-800 dark:bg-green-950/35 dark:text-green-300">
                             Promo code{' '}
                             <strong>
                                 {
@@ -526,13 +526,13 @@ const PaymentPage = () => {
             </div>
 
             {promoMessage && (
-                <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-5 border border-green-100">
+                <div className="mb-5 rounded-xl border border-green-100 bg-green-50 p-4 text-green-700 dark:border-green-800 dark:bg-green-950/35 dark:text-green-300">
                     {promoMessage}
                 </div>
             )}
 
             {error && (
-                <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-5 border border-red-100">
+                <div className="mb-5 rounded-xl border border-red-100 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-950/35 dark:text-red-300">
                     {error}
                 </div>
             )}
@@ -546,7 +546,7 @@ const PaymentPage = () => {
                     booking.paymentStatus ===
                         'paid'
                 }
-                className="w-full bg-gray-900 text-white rounded-2xl py-4 px-4 text-lg font-bold hover:bg-black transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl border border-blue-500/70 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 px-4 py-4 text-lg font-bold text-white shadow-lg shadow-blue-500/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:translate-y-0 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none disabled:shadow-none dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
             >
                 {booking.paymentStatus ===
                 'paid'

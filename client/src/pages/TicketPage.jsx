@@ -1266,7 +1266,7 @@ const TicketPage = () => {
                             onClick={() =>
                                 navigate('/dashboard')
                             }
-                            className="w-full bg-gray-900 text-white py-3 rounded-3xl font-semibold hover:bg-black"
+                            className="w-full rounded-3xl border border-blue-500/70 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.99] dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
                         >
                             Hide Ticket
                         </button>

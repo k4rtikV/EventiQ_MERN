@@ -197,7 +197,7 @@ const WishlistPage = () => {
 
                     <Link
                         to="/events"
-                        className="inline-flex bg-gray-900 hover:bg-black text-white font-bold px-7 py-3 rounded-xl transition"
+                        className="inline-flex rounded-xl border border-blue-500/70 bg-blue-600 px-7 py-3 font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-950"
                     >
                         Browse Events
                     </Link>
@@ -357,7 +357,7 @@ const WishlistPage = () => {
                                         <div className="grid grid-cols-[1fr_auto] gap-2">
                                             <Link
                                                 to={`/events/${event._id}`}
-                                                className="text-center bg-gray-900 hover:bg-black text-white font-semibold py-2.5 px-4 rounded-lg transition"
+                                                className="rounded-lg border border-blue-500/70 bg-blue-600 px-4 py-2.5 text-center font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
                                             >
                                                 View Details
                                             </Link>

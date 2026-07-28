@@ -560,7 +560,7 @@ const EventsPage = () => {
                     <button
                         type="button"
                         onClick={resetFilters}
-                        className="px-6 py-3 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black transition"
+                        className="rounded-lg border border-blue-500/70 bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
                     >
                         Clear Filters
                     </button>
