@@ -33,7 +33,7 @@ import {
 } from '../context/AuthContext';
 
 import api from '../utils/axios';
-import defaultAvatar from '../assets/default-avatar.png';
+import { getAvatarSrc } from '../data/avatarOptions';
 
 const FILTERS = {
     ALL: 'all',
@@ -524,8 +524,8 @@ const UserDashboard = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shrink-0">
                         <img
-                            src={defaultAvatar}
-                            alt="User"
+                            src={getAvatarSrc(user?.avatar)}
+                            alt={`${user?.name || 'User'} profile avatar`}
                             className="w-full h-full object-cover"
                         />
                     </div>

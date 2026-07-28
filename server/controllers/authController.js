@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const { sendOTPEmail } = require('../utils/email');
 const { validateName, validateDefaultAddress } = require('../utils/profileValidation');
 const { createAdminNotifications } = require('../utils/createNotification');
+const { DEFAULT_AVATAR, isAllowedAvatar } = require('../utils/avatarOptions');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_PATTERN =
@@ -281,6 +282,7 @@ exports.login = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            avatar: user.avatar || DEFAULT_AVATAR,
             token: generateToken(
                 user.id,
                 user.role
@@ -354,6 +356,7 @@ exports.verifyOTP = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            avatar: user.avatar || DEFAULT_AVATAR,
             token: generateToken(
                 user.id,
                 user.role
@@ -369,7 +372,7 @@ exports.verifyOTP = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select(
-            'name email role isVerified defaultAddress createdAt'
+            'name email role avatar isVerified defaultAddress createdAt'
         );
 
         if (!user) {
@@ -389,7 +392,12 @@ exports.updateProfile = async (req, res) => {
     try {
         const nameResult = validateName(req.body.name);
         const addressResult = validateDefaultAddress(req.body.defaultAddress);
+        const requestedAvatar = req.body.avatar || DEFAULT_AVATAR;
         const errors = {};
+
+        if (!isAllowedAvatar(requestedAvatar)) {
+            errors.avatar = 'Please select one of the available EventiQ avatars.';
+        }
 
         if (nameResult.error) {
             errors.name = nameResult.error;
@@ -413,6 +421,7 @@ exports.updateProfile = async (req, res) => {
         }
 
         user.name = nameResult.value;
+        user.avatar = requestedAvatar;
         user.defaultAddress = addressResult.value;
         await user.save();
 
@@ -423,6 +432,7 @@ exports.updateProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                avatar: user.avatar || DEFAULT_AVATAR,
                 isVerified: user.isVerified,
                 defaultAddress: user.defaultAddress
             }

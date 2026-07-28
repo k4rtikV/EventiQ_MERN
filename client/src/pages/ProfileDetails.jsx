@@ -14,6 +14,7 @@ import {
     FaCheckCircle,
     FaMapMarkerAlt,
     FaSave,
+    FaUserCircle,
     FaUserEdit
 } from 'react-icons/fa';
 
@@ -22,6 +23,7 @@ import {
 } from '../context/AuthContext';
 
 import api from '../utils/axios';
+import avatarOptions, { DEFAULT_AVATAR_ID, getAvatarSrc } from '../data/avatarOptions';
 
 const INDIA_STATES = [
     'Andaman and Nicobar Islands',
@@ -89,6 +91,7 @@ const ProfileDetails = () => {
 
     const [form, setForm] = useState({
         name: '',
+        avatar: DEFAULT_AVATAR_ID,
         defaultAddress: EMPTY_ADDRESS
     });
 
@@ -110,6 +113,7 @@ const ProfileDetails = () => {
 
                 setForm({
                     name: data.name || '',
+                    avatar: data.avatar || DEFAULT_AVATAR_ID,
                     defaultAddress: {
                         ...EMPTY_ADDRESS,
                         ...(data.defaultAddress || {})
@@ -146,6 +150,7 @@ const ProfileDetails = () => {
     const validate = () => {
         const cleaned = {
             name: cleanText(form.name),
+            avatar: form.avatar || DEFAULT_AVATAR_ID,
             defaultAddress: {
                 street: cleanText(form.defaultAddress.street),
                 city: cleanText(form.defaultAddress.city),
@@ -254,6 +259,19 @@ const ProfileDetails = () => {
         setSuccess('');
     };
 
+    const handleAvatarChange = (avatarId) => {
+        setForm((current) => ({
+            ...current,
+            avatar: avatarId
+        }));
+        setFieldErrors((current) => ({
+            ...current,
+            avatar: ''
+        }));
+        setError('');
+        setSuccess('');
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
@@ -273,6 +291,7 @@ const ProfileDetails = () => {
             updateStoredUser(data.user);
             setForm({
                 name: data.user.name,
+                avatar: data.user.avatar || DEFAULT_AVATAR_ID,
                 defaultAddress: {
                     ...EMPTY_ADDRESS,
                     ...(data.user.defaultAddress || {})
@@ -360,6 +379,65 @@ const ProfileDetails = () => {
                     )}
 
                     <section>
+                        <div className="flex items-center gap-2">
+                            <FaUserCircle className="text-blue-600 dark:text-cyan-400" />
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                                Profile Avatar
+                            </h2>
+                        </div>
+
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Choose one of the predefined EventiQ avatars. No image upload is required.
+                        </p>
+
+                        <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-start">
+                            <div className="mx-auto shrink-0 lg:mx-0">
+                                <img
+                                    src={getAvatarSrc(form.avatar)}
+                                    alt="Selected profile avatar"
+                                    className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl ring-4 ring-blue-500/20 dark:border-gray-800 dark:ring-cyan-400/20"
+                                />
+                                <p className="mt-2 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    Current selection
+                                </p>
+                            </div>
+
+                            <div className="grid flex-1 grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                                {avatarOptions.map((avatar) => {
+                                    const isSelected = form.avatar === avatar.id;
+
+                                    return (
+                                        <button
+                                            key={avatar.id}
+                                            type="button"
+                                            onClick={() => handleAvatarChange(avatar.id)}
+                                            aria-label={`Select ${avatar.label}`}
+                                            aria-pressed={isSelected}
+                                            className={`group relative rounded-2xl border-2 p-1.5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
+                                                isSelected
+                                                    ? 'border-blue-600 bg-blue-50 shadow-md ring-2 ring-blue-200 dark:border-cyan-400 dark:bg-cyan-950/30 dark:ring-cyan-500/20'
+                                                    : 'border-gray-200 bg-white hover:border-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-cyan-500'
+                                            }`}
+                                        >
+                                            <img
+                                                src={avatar.src}
+                                                alt=""
+                                                className="aspect-square w-full rounded-xl object-cover"
+                                            />
+                                            {isSelected && (
+                                                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-xs text-white shadow-md">
+                                                    <FaCheckCircle />
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <FieldError message={fieldErrors.avatar} />
+                    </section>
+
+                    <section className="border-t border-gray-200 pt-8 dark:border-gray-800">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                             Personal Details
                         </h2>

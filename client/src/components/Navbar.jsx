@@ -10,8 +10,10 @@ import {
 
 import {
     FaMoon,
+    FaSignOutAlt,
     FaSun,
-    FaTicketAlt
+    FaTicketAlt,
+    FaUserShield
 } from 'react-icons/fa';
 
 import {
@@ -23,6 +25,9 @@ import {
 } from '../context/ThemeContext';
 
 import NotificationBell from './NotificationBell';
+import {
+    getAvatarSrc
+} from '../data/avatarOptions';
 
 const Navbar = () => {
     const {
@@ -46,56 +51,57 @@ const Navbar = () => {
         isActive
     }) => {
         return [
-            'relative px-3 py-2 rounded-xl font-medium',
-            'border transition-all duration-200 ease-out',
-            'hover:-translate-y-0.5',
+            'relative px-1 py-2 text-sm sm:text-base font-medium',
+            'transition-colors duration-200',
             'focus:outline-none focus-visible:ring-2',
             'focus-visible:ring-blue-400 focus-visible:ring-offset-2',
-            'focus-visible:ring-offset-gray-900',
+            'focus-visible:ring-offset-gray-900 rounded-md',
+            'after:absolute after:left-0 after:right-0 after:-bottom-0.5',
+            'after:h-0.5 after:rounded-full',
+            'after:transition-all after:duration-200',
             isActive
                 ? [
-                    'bg-white/[0.85] text-slate-900',
-                    'border-white/40 backdrop-blur-2xl',
-                    'shadow-lg shadow-black/20',
-                    'font-semibold'
+                    'text-white',
+                    'after:bg-gradient-to-r',
+                    'after:from-blue-400 after:via-purple-400 after:to-cyan-400',
+                    'after:scale-x-100'
                 ].join(' ')
                 : [
-                    'border-transparent text-gray-200',
-                    'hover:bg-white/10 hover:text-white',
-                    'hover:border-white/10 hover:backdrop-blur-md',
-                    'hover:shadow-md hover:shadow-black/10'
+                    'text-gray-300 hover:text-white',
+                    'after:bg-white/40 after:scale-x-0',
+                    'hover:after:scale-x-100'
                 ].join(' ')
         ].join(' ');
     };
 
     const utilityButtonClass = [
-        'w-10 h-10 rounded-xl',
-        'border border-white/10',
-        'bg-white/5 hover:bg-white/10',
-        'hover:border-white/20',
-        'text-white inline-flex items-center justify-center',
-        'transition-all duration-200 ease-out',
-        'hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/15',
+        'h-11 w-11 rounded-full',
+        'inline-flex items-center justify-center',
+        'text-gray-300 hover:text-white',
+        'bg-transparent hover:bg-white/10',
+        'border border-transparent hover:border-white/10',
+        'transition-all duration-200',
         'focus:outline-none focus-visible:ring-2',
         'focus-visible:ring-blue-400 focus-visible:ring-offset-2',
         'focus-visible:ring-offset-gray-900'
     ].join(' ');
 
     return (
-        <nav className="bg-gray-900 border-b border-gray-800 shadow-lg">
+        <nav className="bg-gray-900 border-b border-gray-800">
             <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row justify-between items-center py-4 gap-4">
+                <div className="min-h-[72px] flex items-center justify-between gap-4">
                     <Link
                         to="/"
-                        className="group text-white text-2xl font-bold flex items-center gap-2 rounded-xl border border-transparent px-2 py-1 transition-all duration-200 hover:bg-white/10 hover:border-white/10 hover:-translate-y-0.5 hover:backdrop-blur-md hover:shadow-md hover:shadow-black/10"
+                        className="group flex shrink-0 items-center gap-2 rounded-lg text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
                     >
-                        <FaTicketAlt className="transition-all duration-200 ease-out group-hover:rotate-6 group-hover:text-blue-300 group-hover:drop-shadow-[0_0_6px_rgba(147,197,253,0.65)]" />
-                        <span className="transition-colors duration-200 group-hover:text-white">
+                        <FaTicketAlt className="text-xl transition-colors duration-200 group-hover:text-cyan-300" />
+
+                        <span className="text-xl font-bold tracking-tight">
                             EventiQ
                         </span>
                     </Link>
 
-                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-4 sm:gap-6">
                         <NavLink
                             to="/"
                             end
@@ -104,37 +110,86 @@ const Navbar = () => {
                             Home
                         </NavLink>
 
+                        <span
+                            aria-hidden="true"
+                            className="hidden h-5 w-px bg-white/15 sm:block"
+                        />
+
                         <NavLink
                             to="/events"
                             className={navLinkClass}
                         >
                             Events
                         </NavLink>
+                    </div>
 
+                    <div className="flex shrink-0 items-center gap-3 sm:gap-4">
                         {user ? (
                             <>
                                 <NavLink
                                     to={
-                                        user.role ===
-                                        'admin'
+                                        user.role === 'admin'
                                             ? '/admin'
                                             : '/dashboard'
                                     }
-                                    className={navLinkClass}
+                                    aria-label={
+                                        user.role === 'admin'
+                                            ? 'Open admin dashboard'
+                                            : 'Open profile'
+                                    }
+                                    title={
+                                        user.role === 'admin'
+                                            ? 'Admin dashboard'
+                                            : 'Profile'
+                                    }
+                                    className={({
+                                        isActive
+                                    }) =>
+                                        [
+                                            'h-11 w-11 rounded-full',
+                                            'inline-flex items-center justify-center',
+                                            'transition-all duration-200',
+                                            'focus:outline-none focus-visible:ring-2',
+                                            'focus-visible:ring-blue-400 focus-visible:ring-offset-2',
+                                            'focus-visible:ring-offset-gray-900',
+                                            isActive
+                                                ? [
+                                                    'ring-2 ring-cyan-400',
+                                                    'ring-offset-2 ring-offset-gray-900'
+                                                ].join(' ')
+                                                : 'hover:ring-2 hover:ring-white/30 hover:ring-offset-2 hover:ring-offset-gray-900'
+                                        ].join(' ')
+                                    }
                                 >
-                                    Profile
+                                    {user.role === 'admin' ? (
+                                        <span className="h-11 w-11 rounded-full bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-cyan-500/30 border border-white/15 inline-flex items-center justify-center text-cyan-200">
+                                            <FaUserShield />
+                                        </span>
+                                    ) : (
+                                        <img
+                                            src={getAvatarSrc(user.avatar)}
+                                            alt=""
+                                            className="h-11 w-11 rounded-full border border-white/20 object-cover shadow-sm"
+                                        />
+                                    )}
                                 </NavLink>
 
-                                <div className="rounded-xl">
+                                <div className="ml-1 flex h-11 w-11 items-center justify-center">
                                     <NotificationBell />
                                 </div>
 
                                 <button
                                     type="button"
                                     onClick={handleLogout}
-                                    className="bg-gray-700/70 hover:bg-red-500/20 text-white hover:text-red-300 px-4 py-2 rounded-xl border border-gray-600 hover:border-red-400/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-950/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+                                    aria-label="Logout"
+                                    title="Logout"
+                                    className={[
+                                        utilityButtonClass,
+                                        'hover:bg-red-500/10 hover:text-red-300',
+                                        'hover:border-red-400/20'
+                                    ].join(' ')}
                                 >
-                                    Logout
+                                    <FaSignOutAlt />
                                 </button>
                             </>
                         ) : (
@@ -148,28 +203,7 @@ const Navbar = () => {
 
                                 <NavLink
                                     to="/register"
-                                    className={({
-                                        isActive
-                                    }) =>
-                                        [
-                                            'px-4 py-2 rounded-xl font-semibold border',
-                                            'transition-all duration-200 ease-out',
-                                            'hover:-translate-y-0.5 hover:shadow-md',
-                                            'focus:outline-none focus-visible:ring-2',
-                                            'focus-visible:ring-blue-400 focus-visible:ring-offset-2',
-                                            'focus-visible:ring-offset-gray-900',
-                                            isActive
-                                                ? [
-                                                    'bg-white/[0.85] text-slate-900',
-                                                    'border-white/40 backdrop-blur-2xl',
-                                                    'shadow-lg shadow-black/20'
-                                                ].join(' ')
-                                                : [
-                                                    'bg-white text-gray-900 border-white',
-                                                    'hover:bg-gray-100'
-                                                ].join(' ')
-                                        ].join(' ')
-                                    }
+                                    className="ml-1 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 transition-all duration-200 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
                                 >
                                     Sign Up
                                 </NavLink>
