@@ -16,6 +16,12 @@ const {
 
 dotenv.config();
 
+const formatAmount = (amount) =>
+    Number(amount || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
 const sendBookingEmail = async (
     userEmail,
     userName,
@@ -145,7 +151,11 @@ const sendBookingEmail = async (
             booking.eventId.date
                 ? new Date(
                       booking.eventId.date
-                  ).toLocaleString()
+                  ).toLocaleString('en-IN', {
+                      timeZone: 'Asia/Kolkata',
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                  })
                 : '';
 
         doc.text(
@@ -178,9 +188,12 @@ const sendBookingEmail = async (
             detailsTop + 90
         );
 
-        const qrValue = `${booking._id}-${
-            booking.userId || ''
-        }`;
+        const bookingUserId =
+            booking.userId?._id ||
+            booking.userId ||
+            '';
+
+        const qrValue = `${booking._id}-${bookingUserId}`;
 
         try {
             const qrDataUrl =
@@ -260,7 +273,9 @@ const sendBookingEmail = async (
                 'Your PDF ticket and QR code are attached to this email.'
             ].join('\n'),
             attachments: [{
-                filename: `${eventTitle.replace(/[^a-z0-9]/gi, '_').slice(0, 40)}-${booking._id}.pdf`,
+                filename: `${String(eventTitle || 'EventiQ_Ticket')
+                    .replace(/[^a-z0-9]/gi, '_')
+                    .slice(0, 40)}-${booking._id}.pdf`,
                 content: pdfBuffer,
                 contentType: 'application/pdf'
             }]
