@@ -11,6 +11,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import EventiQChatbot from './components/EventiQChatbot';
+import AdminRoute from './components/AdminRoute';
 
 import Home from './pages/Home';
 import EventsPage from './pages/EventsPage';
@@ -142,29 +143,42 @@ function AppContent() {
                             element={<NotificationsPage />}
                         />
 
-                        <Route
-                            path="/admin"
-                            element={<AdminDashboard />}
-                        />
+                        <Route element={<AdminRoute />}>
+                            <Route
+                                path="/admin"
+                                element={<AdminDashboard />}
+                            />
 
-                        <Route
-                            path="/successful-bookings"
-                            element={
-                                <SuccessfulBookings />
-                            }
-                        />
+                            <Route
+                                path="/successful-bookings"
+                                element={<SuccessfulBookings />}
+                            />
 
-                        <Route
-                            path="/paid-clients"
-                            element={<PaidClients />}
-                        />
+                            <Route
+                                path="/paid-clients"
+                                element={<PaidClients />}
+                            />
 
-                        <Route
-                            path="/pending-requests"
-                            element={
-                                <PendingRequests />
-                            }
-                        />
+                            <Route
+                                path="/pending-requests"
+                                element={<PendingRequests />}
+                            />
+
+                            <Route
+                                path="/admin/refunds/:bookingId"
+                                element={<InitiateRefund />}
+                            />
+
+                            <Route
+                                path="/admin/delayed-support"
+                                element={<DelayedRequestsSupport />}
+                            />
+
+                            <Route
+                                path="/admin/newsletter"
+                                element={<NewsletterDashboard />}
+                            />
+                        </Route>
 
                         <Route
                             path="/about-us"
@@ -211,23 +225,8 @@ function AppContent() {
                         />
 
                         <Route
-                            path="/admin/refunds/:bookingId"
-                            element={<InitiateRefund />}
-                        />
-
-                        <Route
                             path="/refund-status/:bookingId"
                             element={<RefundStatus />}
-                        />
-
-                        <Route
-                            path="/admin/delayed-support"
-                            element={<DelayedRequestsSupport />}
-                        />
-
-                        <Route
-                            path="/admin/newsletter"
-                            element={<NewsletterDashboard />}
                         />
 
                         <Route
