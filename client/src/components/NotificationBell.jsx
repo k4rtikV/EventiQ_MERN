@@ -10,7 +10,7 @@ import {
     FaTimesCircle,
     FaUndoAlt
 } from 'react-icons/fa';
-import { useNotifications } from '../context/NotificationContext';
+import useNotifications from '../hooks/useNotifications';
 
 const iconByType = {
     booking: FaCalendarAlt,

@@ -16,9 +16,7 @@ import {
     FaUserShield
 } from 'react-icons/fa';
 
-import {
-    AuthContext
-} from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 
 import {
     useTheme

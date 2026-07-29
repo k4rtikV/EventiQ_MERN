@@ -12,7 +12,9 @@ import {
 } from 'react-router-dom';
 
 import api from '../utils/axios';
-import { AuthContext } from '../context/AuthContext';
+import EventGridSkeleton from '../components/ui/EventGridSkeleton';
+import EmptyState from '../components/ui/EmptyState';
+import AuthContext from '../context/AuthContextValue';
 
 import {
     FaCalendarAlt,
@@ -49,6 +51,7 @@ const EventsPage = () => {
     const [loading, setLoading] = useState(true);
     const [wishlistMessage, setWishlistMessage] =
         useState('');
+    const [loadError, setLoadError] = useState('');
 
     useEffect(() => {
         fetchEvents();
@@ -65,6 +68,7 @@ const EventsPage = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true);
+            setLoadError('');
 
             const response = await api.get('/events');
 
@@ -90,6 +94,7 @@ const EventsPage = () => {
             );
 
             setEvents([]);
+            setLoadError('Unable to load events right now.');
         } finally {
             setLoading(false);
         }
@@ -542,29 +547,14 @@ const EventsPage = () => {
 
             {/* Event Results */}
             {loading ? (
-                <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
-                    Loading events...
-                </div>
-            ) : filteredAndSortedEvents.length ===
-              0 ? (
-                <div className="bg-white border border-gray-200 rounded-2xl text-center py-20 px-6 shadow-sm dark:bg-gray-900 dark:border-gray-700">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2 dark:text-gray-100">
-                        No events found
-                    </h3>
-
-                    <p className="text-gray-500 mb-6 dark:text-gray-400">
-                        No events match your current
-                        search or filters.
-                    </p>
-
-                    <button
-                        type="button"
-                        onClick={resetFilters}
-                        className="rounded-lg border border-blue-500/70 bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:border-cyan-400/40 dark:focus-visible:ring-offset-gray-900"
-                    >
-                        Clear Filters
-                    </button>
-                </div>
+                <EventGridSkeleton count={6} />
+            ) : filteredAndSortedEvents.length === 0 ? (
+                <EmptyState
+                    title={loadError ? 'Events could not be loaded' : 'No events found'}
+                    message={loadError || 'No events match your current search or filters.'}
+                    actionLabel="Clear Filters"
+                    onAction={resetFilters}
+                />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredAndSortedEvents.map(

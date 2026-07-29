@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 const statusStyle = {
     open: 'bg-red-100 text-red-700', in_progress: 'bg-yellow-100 text-yellow-800', resolved: 'bg-green-100 text-green-700', closed: 'bg-gray-200 text-gray-700'
@@ -55,7 +56,7 @@ const DelayedRequestsSupport = () => {
         } catch (error) { if (win) win.close(); alert(error.response?.data?.message || 'Unable to open invoice.'); }
     };
 
-    if (loading) return <div className="py-20 text-center text-lg font-semibold">Loading delayed support requests...</div>;
+    if (loading) return <PageSkeleton rows={5} />;
 
     return (
         <div className="mx-auto max-w-7xl py-6">

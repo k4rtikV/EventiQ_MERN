@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 const NewsletterDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -148,8 +149,8 @@ const NewsletterDashboard = () => {
     };
 
     if (loading) {
-        return <div className="py-20 text-center text-xl font-semibold">Loading newsletter dashboard...</div>;
-    }
+    return <PageSkeleton rows={5} />;
+}
 
     return (
         <div className="mx-auto max-w-7xl">

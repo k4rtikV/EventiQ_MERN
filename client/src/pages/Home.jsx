@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/axios';
+import EventGridSkeleton from '../components/ui/EventGridSkeleton';
+import EmptyState from '../components/ui/EmptyState';
 import {
     FaCalendarAlt,
     FaMapMarkerAlt,
@@ -17,6 +19,7 @@ const Home = () => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [recentlyViewed, setRecentlyViewed] = useState([]);
+    const [loadError, setLoadError] = useState('');
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -59,6 +62,7 @@ const Home = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true);
+            setLoadError('');
 
             const response = await api.get('/events', {
                 params: {
@@ -81,6 +85,7 @@ const Home = () => {
             );
 
             setEvents([]);
+            setLoadError('Unable to load events right now. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -193,13 +198,14 @@ const Home = () => {
 
             {/* Featured Events */}
             {loading ? (
-                <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
-                    Loading events...
-                </div>
+                <EventGridSkeleton count={3} />
             ) : events.length === 0 ? (
-                <div className="text-center py-20 text-xl text-gray-500 dark:text-gray-400">
-                    No events found matching your search.
-                </div>
+                <EmptyState
+                    title={loadError ? 'Events could not be loaded' : 'No matching events'}
+                    message={loadError || 'Try a different event title or clear your search.'}
+                    actionLabel={search ? 'Clear Search' : undefined}
+                    onAction={search ? () => setSearch('') : undefined}
+                />
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

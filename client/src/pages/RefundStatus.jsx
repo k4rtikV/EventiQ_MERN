@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 const labels = {
     initiated: 'Refund Initiated',
@@ -31,7 +32,7 @@ const RefundStatus = () => {
     }, [bookingId, navigate, user]);
 
     const activeIndex = useMemo(() => mainSteps.indexOf(booking?.refund?.status), [booking]);
-    if (loading) return <div className="py-20 text-center text-lg font-semibold">Loading refund status...</div>;
+    if (loading) return <PageSkeleton rows={3} />;
 
     return (
         <div className="mx-auto max-w-5xl py-6 sm:py-10">

@@ -23,9 +23,7 @@ import {
 
 import api from '../utils/axios';
 
-import {
-    AuthContext
-} from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 
 const PurchasedEvent = () => {
     const {

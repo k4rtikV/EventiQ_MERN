@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/axios';
-import { AuthContext } from '../context/AuthContext';
+import PageSkeleton from '../components/ui/PageSkeleton';
+import ErrorState from '../components/ui/ErrorState';
+import AuthContext from '../context/AuthContextValue';
 import { FaCalendarAlt, FaMapMarkerAlt, FaChair, FaMoneyBillWave } from 'react-icons/fa';
 
 const RECENTLY_VIEWED_KEY = 'eventiq-recently-viewed-events';
@@ -100,8 +102,8 @@ const EventDetail = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-20 text-xl font-semibold">Loading...</div>;
-    if (error && !event) return <div className="text-center py-20 text-xl text-red-500">{error || 'Event not found'}</div>;
+    if (loading) return <PageSkeleton rows={3} />;
+    if (error && !event) return <ErrorState title="Event unavailable" message={error || 'Event not found'} onRetry={() => window.location.reload()} />;
 
     const isSoldOut = event.availableSeats <= 0;
     const maxQuantity = Math.min(10, event.availableSeats);

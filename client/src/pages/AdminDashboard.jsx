@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
+import PageSkeleton from '../components/ui/PageSkeleton';
 import { useNavigate } from 'react-router-dom';
 
 const EVENT_CATEGORIES = [
@@ -327,7 +328,7 @@ const AdminDashboard = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-20 text-xl font-semibold">Loading admin panel...</div>;
+    if (loading) return <PageSkeleton rows={6} />;
 
     return (
         <div className="max-w-7xl mx-auto">

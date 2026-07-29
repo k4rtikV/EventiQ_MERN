@@ -13,7 +13,7 @@ import QRCodeGenerator from 'qrcode';
 import { jsPDF } from 'jspdf';
 import { FaArrowLeft } from 'react-icons/fa';
 
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 
 const TicketPage = () => {

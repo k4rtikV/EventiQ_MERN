@@ -17,7 +17,10 @@ import {
 } from 'react-icons/fa';
 
 import api from '../utils/axios';
-import { AuthContext } from '../context/AuthContext';
+import EventGridSkeleton from '../components/ui/EventGridSkeleton';
+import EmptyState from '../components/ui/EmptyState';
+import ErrorState from '../components/ui/ErrorState';
+import AuthContext from '../context/AuthContextValue';
 
 const WishlistPage = () => {
     const { user } = useContext(AuthContext);
@@ -109,13 +112,8 @@ const WishlistPage = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="text-center py-20 text-xl font-semibold text-gray-600 dark:text-gray-300">
-                Loading your wishlist...
-            </div>
-        );
-    }
+    if (loading) return <EventGridSkeleton count={3} />;
+    if (message && wishlist.length === 0 && !message.includes('removed')) return <ErrorState title="Wishlist unavailable" message={message} onRetry={fetchWishlist} />;
 
     return (
         <div className="max-w-6xl mx-auto">

@@ -12,7 +12,9 @@ import {
     FaTrash,
     FaUndoAlt
 } from 'react-icons/fa';
-import { useNotifications } from '../context/NotificationContext';
+import useNotifications from '../hooks/useNotifications';
+import PageSkeleton from '../components/ui/PageSkeleton';
+import EmptyState from '../components/ui/EmptyState';
 
 const iconByType = {
     booking: FaCalendarAlt,
@@ -134,19 +136,9 @@ const NotificationsPage = () => {
 
                 <div className="divide-y divide-gray-100 dark:divide-slate-700">
                     {loading ? (
-                        <div className="py-20 text-center text-gray-500 font-semibold dark:text-gray-400">
-                            Loading notifications...
-                        </div>
+                        <div className="p-6"><PageSkeleton rows={3} /></div>
                     ) : visibleNotifications.length === 0 ? (
-                        <div className="py-20 px-6 text-center">
-                            <FaBell className="mx-auto text-5xl text-gray-300 dark:text-gray-500 mb-5" />
-                            <h2 className="text-xl font-black text-gray-800 dark:text-white">
-                                {filter === 'unread' ? 'You are all caught up' : 'No notifications yet'}
-                            </h2>
-                            <p className="text-gray-500 mt-2 dark:text-gray-400">
-                                New booking and account updates will appear here.
-                            </p>
-                        </div>
+                        <div className="p-6"><EmptyState icon={FaBell} title={filter === 'unread' ? 'You are all caught up' : 'No notifications yet'} message="New booking and account updates will appear here." /></div>
                     ) : (
                         visibleNotifications.map((notification) => {
                             const Icon = iconByType[notification.type] || FaBell;

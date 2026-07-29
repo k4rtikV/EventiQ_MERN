@@ -1,9 +1,8 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../utils/axios';
+import AuthContext from './AuthContextValue';
 
-export const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -77,3 +76,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+export default AuthProvider;

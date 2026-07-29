@@ -28,9 +28,7 @@ import {
     FaUserEdit
 } from 'react-icons/fa';
 
-import {
-    AuthContext
-} from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 
 import api from '../utils/axios';
 import { getAvatarSrc } from '../data/avatarOptions';

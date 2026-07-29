@@ -1,16 +1,14 @@
 import React, {
-    createContext,
     useCallback,
     useContext,
     useEffect,
     useState
 } from 'react';
 import api from '../utils/axios';
-import { AuthContext } from './AuthContext';
+import AuthContext from './AuthContextValue';
+import NotificationContext from './NotificationContextValue';
 
-export const NotificationContext = createContext(null);
-
-export const NotificationProvider = ({ children }) => {
+const NotificationProvider = ({ children }) => {
     const { user } = useContext(AuthContext);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -156,12 +154,5 @@ export const NotificationProvider = ({ children }) => {
     );
 };
 
-export const useNotifications = () => {
-    const context = useContext(NotificationContext);
 
-    if (!context) {
-        throw new Error('useNotifications must be used inside NotificationProvider');
-    }
-
-    return context;
-};
+export default NotificationProvider;

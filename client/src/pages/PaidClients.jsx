@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
+import PageSkeleton from '../components/ui/PageSkeleton';
 
 const PaidClients = () => {
     const { user } = useContext(AuthContext);
@@ -29,7 +30,7 @@ const PaidClients = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-20 text-xl font-semibold">Loading paid clients...</div>;
+    if (loading) return <PageSkeleton rows={5} />;
 
     return (
         <div className="max-w-7xl mx-auto">
