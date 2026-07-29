@@ -376,6 +376,34 @@ exports.sendBookingOTP = async (req, res) => {
     try {
         const { eventId } = req.body;
 
+        if (!eventId) {
+            return res.status(400).json({
+                message: 'Event ID is required.'
+            });
+        }
+
+        const event = await Event.findById(eventId).select(
+            'date availableSeats title'
+        );
+
+        if (!event) {
+            return res.status(404).json({
+                message: 'Event not found.'
+            });
+        }
+
+        if (new Date(event.date).getTime() <= Date.now()) {
+            return res.status(400).json({
+                message: 'This event has already started or ended.'
+            });
+        }
+
+        if (Number(event.availableSeats || 0) < 1) {
+            return res.status(400).json({
+                message: 'This event is sold out.'
+            });
+        }
+
         /*
          * Only an active unpaid booking should prevent another booking.
          *
@@ -470,6 +498,12 @@ exports.bookEvent = async (req, res) => {
         if (!event) {
             return res.status(404).json({
                 message: 'Event not found'
+            });
+        }
+
+        if (new Date(event.date).getTime() <= Date.now()) {
+            return res.status(400).json({
+                message: 'This event has already started or ended.'
             });
         }
 
@@ -644,6 +678,13 @@ exports.updateBookingAddress = async (
             });
         }
 
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'A cancelled booking cannot be updated.'
+            });
+        }
+
         if (
             booking.paymentStatus === 'paid'
         ) {
@@ -711,6 +752,13 @@ exports.applyPromoCode = async (
             return res.status(404).json({
                 message:
                     'Booking not found'
+            });
+        }
+
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'A promo code cannot be applied to a cancelled booking.'
             });
         }
 
@@ -840,6 +888,13 @@ exports.removePromoCode = async (
             });
         }
 
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'A promo code cannot be changed on a cancelled booking.'
+            });
+        }
+
         if (
             booking.paymentStatus === 'paid'
         ) {
@@ -917,6 +972,20 @@ exports.createOrder = async (
             });
         }
 
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'Payment cannot be started for a cancelled booking.'
+            });
+        }
+
+        if (booking.status === 'confirmed') {
+            return res.status(400).json({
+                message:
+                    'This booking has already been confirmed.'
+            });
+        }
+
         if (
             booking.paymentStatus === 'paid'
         ) {
@@ -945,6 +1014,13 @@ exports.createOrder = async (
         if (!event) {
             return res.status(404).json({
                 message: 'Event not found'
+            });
+        }
+
+        if (new Date(event.date).getTime() <= Date.now()) {
+            return res.status(400).json({
+                message:
+                    'Payment cannot be started because this event has already started or ended.'
             });
         }
 
@@ -1199,6 +1275,27 @@ exports.verifyPayment = async (
             });
         }
 
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message:
+                    'Payment cannot be verified for a cancelled booking.'
+            });
+        }
+
+        if (!booking.eventId) {
+            return res.status(404).json({
+                message:
+                    'The event linked to this booking no longer exists.'
+            });
+        }
+
+        if (new Date(booking.eventId.date).getTime() <= Date.now()) {
+            return res.status(400).json({
+                message:
+                    'Payment cannot be completed because this event has already started or ended.'
+            });
+        }
+
         if (
             booking.razorpayOrderId !==
             razorpay_order_id
@@ -1221,14 +1318,20 @@ exports.verifyPayment = async (
                 )
                 .digest('hex');
 
+        const expectedSignatureBuffer = Buffer.from(
+            expectedSignature,
+            'utf8'
+        );
+        const receivedSignatureBuffer = Buffer.from(
+            String(razorpay_signature),
+            'utf8'
+        );
+
         const isSignatureValid =
+            expectedSignatureBuffer.length === receivedSignatureBuffer.length &&
             crypto.timingSafeEqual(
-                Buffer.from(
-                    expectedSignature
-                ),
-                Buffer.from(
-                    razorpay_signature
-                )
+                expectedSignatureBuffer,
+                receivedSignatureBuffer
             );
 
         if (!isSignatureValid) {

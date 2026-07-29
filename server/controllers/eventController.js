@@ -296,9 +296,35 @@ exports.updateEvent = async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
+        const mergedInput = {
+            ...previousEvent,
+            ...req.body
+        };
+        const validation = validateEventInput(mergedInput);
+
+        if (validation.error) {
+            return res.status(400).json({ message: validation.error });
+        }
+
+        const alreadyReservedSeats = Math.max(
+            0,
+            Number(previousEvent.totalSeats || 0) -
+                Number(previousEvent.availableSeats || 0)
+        );
+
+        if (validation.data.totalSeats < alreadyReservedSeats) {
+            return res.status(400).json({
+                message: `Total seats cannot be lower than the ${alreadyReservedSeats} seat${alreadyReservedSeats === 1 ? '' : 's'} already assigned to confirmed bookings.`
+            });
+        }
+
         const event = await Event.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            {
+                ...validation.data,
+                availableSeats:
+                    validation.data.totalSeats - alreadyReservedSeats
+            },
             { new: true, runValidators: true }
         );
 
@@ -332,10 +358,14 @@ exports.updateEvent = async (req, res) => {
 
         res.json(event);
     } catch (error) {
-        console.error(
-            'Update event error:',
-            error
-        );
+        console.error('Update event error:', error);
+
+        if (error.name === 'ValidationError') {
+            const firstError = Object.values(error.errors)[0];
+            return res.status(400).json({
+                message: firstError?.message || 'Please review the event details.'
+            });
+        }
 
         res.status(500).json({
             message: 'Server Error',
@@ -350,6 +380,17 @@ exports.deleteEvent = async (req, res) => {
 
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
+        }
+
+        const activeBookingCount = await Booking.countDocuments({
+            eventId: event._id,
+            status: { $ne: 'cancelled' }
+        });
+
+        if (activeBookingCount > 0) {
+            return res.status(409).json({
+                message: `This event has ${activeBookingCount} active booking${activeBookingCount === 1 ? '' : 's'}. Cancel or resolve those bookings before deleting the event.`
+            });
         }
 
         const [wishlistedUsers, activeBookings] = await Promise.all([

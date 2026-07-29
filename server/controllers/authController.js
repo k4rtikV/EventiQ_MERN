@@ -147,17 +147,39 @@ exports.register = async (req, res) => {
 
         const otp = generateOTP();
 
+        await OTP.findOneAndDelete({
+            email: normalizedEmail,
+            action: 'account_verification'
+        });
+
         await OTP.create({
             email: normalizedEmail,
             otp,
             action: 'account_verification'
         });
 
-        await sendOTPEmail(
-            normalizedEmail,
-            otp,
-            'account_verification'
-        );
+        try {
+            await sendOTPEmail(
+                normalizedEmail,
+                otp,
+                'account_verification'
+            );
+        } catch (emailError) {
+            // Do not leave behind an unusable account when the initial
+            // verification email could not be delivered.
+            await Promise.allSettled([
+                OTP.deleteMany({
+                    email: normalizedEmail,
+                    action: 'account_verification'
+                }),
+                User.deleteOne({
+                    _id: user._id,
+                    isVerified: false
+                })
+            ]);
+
+            throw emailError;
+        }
 
         res.status(201).json({
             message:
@@ -310,6 +332,16 @@ exports.verifyOTP = async (req, res) => {
             });
         }
 
+        if (
+            typeof email !== 'string' ||
+            typeof otp !== 'string'
+        ) {
+            return res.status(400).json({
+                message:
+                    'Email and OTP must be valid text values'
+            });
+        }
+
         const normalizedEmail =
             email.trim().toLowerCase();
 
@@ -339,6 +371,17 @@ exports.verifyOTP = async (req, res) => {
                     new: true
                 }
             );
+
+        if (!user) {
+            await OTP.deleteOne({
+                _id: validOTP._id
+            });
+
+            return res.status(404).json({
+                message:
+                    'The account linked to this OTP no longer exists. Please register again.'
+            });
+        }
 
         await OTP.deleteOne({
             _id: validOTP._id
