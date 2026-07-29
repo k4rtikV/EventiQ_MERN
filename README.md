@@ -4,9 +4,7 @@ A full-stack MERN Event Management and Ticket Booking Platform built with modern
 
 ---
 
-## 📸 Preview
-
-> Add screenshots or a GIF of the application here.
+Deployed link - https://eventiq-mern.onrender.com/
 
 Example:
 
@@ -38,7 +36,6 @@ Example:
 - Download Tickets
 - Download Invoices
 - Ticket QR Code
-- Ticket Verification
 - Notification Centre
 - AI-inspired Help Chatbot
 - Dark / Light Theme
