@@ -3,13 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 import PageSkeleton from '../components/ui/PageSkeleton';
-
-const formatCurrency = (value) => new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-}).format(Number(value || 0));
+import Button from '../components/ui/Button';
+import ConfirmModal from '../components/ui/ConfirmModal';
+import { formatCurrency, formatDateTime } from '../utils/formatters';
 
 const InitiateRefund = () => {
     const { bookingId } = useParams();
@@ -25,6 +21,7 @@ const InitiateRefund = () => {
     const [error, setError] = useState('');
     const [refundStatus, setRefundStatus] = useState('processing');
     const [statusNote, setStatusNote] = useState('');
+    const [confirmRefundOpen, setConfirmRefundOpen] = useState(false);
 
     useEffect(() => {
         if (!user || user.role !== 'admin') {
@@ -61,14 +58,16 @@ const InitiateRefund = () => {
         return `INV-${year}-${booking._id.slice(-8).toUpperCase()}`;
     }, [booking]);
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
+        if (!submitting) setConfirmRefundOpen(true);
+    };
 
-        if (!window.confirm(`Initiate a refund of ${formatCurrency(booking.amount)} for this booking?`)) {
-            return;
-        }
+    const confirmRefund = async () => {
+        if (submitting || !booking) return;
 
         setSubmitting(true);
+        setConfirmRefundOpen(false);
         setError('');
         setMessage('');
 
@@ -168,7 +167,7 @@ const InitiateRefund = () => {
                                 <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
                                     <p className="font-black">Current: {booking.refund.status.replaceAll('_', ' ')}</p>
                                     <p className="mt-1">Reference: {booking.refund.referenceId || 'Not available'}</p>
-                                    <p className="mt-1">Last updated: {new Date(booking.refund.lastUpdatedAt || booking.refund.initiatedAt).toLocaleString()}</p>
+                                    <p className="mt-1">Last updated: {formatDateTime(booking.refund.lastUpdatedAt || booking.refund.initiatedAt)}</p>
                                 </div>
                                 <label className="mb-2 block text-sm font-bold">Update status</label>
                                 <select value={refundStatus} onChange={(event) => setRefundStatus(event.target.value)} className="mb-5 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
@@ -182,7 +181,7 @@ const InitiateRefund = () => {
                                 <label className="mb-2 block text-sm font-bold">Status note <span className="font-normal text-gray-500 dark:text-gray-400">(optional)</span></label>
                                 <textarea value={statusNote} onChange={(event) => setStatusNote(event.target.value)} maxLength={500} rows={4} placeholder="Add an update visible in the refund history..." className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800" />
                                 <p className="mb-5 mt-1 text-right text-xs text-gray-500 dark:text-gray-400">{statusNote.length}/500</p>
-                                <button type="submit" disabled={submitting} className="w-full rounded-lg bg-blue-600 px-5 py-3.5 font-black text-white shadow-md transition hover:bg-blue-700 disabled:opacity-60">{submitting ? 'Updating...' : 'Update Refund Status'}</button>
+                                <Button type="submit" loading={submitting} className="w-full">Update Refund Status</Button>
                                 <button type="button" onClick={() => navigate(`/refund-status/${bookingId}`)} className="mt-3 w-full rounded-lg border border-blue-300 bg-blue-50 px-5 py-3 font-black text-blue-700 hover:bg-blue-600 hover:text-white">Preview User Refund Page</button>
                             </form>
                         ) : (
@@ -203,6 +202,16 @@ const InitiateRefund = () => {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                open={confirmRefundOpen}
+                title="Initiate this refund?"
+                message={`A refund of ${formatCurrency(booking?.amount)} will be recorded as initiated and the customer will be notified by email.`}
+                confirmLabel="Initiate Refund"
+                loading={submitting}
+                onClose={() => setConfirmRefundOpen(false)}
+                onConfirm={confirmRefund}
+            />
         </div>
     );
 };

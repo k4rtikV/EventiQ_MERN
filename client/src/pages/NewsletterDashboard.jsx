@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 import PageSkeleton from '../components/ui/PageSkeleton';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 const NewsletterDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -24,6 +25,8 @@ const NewsletterDashboard = () => {
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [busySubscriberId, setBusySubscriberId] = useState(null);
+    const [confirmSendOpen, setConfirmSendOpen] = useState(false);
+    const [subscriberToDelete, setSubscriberToDelete] = useState(null);
     const [feedback, setFeedback] = useState({ type: '', message: '' });
 
     useEffect(() => {
@@ -84,9 +87,12 @@ const NewsletterDashboard = () => {
             return;
         }
 
-        if (!window.confirm(`Send this newsletter to ${stats.active || 0} active subscriber${stats.active === 1 ? '' : 's'}?`)) {
-            return;
-        }
+        setConfirmSendOpen(true);
+    };
+
+    const confirmSendNewsletter = async () => {
+        if (sending) return;
+        setConfirmSendOpen(false);
 
         try {
             setSending(true);
@@ -128,10 +134,14 @@ const NewsletterDashboard = () => {
         }
     };
 
-    const handleDeleteSubscriber = async (subscriber) => {
-        if (!window.confirm(`Permanently remove ${subscriber.email} from the newsletter list?`)) {
-            return;
-        }
+    const handleDeleteSubscriber = (subscriber) => {
+        if (!busySubscriberId) setSubscriberToDelete(subscriber);
+    };
+
+    const confirmDeleteSubscriber = async () => {
+        const subscriber = subscriberToDelete;
+        if (!subscriber || busySubscriberId) return;
+        setSubscriberToDelete(null);
 
         try {
             setBusySubscriberId(subscriber._id);
@@ -362,6 +372,27 @@ const NewsletterDashboard = () => {
                     </div>
                 </section>
             </div>
+
+            <ConfirmModal
+                open={confirmSendOpen}
+                title="Send newsletter?"
+                message={`This newsletter will be sent to ${stats.active || 0} active subscriber${stats.active === 1 ? '' : 's'}.`}
+                confirmLabel="Send Newsletter"
+                loading={sending}
+                onClose={() => setConfirmSendOpen(false)}
+                onConfirm={confirmSendNewsletter}
+            />
+
+            <ConfirmModal
+                open={Boolean(subscriberToDelete)}
+                title="Remove subscriber?"
+                message={`${subscriberToDelete?.email || 'This subscriber'} will be permanently removed from the newsletter list.`}
+                confirmLabel="Remove"
+                danger
+                loading={Boolean(busySubscriberId)}
+                onClose={() => setSubscriberToDelete(null)}
+                onConfirm={confirmDeleteSubscriber}
+            />
         </div>
     );
 };

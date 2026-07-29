@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 import PageSkeleton from '../components/ui/PageSkeleton';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 const PendingRequests = () => {
     const { user } = useContext(AuthContext);
@@ -10,6 +11,9 @@ const PendingRequests = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
+    const [busyBookingId, setBusyBookingId] = useState(null);
+    const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [feedback, setFeedback] = useState('');
 
     useEffect(() => {
         if (!user || user.role !== 'admin') {
@@ -36,22 +40,36 @@ const PendingRequests = () => {
     };
 
     const handleConfirmBooking = async (id, paymentStatus) => {
+        if (busyBookingId) return;
+        setBusyBookingId(id);
+        setFeedback('');
         try {
             await api.put(`/bookings/${id}/confirm`, { paymentStatus });
-            fetchPending();
+            await fetchPending();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error confirming booking');
+            setFeedback(error.response?.data?.message || 'Error confirming booking');
+        } finally {
+            setBusyBookingId(null);
         }
     };
 
-    const handleCancelBooking = async (id) => {
-        if (window.confirm('Cancel this user\'s booking request?')) {
-            try {
-                await api.delete(`/bookings/${id}`);
-                fetchPending();
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error cancelling booking');
-            }
+    const handleCancelBooking = (id) => {
+        if (!busyBookingId) setBookingToCancel(id);
+    };
+
+    const confirmCancelBooking = async () => {
+        const id = bookingToCancel;
+        if (!id || busyBookingId) return;
+        setBookingToCancel(null);
+        setBusyBookingId(id);
+        setFeedback('');
+        try {
+            await api.delete(`/bookings/${id}`);
+            await fetchPending();
+        } catch (error) {
+            setFeedback(error.response?.data?.message || 'Error cancelling booking');
+        } finally {
+            setBusyBookingId(null);
         }
     };
 
@@ -104,7 +122,7 @@ const PendingRequests = () => {
                 invoiceWindow.close();
             }
 
-            alert(
+            setFeedback(
                 error.response?.data?.message ||
                 'Unable to open the invoice.'
             );
@@ -133,6 +151,8 @@ const PendingRequests = () => {
                     Back to Admin Dashboard
                 </button>
             </div>
+
+            {feedback && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200">{feedback}</div>}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-900 dark:border-gray-800">
                 <ul className="divide-y divide-gray-100">
@@ -220,14 +240,14 @@ const PendingRequests = () => {
                             {booking.status === 'pending' && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {booking.paymentStatus === 'paid' && (
-                                        <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-700 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                        <button disabled={busyBookingId === booking._id} onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-700 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
                                             ✓ Approve as Paid
                                         </button>
                                     )}
-                                    <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                                    <button disabled={busyBookingId === booking._id} onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
                                         ✓ Approve Undecided
                                     </button>
-                                    <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
+                                    <button disabled={busyBookingId === booking._id} onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
                                         ✕ Reject
                                     </button>
                                 </div>
@@ -236,6 +256,17 @@ const PendingRequests = () => {
                     ))}
                 </ul>
             </div>
+
+            <ConfirmModal
+                open={Boolean(bookingToCancel)}
+                title="Reject booking request?"
+                message="This booking request will be cancelled. The action cannot be undone from this page."
+                confirmLabel="Reject Booking"
+                danger
+                loading={Boolean(busyBookingId)}
+                onClose={() => setBookingToCancel(null)}
+                onConfirm={confirmCancelBooking}
+            />
         </div>
     );
 };

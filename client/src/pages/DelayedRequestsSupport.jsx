@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 import PageSkeleton from '../components/ui/PageSkeleton';
+import ConfirmModal from '../components/ui/ConfirmModal';
+import { formatCurrency, formatDateTime } from '../utils/formatters';
 
 const statusStyle = {
     open: 'bg-red-100 text-red-700', in_progress: 'bg-yellow-100 text-yellow-800', resolved: 'bg-green-100 text-green-700', closed: 'bg-gray-200 text-gray-700'
@@ -17,6 +19,8 @@ const DelayedRequestsSupport = () => {
     const [status, setStatus] = useState('all');
     const [search, setSearch] = useState('');
     const [busyId, setBusyId] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [requestToApprove, setRequestToApprove] = useState(null);
 
     const load = async () => {
         try {
@@ -25,7 +29,7 @@ const DelayedRequestsSupport = () => {
             if (status !== 'all') params.status = status;
             const { data } = await api.get('/support/admin/requests', { params });
             setRequests(data);
-        } catch (error) { alert(error.response?.data?.message || 'Unable to load support requests.'); }
+        } catch (error) { setErrorMessage(error.response?.data?.message || 'Unable to load support requests.'); }
         finally { setLoading(false); }
     };
 
@@ -39,10 +43,17 @@ const DelayedRequestsSupport = () => {
         return haystack.includes(search.trim().toLowerCase());
     }), [requests, search]);
 
-    const approveTicket = async (request) => {
-        if (!window.confirm('Approve this paid booking and assign its ticket?')) return;
+    const approveTicket = (request) => {
+        if (!busyId) setRequestToApprove(request);
+    };
+
+    const confirmApproveTicket = async () => {
+        const request = requestToApprove;
+        if (!request || busyId) return;
+        setRequestToApprove(null);
+        setErrorMessage('');
         try { setBusyId(request._id); await api.put(`/bookings/${request.booking._id}/confirm`); await load(); }
-        catch (error) { alert(error.response?.data?.message || 'Unable to approve booking.'); }
+        catch (error) { setErrorMessage(error.response?.data?.message || 'Unable to approve booking.'); }
         finally { setBusyId(null); }
     };
 
@@ -53,7 +64,7 @@ const DelayedRequestsSupport = () => {
             const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
             if (win) win.location.href = url;
             setTimeout(() => URL.revokeObjectURL(url), 60000);
-        } catch (error) { if (win) win.close(); alert(error.response?.data?.message || 'Unable to open invoice.'); }
+        } catch (error) { if (win) win.close(); setErrorMessage(error.response?.data?.message || 'Unable to open invoice.'); }
     };
 
     if (loading) return <PageSkeleton rows={5} />;
@@ -74,6 +85,8 @@ const DelayedRequestsSupport = () => {
                 <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-xl border border-gray-300 px-4 py-3 font-semibold dark:border-gray-600"><option value="all">All statuses</option><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select>
             </div>
 
+            {errorMessage && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200">{errorMessage}</div>}
+
             <div className="space-y-5">
                 {visible.length === 0 ? <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700">No delayed support requests match these filters.</div> : visible.map((request) => {
                     const booking = request.booking;
@@ -81,10 +94,10 @@ const DelayedRequestsSupport = () => {
                     return (
                         <article key={request._id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:bg-gray-900 dark:border-gray-700">
                             <div className="flex flex-col justify-between gap-4 md:flex-row">
-                                <div><div className="flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-black uppercase ${ticket ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{ticket ? 'Ticket Assignment Delay' : 'Refund Initiation Delay'}</span><span className={`rounded-full px-3 py-1 text-xs font-black uppercase ${statusStyle[request.status]}`}>{request.status.replace('_', ' ')}</span></div><h2 className="mt-3 text-xl font-black">{booking?.eventId?.title || 'Deleted Event'}</h2><p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Submitted {new Date(request.createdAt).toLocaleString()}</p></div>
+                                <div><div className="flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-black uppercase ${ticket ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{ticket ? 'Ticket Assignment Delay' : 'Refund Initiation Delay'}</span><span className={`rounded-full px-3 py-1 text-xs font-black uppercase ${statusStyle[request.status]}`}>{request.status.replace('_', ' ')}</span></div><h2 className="mt-3 text-xl font-black">{booking?.eventId?.title || 'Deleted Event'}</h2><p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Submitted {formatDateTime(request.createdAt)}</p></div>
                                 <div className="text-sm md:text-right"><p className="font-black">{request.user?.name}</p><p className="text-gray-500 dark:text-gray-400">{request.user?.email}</p><p className="mt-1 break-all text-xs text-gray-400">{booking?._id}</p></div>
                             </div>
-                            <div className="mt-5 grid gap-3 rounded-xl bg-gray-50 p-4 text-sm sm:grid-cols-4 dark:bg-gray-800"><div><b>Booking</b><p className="capitalize">{booking?.status}</p></div><div><b>Payment</b><p className="capitalize">{booking?.paymentStatus?.replace('_', ' ')}</p></div><div><b>Amount</b><p>₹{Number(booking?.amount || 0).toFixed(2)}</p></div><div><b>Refund</b><p className="capitalize">{booking?.refund?.status?.replaceAll('_', ' ') || 'Not started'}</p></div></div>
+                            <div className="mt-5 grid gap-3 rounded-xl bg-gray-50 p-4 text-sm sm:grid-cols-4 dark:bg-gray-800"><div><b>Booking</b><p className="capitalize">{booking?.status}</p></div><div><b>Payment</b><p className="capitalize">{booking?.paymentStatus?.replace('_', ' ')}</p></div><div><b>Amount</b><p>{formatCurrency(booking?.amount)}</p></div><div><b>Refund</b><p className="capitalize">{booking?.refund?.status?.replaceAll('_', ' ') || 'Not started'}</p></div></div>
                             <div className="mt-4 rounded-xl border border-gray-200 p-4 dark:border-gray-700"><p className="text-xs font-black uppercase text-gray-500 dark:text-gray-400">Customer message</p><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{request.message}</p>{request.adminNote && <p className="mt-3 border-t pt-3 text-sm text-gray-600 dark:text-gray-300"><b>Admin note:</b> {request.adminNote}</p>}</div>
                             <div className="mt-5 flex flex-wrap gap-2">
                                 {ticket && booking?.status === 'pending' && booking?.paymentStatus === 'paid' && <button disabled={busyId === request._id} onClick={() => approveTicket(request)} className="rounded-lg bg-green-600 px-4 py-2.5 text-sm font-black text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-green-700 hover:shadow-md active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">Approve & Assign Ticket</button>}
@@ -95,6 +108,16 @@ const DelayedRequestsSupport = () => {
                     );
                 })}
             </div>
+
+            <ConfirmModal
+                open={Boolean(requestToApprove)}
+                title="Approve and assign ticket?"
+                message="This paid booking will be confirmed, its ticket will be assigned, and the customer notification flow will run."
+                confirmLabel="Approve Booking"
+                loading={Boolean(busyId)}
+                onClose={() => setRequestToApprove(null)}
+                onConfirm={confirmApproveTicket}
+            />
         </div>
     );
 };

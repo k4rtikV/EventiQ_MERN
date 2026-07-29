@@ -32,6 +32,7 @@ import AuthContext from '../context/AuthContextValue';
 
 import api from '../utils/axios';
 import { getAvatarSrc } from '../data/avatarOptions';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 const FILTERS = {
     ALL: 'all',
@@ -206,6 +207,9 @@ const UserDashboard = () => {
         setDashboardError
     ] = useState('');
 
+    const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [cancellingBookingId, setCancellingBookingId] = useState(null);
+
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -271,32 +275,30 @@ const UserDashboard = () => {
         }
     };
 
-    const cancelBooking = async (
-        bookingId
-    ) => {
-        const shouldCancel =
-            window.confirm(
-                'Are you sure you want to cancel this booking request?'
-            );
+    const cancelBooking = (bookingId) => {
+        if (!cancellingBookingId) setBookingToCancel(bookingId);
+    };
 
-        if (!shouldCancel) {
-            return;
-        }
+    const confirmCancelBooking = async () => {
+        const bookingId = bookingToCancel;
+        if (!bookingId || cancellingBookingId) return;
+        setBookingToCancel(null);
+        setCancellingBookingId(bookingId);
+        setDashboardError('');
 
         try {
-            await api.delete(
-                `/bookings/${bookingId}`
-            );
-
+            await api.delete(`/bookings/${bookingId}`);
             await Promise.all([
                 fetchBookings(),
                 fetchPaymentHistory()
             ]);
         } catch (error) {
-            alert(
+            setDashboardError(
                 error.response?.data?.message ||
-                    'Error cancelling booking'
+                'Error cancelling booking'
             );
+        } finally {
+            setCancellingBookingId(null);
         }
     };
 
@@ -343,7 +345,7 @@ const UserDashboard = () => {
             link.remove();
             URL.revokeObjectURL(url);
         } catch (error) {
-            alert(
+            setDashboardError(
                 error.response?.data?.message ||
                     'Unable to download invoice'
             );
@@ -517,6 +519,7 @@ const UserDashboard = () => {
     }
 
     return (
+        <>
         <div className="max-w-6xl mx-auto">
             <section className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6 sm:p-8 mb-8 border-2 border-blue-100 dark:border-gray-800 ring-1 ring-blue-50 dark:ring-gray-800/60 flex flex-col sm:flex-row sm:items-center text-center sm:text-left gap-6 transition-all duration-200 before:absolute before:inset-y-0 before:left-0 before:w-1.5 before:bg-gradient-to-b before:from-blue-500 before:via-indigo-500 before:to-purple-500">
                 <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
@@ -694,6 +697,18 @@ const UserDashboard = () => {
                 />
             )}
         </div>
+
+        <ConfirmModal
+            open={Boolean(bookingToCancel)}
+            title="Cancel booking request?"
+            message="The booking will be cancelled. Paid cancellations may require the administrator to initiate a refund."
+            confirmLabel="Cancel Booking"
+            danger
+            loading={Boolean(cancellingBookingId)}
+            onClose={() => setBookingToCancel(null)}
+            onConfirm={confirmCancelBooking}
+        />
+        </>
     );
 };
 

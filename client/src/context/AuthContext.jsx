@@ -7,11 +7,20 @@ const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const userInfo = localStorage.getItem('userInfo');
-        if (userInfo) {
-            setUser(JSON.parse(userInfo));
+        try {
+            const userInfo = localStorage.getItem('userInfo');
+
+            if (userInfo) {
+                setUser(JSON.parse(userInfo));
+            }
+        } catch (error) {
+            console.error('Unable to restore the saved session:', error);
+            localStorage.removeItem('userInfo');
+            localStorage.removeItem('token');
+            setUser(null);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const login = async (email, password) => {

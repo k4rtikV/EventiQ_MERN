@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContextValue';
 import api from '../utils/axios';
 import PageSkeleton from '../components/ui/PageSkeleton';
+import ConfirmModal from '../components/ui/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 
 const EVENT_CATEGORIES = [
@@ -156,6 +157,9 @@ const AdminDashboard = () => {
     const [newsletterStats, setNewsletterStats] = useState({ total: 0, active: 0 });
     const [loading, setLoading] = useState(true);
     const [viewingInvoiceId, setViewingInvoiceId] = useState(null);
+    const [busyActionId, setBusyActionId] = useState(null);
+    const [confirmAction, setConfirmAction] = useState(null);
+    const [actionError, setActionError] = useState('');
 
     const [showEventForm, setShowEventForm] = useState(false);
     const [eventFormError, setEventFormError] = useState('');
@@ -238,34 +242,48 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleDeleteEvent = async (id) => {
-        if (window.confirm('Are you sure you want to delete this event?')) {
-            try {
-                await api.delete(`/events/${id}`);
-                fetchData();
-            } catch (error) {
-                alert('Error deleting event');
-            }
-        }
+    const handleDeleteEvent = (id) => {
+        if (!busyActionId) setConfirmAction({ type: 'delete-event', id });
     };
 
     const handleConfirmBooking = async (id, paymentStatus) => {
+        if (busyActionId) return;
+        setBusyActionId(id);
+        setActionError('');
         try {
             await api.put(`/bookings/${id}/confirm`, { paymentStatus });
-            fetchData();
+            await fetchData();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error confirming booking');
+            setActionError(error.response?.data?.message || 'Error confirming booking');
+        } finally {
+            setBusyActionId(null);
         }
     };
 
-    const handleCancelBooking = async (id) => {
-        if (window.confirm('Cancel this user\'s booking request?')) {
-            try {
-                await api.delete(`/bookings/${id}`);
-                fetchData();
-            } catch (error) {
-                alert(error.response?.data?.message || 'Error cancelling booking');
+    const handleCancelBooking = (id) => {
+        if (!busyActionId) setConfirmAction({ type: 'cancel-booking', id });
+    };
+
+    const runConfirmedAction = async () => {
+        const action = confirmAction;
+        if (!action || busyActionId) return;
+        setConfirmAction(null);
+        setBusyActionId(action.id);
+        setActionError('');
+        try {
+            if (action.type === 'delete-event') {
+                await api.delete(`/events/${action.id}`);
+            } else {
+                await api.delete(`/bookings/${action.id}`);
             }
+            await fetchData();
+        } catch (error) {
+            setActionError(
+                error.response?.data?.message ||
+                (action.type === 'delete-event' ? 'Error deleting event' : 'Error cancelling booking')
+            );
+        } finally {
+            setBusyActionId(null);
         }
     };
 
@@ -319,7 +337,7 @@ const AdminDashboard = () => {
                 invoiceWindow.close();
             }
 
-            alert(
+            setActionError(
                 error.response?.data?.message ||
                 'Unable to open the invoice.'
             );
@@ -332,6 +350,8 @@ const AdminDashboard = () => {
 
     return (
         <div className="max-w-7xl mx-auto">
+            {actionError && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200">{actionError}</div>}
+
             <div className="bg-black text-white rounded-2xl p-6 sm:p-8 mb-8 shadow-lg flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">Admin Dashboard</h1>
@@ -556,14 +576,14 @@ const AdminDashboard = () => {
                                         {booking.status === 'pending' && (
                                             <div className="flex flex-wrap gap-2 mt-2">
                                                 {booking.paymentStatus === 'paid' && (
-                                                    <button onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
+                                                    <button disabled={busyActionId === booking._id} onClick={() => handleConfirmBooking(booking._id, 'paid')} className="flex-1 min-w-[120px] bg-green-50 text-green-700 hover:bg-green-600 hover:text-white border border-green-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition">
                                                         ✓ Approve as Paid
                                                     </button>
                                                 )}
-                                                <button onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
+                                                <button disabled={busyActionId === booking._id} onClick={() => handleConfirmBooking(booking._id, 'not_paid')} className="flex-1 min-w-[120px] bg-gray-50 text-gray-700 hover:bg-gray-800 hover:text-white border border-gray-200 text-xs font-bold py-2.5 px-3 rounded-lg shadow-sm transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700">
                                                     ✓ Approve Undecided
                                                 </button>
-                                                <button onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
+                                                <button disabled={busyActionId === booking._id} onClick={() => handleCancelBooking(booking._id)} className="w-[80px] bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 text-xs font-bold py-2.5 px-3 rounded-lg transition">
                                                     ✕ Reject
                                                 </button>
                                             </div>
@@ -575,6 +595,19 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmModal
+                open={Boolean(confirmAction)}
+                title={confirmAction?.type === 'delete-event' ? 'Delete event?' : 'Reject booking request?'}
+                message={confirmAction?.type === 'delete-event'
+                    ? 'The event will be permanently deleted. Events with active bookings remain protected by the server.'
+                    : 'This booking request will be cancelled and removed from the pending queue.'}
+                confirmLabel={confirmAction?.type === 'delete-event' ? 'Delete Event' : 'Reject Booking'}
+                danger
+                loading={Boolean(busyActionId)}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={runConfirmedAction}
+            />
         </div>
     );
 };

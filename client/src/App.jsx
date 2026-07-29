@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import EventiQChatbot from './components/EventiQChatbot';
 import AdminRoute from './components/AdminRoute';
+import UserRoute from './components/UserRoute';
 
 import Home from './pages/Home';
 import EventsPage from './pages/EventsPage';
@@ -71,11 +72,13 @@ function AppContent() {
         '/pending-requests'
     ];
 
-    const isAdminRoute = adminOnlyPaths.some(
-        (path) =>
-            location.pathname === path ||
-            location.pathname.startsWith(`${path}/`)
-    );
+    const isAdminRoute =
+        location.pathname.startsWith('/admin') ||
+        adminOnlyPaths.some(
+            (path) =>
+                location.pathname === path ||
+                location.pathname.startsWith(`${path}/`)
+        );
 
     const shouldShowChatbot = !isAdminUser && !isAdminRoute;
 
@@ -104,16 +107,6 @@ function AppContent() {
                         />
 
                         <Route
-                            path="/booking/:id/address"
-                            element={<AddressDetails />}
-                        />
-
-                        <Route
-                            path="/booking/:id/payment"
-                            element={<PaymentPage />}
-                        />
-
-                        <Route
                             path="/login"
                             element={<Login />}
                         />
@@ -123,25 +116,62 @@ function AppContent() {
                             element={<Register />}
                         />
 
-                        <Route
-                            path="/dashboard"
-                            element={<UserDashboard />}
-                        />
+                        <Route element={<UserRoute />}>
+                            <Route
+                                path="/booking/:id/address"
+                                element={<AddressDetails />}
+                            />
 
-                        <Route
-                            path="/profile"
-                            element={<ProfileDetails />}
-                        />
+                            <Route
+                                path="/booking/:id/payment"
+                                element={<PaymentPage />}
+                            />
 
-                        <Route
-                            path="/wishlist"
-                            element={<WishlistPage />}
-                        />
+                            <Route
+                                path="/dashboard"
+                                element={<UserDashboard />}
+                            />
 
-                        <Route
-                            path="/notifications"
-                            element={<NotificationsPage />}
-                        />
+                            <Route
+                                path="/profile"
+                                element={<ProfileDetails />}
+                            />
+
+                            <Route
+                                path="/wishlist"
+                                element={<WishlistPage />}
+                            />
+
+                            <Route
+                                path="/notifications"
+                                element={<NotificationsPage />}
+                            />
+
+                            <Route
+                                path="/support/ticket-delay/:bookingId"
+                                element={<TicketDelaySupport />}
+                            />
+
+                            <Route
+                                path="/support/refund-delay/:bookingId"
+                                element={<RefundDelaySupport />}
+                            />
+
+                            <Route
+                                path="/refund-status/:bookingId"
+                                element={<RefundStatus />}
+                            />
+
+                            <Route
+                                path="/ticket/:id"
+                                element={<TicketPage />}
+                            />
+
+                            <Route
+                                path="/booking/:id/purchased"
+                                element={<PurchasedEvent />}
+                            />
+                        </Route>
 
                         <Route element={<AdminRoute />}>
                             <Route
@@ -208,35 +238,6 @@ function AppContent() {
                         <Route
                             path="/contact-us"
                             element={<ContactUs />}
-                        />
-
-                        <Route
-                            path="/support/ticket-delay/:bookingId"
-                            element={
-                                <TicketDelaySupport />
-                            }
-                        />
-
-                        <Route
-                            path="/support/refund-delay/:bookingId"
-                            element={
-                                <RefundDelaySupport />
-                            }
-                        />
-
-                        <Route
-                            path="/refund-status/:bookingId"
-                            element={<RefundStatus />}
-                        />
-
-                        <Route
-                            path="/ticket/:id"
-                            element={<TicketPage />}
-                        />
-
-                        <Route
-                            path="/booking/:id/purchased"
-                            element={<PurchasedEvent />}
                         />
 
                         <Route
